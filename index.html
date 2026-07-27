@@ -234,10 +234,19 @@
     </div>
 
     <script>
+        // Data Utama
         let database = [];     
         let dataStore = [];    
         let processedData = []; 
-        let storeSummaryMap = {}; 
+        
+        // =====================================
+        // OBJEK HASH MAP (KUNCI ANTI-LEMOT 🚀)
+        // =====================================
+        let dbMapByOrin = {};          // { "123": {row database} }
+        let dbMapByBsoft = {};         // { "abc": {row database} }
+        let storeSummaryMap = {};      // { "123": { totalSold: 10, totalEoh: 20 } }
+        let storeRecordsByOrin = {};   // { "123": [ baris toko A, baris toko B ] } -> Modal 1
+        let storeRecordsByToko = {};   // { "Gramedia JKT": [ baris buku A, baris buku B ] } -> Modal 2
         
         // State Export
         let currentDetailData = []; 
@@ -271,27 +280,50 @@
                 const csvMainText = await resMain.text();
                 const csvStoreText = await resStore.text();
 
+                // 1. Parsing & Indexing Database Utama
                 Papa.parse(csvMainText, {
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
                         database = results.data.map(row => {
                             let cleanRow = {};
                             for (let key in row) cleanRow[key.trim()] = row[key];
+                            
+                            // 🚀 Buat Index Hash Map untuk DB Utama
+                            let orin = cleanStr(cleanRow['ID ORIN']);
+                            let bsoft = cleanStr(cleanRow['KODE BSOFT']);
+                            if(orin) dbMapByOrin[orin] = cleanRow;
+                            if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
+                            
                             return cleanRow;
                         });
                     }
                 });
 
+                // 2. Parsing & Indexing Database Toko
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
                         dataStore = results.data.slice(9);
                         dataStore.forEach(st => {
                             let id = cleanStr(st[1]);
+                            let namaToko = cleanStr(st[3]);
+                            
                             if(!id) return;
+                            
+                            // 🚀 Index A: Kalkulasi Total Nasional per Buku
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
                             storeSummaryMap[id].totalSold += parseNum(st[7]);
                             storeSummaryMap[id].totalEoh += parseNum(st[11]);
+                            
+                            // 🚀 Index B: Grouping Riwayat berdasarkan ID BUKU (Untuk Modal 1)
+                            if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = [];
+                            storeRecordsByOrin[id].push(st);
+                            
+                            // 🚀 Index C: Grouping Riwayat berdasarkan NAMA TOKO (Untuk Modal 2)
+                            if(namaToko) {
+                                if(!storeRecordsByToko[namaToko]) storeRecordsByToko[namaToko] = [];
+                                storeRecordsByToko[namaToko].push(st);
+                            }
                         });
                     }
                 });
@@ -364,7 +396,7 @@
         }
 
         // ==========================================
-        // FITUR 2: PENCARIAN TOKO (BARU)
+        // FITUR 2: PENCARIAN TOKO
         // ==========================================
         function searchStoreManual() {
             if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
@@ -374,17 +406,18 @@
             
             if(!searchVal) return alert("Silakan ketikkan nama toko atau kota yang dicari.");
 
-            // Ambil daftar toko unik dari sheet PER STORE (kolom D/Index 3)
-            let uniqueStores = [...new Set(dataStore.map(st => st[3] ? String(st[3]).trim() : '').filter(Boolean))];
-            let matches = uniqueStores.filter(storeName => storeName.toLowerCase().includes(searchVal));
+            // Ambil langsung dari Object Keys Hash Map (Super Cepat)
+            let uniqueStores = Object.keys(storeRecordsByToko);
+            let matches = uniqueStores.filter(storeName => storeName.includes(searchVal));
 
             if (matches.length > 0) {
                 processedData = matches.map(storeName => ({
-                    'NAMA TOKO TERDAFTAR': storeName,
+                    // Kembalikan case asli dengan mengambil sample record pertama
+                    'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3],
                     'STATUS SYSTEM': '✅ MATCHED_STORE'
                 }));
                 renderPreview(processedData);
-                document.getElementById('export-btn').classList.add('hidden'); // Sembunyikan export massal utk pencarian toko
+                document.getElementById('export-btn').classList.add('hidden'); 
             } else {
                 processedData = [{'KATA KUNCI DICARI': searchVal, 'STATUS SYSTEM': '❌ NOT FOUND'}];
                 renderPreview(processedData);
@@ -443,9 +476,11 @@
                 };
 
                 processedData = userExcelData.map(row => {
-                    const idOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']);
-                    const kodeBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']);
-                    let match = idOrin ? database.find(r => cleanStr(r['ID ORIN']) === idOrin) : (kodeBsoft ? database.find(r => cleanStr(r['KODE BSOFT']) === kodeBsoft) : null);
+                    const userOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']);
+                    const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']);
+                    
+                    // 🚀 Cari pakai Hash Map (O(1) sangat cepat, tidak ada delay meskipun ribuan baris Excel)
+                    let match = userOrin ? dbMapByOrin[userOrin] : (userBsoft ? dbMapByBsoft[userBsoft] : null);
 
                     if (match) {
                         let newRow = { ...row };
@@ -547,7 +582,8 @@
             currentDetailData = [];
             currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
-            const stores = dataStore.filter(row => cleanStr(row[1]) === cleanStr(idOrin));
+            // 🚀 Ambil data instan dari Hash Map
+            const stores = storeRecordsByOrin[cleanStr(idOrin)] || [];
             let hasData = false;
 
             stores.forEach(store => {
@@ -575,18 +611,18 @@
             currentStoreDetailData = [];
             currentStoreFileName = `Katalog_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
-            const records = dataStore.filter(row => cleanStr(row[3]) === cleanStr(namaToko));
+            // 🚀 Ambil data instan dari Hash Map 
+            const records = storeRecordsByToko[cleanStr(namaToko)] || [];
             let hasData = false;
 
             records.forEach(st => {
                 const idOrin = st[1] ? String(st[1]).trim() : '';
                 const valSold = parseNum(st[7]); const valEoh = parseNum(st[11]);
                 
-                // Hanya memunculkan buku yang riwayatnya pernah terjual (Sold) atau masih ada fisiknya (EOH) di toko tsb
                 if (valSold > 0 || valEoh > 0) {
                     hasData = true;
-                    // Sinkronisasi dengan database utama untuk ambil data pelengkap
-                    let dbMatch = database.find(dbRow => cleanStr(dbRow['ID ORIN']) === cleanStr(idOrin));
+                    // 🚀 Sinkronisasi instan dengan database utama pakai Hash Map
+                    let dbMatch = dbMapByOrin[cleanStr(idOrin)];
                     
                     let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st[2] || '-');
                     let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
@@ -610,7 +646,6 @@
             document.getElementById('storeModal').classList.remove('hidden');
         }
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
-
 
         // ==========================================
         // EXPORT EXCEL & PDF ENGINE
