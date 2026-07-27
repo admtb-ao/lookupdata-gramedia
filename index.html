@@ -57,7 +57,7 @@
         <!-- FITUR 1: Pencarian Manual BUKU -->
         <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-200">
             <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul Buku (contoh: <i>garda</i> / <i>leika</i>) lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data)</b>.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul Buku (contoh: <i>garda</i> / <i>leika</i>) lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data secara berurutan dari SOLD terbanyak)</b>.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="manual-search-input" placeholder="Masukkan ID atau Judul Buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                 <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -357,7 +357,7 @@
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
 
         // ==========================================
-        // FITUR 1: PENCARIAN BUKU
+        // FITUR 1: PENCARIAN BUKU (DILENGKAPI AUTO-SORT)
         // ==========================================
         function searchManual() {
             if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
@@ -380,6 +380,10 @@
                         'STATUS SYSTEM': '✅ MATCHED_BOOK'
                     };
                 });
+                
+                // 🚀 PENGURUTAN OTOMATIS: Berdasarkan nilai SOLD tertinggi ke terendah
+                processedData.sort((a, b) => b['SOLD (TERJUAL BULAN INI)'] - a['SOLD (TERJUAL BULAN INI)']);
+
                 renderPreview(processedData);
                 document.getElementById('export-btn').classList.remove('hidden');
             } else {
@@ -508,7 +512,7 @@
         }
 
         // ==========================================
-        // RENDER PREVIEW DINAMIS (Optimasi: Array Join)
+        // RENDER PREVIEW DINAMIS 
         // ==========================================
         function renderPreview(dataArray) {
             if (dataArray.length === 0) return;
@@ -563,7 +567,7 @@
         }
 
         // ==========================================
-        // MODAL 1: RINCIAN TOKO
+        // MODAL 1: RINCIAN TOKO (DILENGKAPI AUTO-SORT)
         // ==========================================
         function lihatDetail(idOrin, kodeBsoft, judulItem, harga, stokBsoft) {
             document.getElementById('mdl-id').innerText = idOrin;
@@ -580,19 +584,25 @@
             currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || [];
-            let hasData = false;
-            let htmlChunks = [];
+            let validStores = [];
 
             stores.forEach(store => {
                 const namaToko = store[3] || '-'; const valSold = parseNum(store[7]); const valEoh = parseNum(store[11]); 
                 if (valSold > 0 || valEoh > 0) {
-                    hasData = true;
-                    htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${valEoh}</td></tr>`);
-                    currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': namaToko, 'SOLD (TERJUAL)': valSold, 'EOH (STOK AKHIR)': valEoh });
+                    validStores.push({ namaToko, valSold, valEoh });
                 }
             });
+
+            // 🚀 PENGURUTAN OTOMATIS: Urutkan toko dari pembeli terbanyak
+            validStores.sort((a, b) => b.valSold - a.valSold);
             
-            if (!hasData) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
+            let htmlChunks = [];
+            validStores.forEach(item => {
+                htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
+                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
+            });
+            
+            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
             else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('detailModal').classList.remove('hidden');
@@ -600,7 +610,7 @@
         function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
         // ==========================================
-        // MODAL 2: KATALOG BUKU
+        // MODAL 2: KATALOG BUKU (DILENGKAPI AUTO-SORT)
         // ==========================================
         function lihatDetailKatalog(namaToko) {
             document.getElementById('mdl-store-name').innerText = namaToko;
@@ -613,37 +623,42 @@
             currentStoreFileName = `Katalog_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
             const records = storeRecordsByToko[cleanStr(namaToko)] || [];
-            let hasData = false;
-            let htmlChunks = [];
+            let validRecords = [];
 
             records.forEach(st => {
                 const idOrin = st[1] ? String(st[1]).trim() : '';
                 const valSold = parseNum(st[7]); const valEoh = parseNum(st[11]);
                 
                 if (valSold > 0 || valEoh > 0) {
-                    hasData = true;
                     let dbMatch = dbMapByOrin[cleanStr(idOrin)];
-                    
                     let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st[2] || '-');
                     let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
                     let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
                     let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
                     
-                    htmlChunks.push(`
-                        <tr class="hover:bg-purple-50">
-                            <td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${idOrin}</td>
-                            <td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${judulItem}</td>
-                            <td class="py-2 px-2 text-center border-b border-l text-xs">${harga}</td>
-                            <td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${stokBsoft}</td>
-                            <td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${valSold}</td>
-                            <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${valEoh}</td>
-                        </tr>
-                    `);
-                    currentStoreDetailData.push({ 'NAMA TOKO': namaToko, 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'SOLD (TERJUAL)': valSold, 'EOH (STOK AKHIR)': valEoh });
+                    validRecords.push({ idOrin, judulItem, harga, stokBsoft, valSold, valEoh, kodeBsoft, namaToko });
                 }
             });
+
+            // 🚀 PENGURUTAN OTOMATIS: Urutkan buku dari yang paling laku di toko tersebut
+            validRecords.sort((a, b) => b.valSold - a.valSold);
+
+            let htmlChunks = [];
+            validRecords.forEach(item => {
+                htmlChunks.push(`
+                    <tr class="hover:bg-purple-50">
+                        <td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td>
+                        <td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td>
+                        <td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td>
+                        <td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td>
+                        <td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td>
+                        <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td>
+                    </tr>
+                `);
+                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
+            });
             
-            if (!hasData) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
+            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
             else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('storeModal').classList.remove('hidden');
@@ -676,11 +691,9 @@
             const origClass = el.className;
             
             hdr.classList.remove('hidden'); 
-            // Ubah class agar background putih penuh tanpa kepotong padding tailwind berlebih
             el.className = "p-2 bg-white w-full"; 
             
             const opt = {
-                // margin format: [Top, Left, Bottom, Right]
                 margin:       [0.5, 0.4, 0.5, 0.4], 
                 filename:     currentDetailFileName + ".pdf",
                 image:        { type: 'jpeg', quality: 0.98 },
@@ -711,16 +724,13 @@
             const origClass = el.className;
             
             hdr.classList.remove('hidden'); 
-            // Ubah class agar background putih penuh tanpa kepotong padding tailwind berlebih
             el.className = "p-2 bg-white w-full"; 
             
             const opt = {
-                // margin format: [Top, Left, Bottom, Right] - Memberi jarak batas aman
                 margin:       [0.5, 0.5, 0.5, 0.5], 
                 filename:     currentStoreFileName + ".pdf",
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                // KHUSUS KATALOG TOKO: Mengubah kertas jadi LANDSCAPE (Mendatar) agar tabel luas!
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }, 
                 pagebreak:    { avoid: 'tr' }
             };
