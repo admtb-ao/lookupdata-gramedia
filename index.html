@@ -242,11 +242,11 @@
         // =====================================
         // OBJEK HASH MAP (KUNCI ANTI-LEMOT 🚀)
         // =====================================
-        let dbMapByOrin = {};          // { "123": {row database} }
-        let dbMapByBsoft = {};         // { "abc": {row database} }
-        let storeSummaryMap = {};      // { "123": { totalSold: 10, totalEoh: 20 } }
-        let storeRecordsByOrin = {};   // { "123": [ baris toko A, baris toko B ] } -> Modal 1
-        let storeRecordsByToko = {};   // { "Gramedia JKT": [ baris buku A, baris buku B ] } -> Modal 2
+        let dbMapByOrin = {};          
+        let dbMapByBsoft = {};         
+        let storeSummaryMap = {};      
+        let storeRecordsByOrin = {};   
+        let storeRecordsByToko = {};   
         
         // State Export
         let currentDetailData = []; 
@@ -288,7 +288,6 @@
                             let cleanRow = {};
                             for (let key in row) cleanRow[key.trim()] = row[key];
                             
-                            // 🚀 Buat Index Hash Map untuk DB Utama
                             let orin = cleanStr(cleanRow['ID ORIN']);
                             let bsoft = cleanStr(cleanRow['KODE BSOFT']);
                             if(orin) dbMapByOrin[orin] = cleanRow;
@@ -310,16 +309,13 @@
                             
                             if(!id) return;
                             
-                            // 🚀 Index A: Kalkulasi Total Nasional per Buku
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
                             storeSummaryMap[id].totalSold += parseNum(st[7]);
                             storeSummaryMap[id].totalEoh += parseNum(st[11]);
                             
-                            // 🚀 Index B: Grouping Riwayat berdasarkan ID BUKU (Untuk Modal 1)
                             if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = [];
                             storeRecordsByOrin[id].push(st);
                             
-                            // 🚀 Index C: Grouping Riwayat berdasarkan NAMA TOKO (Untuk Modal 2)
                             if(namaToko) {
                                 if(!storeRecordsByToko[namaToko]) storeRecordsByToko[namaToko] = [];
                                 storeRecordsByToko[namaToko].push(st);
@@ -406,13 +402,11 @@
             
             if(!searchVal) return alert("Silakan ketikkan nama toko atau kota yang dicari.");
 
-            // Ambil langsung dari Object Keys Hash Map (Super Cepat)
             let uniqueStores = Object.keys(storeRecordsByToko);
             let matches = uniqueStores.filter(storeName => storeName.includes(searchVal));
 
             if (matches.length > 0) {
                 processedData = matches.map(storeName => ({
-                    // Kembalikan case asli dengan mengambil sample record pertama
                     'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3],
                     'STATUS SYSTEM': '✅ MATCHED_STORE'
                 }));
@@ -479,7 +473,6 @@
                     const userOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']);
                     const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']);
                     
-                    // 🚀 Cari pakai Hash Map (O(1) sangat cepat, tidak ada delay meskipun ribuan baris Excel)
                     let match = userOrin ? dbMapByOrin[userOrin] : (userBsoft ? dbMapByBsoft[userBsoft] : null);
 
                     if (match) {
@@ -515,20 +508,21 @@
         }
 
         // ==========================================
-        // RENDER PREVIEW DINAMIS
+        // RENDER PREVIEW DINAMIS (Optimasi: Array Join)
         // ==========================================
         function renderPreview(dataArray) {
             if (dataArray.length === 0) return;
             const thead = document.getElementById('table-head'), tbody = document.getElementById('table-body');
-            thead.innerHTML = ''; tbody.innerHTML = '';
-
+            
             const headers = Object.keys(dataArray[0]);
             let headerRow = '<tr>';
             headers.forEach(header => { headerRow += `<th class="py-2 md:py-3 px-3 md:px-4 border">${header}</th>`; });
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
 
+            let htmlChunks = [];
             const limit = Math.min(dataArray.length, 100); 
+            
             for (let i = 0; i < limit; i++) {
                 let rowHtml = '<tr class="hover:bg-gray-50 border-b">';
                 
@@ -560,13 +554,17 @@
                         rowHtml += `<td class="py-2 px-3 border">${val}</td>`;
                     }
                 });
-                rowHtml += '</tr>'; tbody.innerHTML += rowHtml;
+                rowHtml += '</tr>'; 
+                htmlChunks.push(rowHtml);
             }
-            if (dataArray.length > limit) tbody.innerHTML += `<tr><td colspan="${headers.length}" class="py-3 md:py-4 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Menampilkan ${limit} dari ${dataArray.length} data.</td></tr>`;
+            if (dataArray.length > limit) htmlChunks.push(`<tr><td colspan="${headers.length}" class="py-3 md:py-4 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Menampilkan ${limit} dari ${dataArray.length} data.</td></tr>`);
+            
+            // 🚀 Render DOM sekaligus agar tidak lag
+            tbody.innerHTML = htmlChunks.join('');
         }
 
         // ==========================================
-        // MODAL 1: RINCIAN TOKO (DARI KLIK BUKU)
+        // MODAL 1: RINCIAN TOKO (Optimasi: Array Join)
         // ==========================================
         function lihatDetail(idOrin, kodeBsoft, judulItem, harga, stokBsoft) {
             document.getElementById('mdl-id').innerText = idOrin;
@@ -575,45 +573,49 @@
             document.getElementById('mdl-harga').innerText = harga;
             document.getElementById('mdl-stokbsoft').innerText = stokBsoft;
             
-            const tbody = document.getElementById('detailBody'); tbody.innerHTML = "";
+            const tbody = document.getElementById('detailBody');
             const now = new Date(), dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             document.getElementById('pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
             currentDetailData = [];
             currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
-            // 🚀 Ambil data instan dari Hash Map
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || [];
             let hasData = false;
+            let htmlChunks = [];
 
             stores.forEach(store => {
                 const namaToko = store[3] || '-'; const valSold = parseNum(store[7]); const valEoh = parseNum(store[11]); 
                 if (valSold > 0 || valEoh > 0) {
                     hasData = true;
-                    tbody.innerHTML += `<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${valEoh}</td></tr>`;
+                    htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${valEoh}</td></tr>`);
                     currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': namaToko, 'SOLD (TERJUAL)': valSold, 'EOH (STOK AKHIR)': valEoh });
                 }
             });
+            
             if (!hasData) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
+            else tbody.innerHTML = htmlChunks.join('');
+            
             document.getElementById('detailModal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
         // ==========================================
-        // MODAL 2: KATALOG BUKU (DARI KLIK TOKO)
+        // MODAL 2: KATALOG BUKU (Optimasi: Array Join)
         // ==========================================
         function lihatDetailKatalog(namaToko) {
             document.getElementById('mdl-store-name').innerText = namaToko;
-            const tbody = document.getElementById('storeDetailBody'); tbody.innerHTML = "";
+            const tbody = document.getElementById('storeDetailBody');
+            
             const now = new Date(), dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             document.getElementById('store-pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
             currentStoreDetailData = [];
             currentStoreFileName = `Katalog_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
-            // 🚀 Ambil data instan dari Hash Map 
             const records = storeRecordsByToko[cleanStr(namaToko)] || [];
             let hasData = false;
+            let htmlChunks = [];
 
             records.forEach(st => {
                 const idOrin = st[1] ? String(st[1]).trim() : '';
@@ -621,7 +623,6 @@
                 
                 if (valSold > 0 || valEoh > 0) {
                     hasData = true;
-                    // 🚀 Sinkronisasi instan dengan database utama pakai Hash Map
                     let dbMatch = dbMapByOrin[cleanStr(idOrin)];
                     
                     let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st[2] || '-');
@@ -629,7 +630,7 @@
                     let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
                     let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
                     
-                    tbody.innerHTML += `
+                    htmlChunks.push(`
                         <tr class="hover:bg-purple-50">
                             <td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${idOrin}</td>
                             <td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${judulItem}</td>
@@ -638,11 +639,15 @@
                             <td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${valSold}</td>
                             <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${valEoh}</td>
                         </tr>
-                    `;
+                    `);
                     currentStoreDetailData.push({ 'NAMA TOKO': namaToko, 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'SOLD (TERJUAL)': valSold, 'EOH (STOK AKHIR)': valEoh });
                 }
             });
+            
+            // 🚀 Render DOM sekaligus agar tidak lag
             if (!hasData) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
+            else tbody.innerHTML = htmlChunks.join('');
+            
             document.getElementById('storeModal').classList.remove('hidden');
         }
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
