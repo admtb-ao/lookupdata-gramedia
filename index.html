@@ -69,7 +69,7 @@
         <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-lg border border-purple-200">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di cabang tersebut.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -187,7 +187,7 @@
     <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
-                <h5 class="font-bold text-lg md:text-xl">Katalog Buku di Cabang Toko</h5>
+                <h5 class="font-bold text-lg md:text-xl">Data Buku di Toko</h5>
                 <button onclick="closeStoreModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
             
@@ -201,7 +201,7 @@
             
             <div id="store-pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="store-pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
-                    <h2 class="text-2xl font-bold text-gray-800">Laporan Katalog & Stok Cabang</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Laporan Data & Stok Toko</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="store-pdf-print-date"></span></p>
                 </div>
 
@@ -539,7 +539,7 @@
                         let jd = escapeAttr(dataArray[i]['JUDUL ITEM'] || dataArray[i]['judul'] || '-');
                         let hr = escapeAttr(dataArray[i]['HARGA'] || '-');
                         let st = escapeAttr(dataArray[i]['STOK BSOFT'] || '-');
-                        rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-green-600">Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Cabang Toko</button></td>`;
+                        rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-green-600">Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button></td>`;
                     } 
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_STORE') {
                         let nmToko = escapeAttr(dataArray[i]['NAMA TOKO TERDAFTAR']);
@@ -658,7 +658,7 @@
                 currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
             });
             
-            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
+            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di toko ini.</td></tr>`;
             else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('storeModal').classList.remove('hidden');
