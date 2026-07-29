@@ -106,6 +106,14 @@
                 </div>
                 <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
             </div>
+            
+            <!-- Elemen baru: Tombol Eksekusi Manual (disembunyikan sebelum file dipilih) -->
+            <div id="file-ready-container" class="hidden mt-4 bg-white p-4 border border-blue-200 rounded-lg shadow-sm text-center">
+                <p id="file-name-display" class="text-sm md:text-base font-semibold text-gray-700 mb-3"></p>
+                <button onclick="triggerProcessExcel()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
+                    🚀 Proses Data Sekarang
+                </button>
+            </div>
         </div>
 
         <!-- Tombol Export -->
@@ -238,6 +246,7 @@
         let database = [];     
         let dataStore = [];    
         let processedData = []; 
+        let pendingExcelFile = null; // Menyimpan file excel sementara
         
         // =====================================
         // OBJEK HASH MAP (KUNCI ANTI-LEMOT 🚀)
@@ -426,7 +435,7 @@
         }
 
         // ==========================================
-        // FITUR 3: BULK UPLOAD EXCEL (SUDAH SUPPORT ITEM NUMBER)
+        // FITUR 3: BULK UPLOAD EXCEL (DILENGKAPI TOMBOL PROSES MANUAL)
         // ==========================================
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-upload');
@@ -435,9 +444,34 @@
         dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('drag-active'); });
         dropZone.addEventListener('drop', e => {
             e.preventDefault(); dropZone.classList.remove('drag-active');
-            if (!fileInput.disabled && e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; processExcelFile(e.dataTransfer.files[0]); }
+            if (!fileInput.disabled && e.dataTransfer.files.length) { 
+                fileInput.files = e.dataTransfer.files; 
+                handleFileSelection(e.dataTransfer.files[0]); 
+            }
         });
-        fileInput.addEventListener('change', e => { if (e.target.files.length) processExcelFile(e.target.files[0]); });
+        fileInput.addEventListener('change', e => { 
+            if (e.target.files.length) handleFileSelection(e.target.files[0]); 
+        });
+
+        // Tahan eksekusi, simpan file, lalu munculkan UI tombol Proses
+        function handleFileSelection(file) {
+            pendingExcelFile = file;
+            const container = document.getElementById('file-ready-container');
+            const textDisplay = document.getElementById('file-name-display');
+            
+            container.classList.remove('hidden');
+            textDisplay.innerHTML = `📄 File terpilih: <span class="text-blue-600 font-bold">${file.name}</span><br><span class="text-xs text-gray-500 font-normal">Silakan atur centang kolom di atas, lalu klik Proses Data Sekarang.</span>`;
+            
+            // Efek visual zona drop
+            dropZone.classList.add('border-blue-400', 'bg-blue-50');
+            setTimeout(() => dropZone.classList.remove('border-blue-400', 'bg-blue-50'), 2000);
+        }
+
+        // Fungsi yang dipanggil saat tombol Proses Data ditekan
+        function triggerProcessExcel() {
+            if (!pendingExcelFile) return alert("Pilih atau drag file Excel terlebih dahulu.");
+            processExcelFile(pendingExcelFile);
+        }
 
         function processExcelFile(file) {
             if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
@@ -452,7 +486,6 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i];
                     if (!row) continue;
-                    // Penambahan deteksi kolom "Item number" atau "Item Number"
                     if (row.some(cell => ['id orin', 'item id', 'kode bsoft', 'iditem', 'item number'].includes(cleanStr(cell)))) {
                         headerRowIndex = i; actualHeaders = row.map(h => String(h).trim()); break;
                     }
@@ -475,7 +508,6 @@
                 };
 
                 processedData = userExcelData.map(row => {
-                    // Deteksi ID yang diupload dengan menambahkan Item number
                     const userOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']) || cleanStr(row['Item number']) || cleanStr(row['Item Number']);
                     const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']);
                     
@@ -507,8 +539,11 @@
                 renderPreview(processedData);
                 document.getElementById('export-btn').classList.remove('hidden');
                 
-                dropZone.classList.add('border-green-500', 'bg-green-50');
-                setTimeout(() => dropZone.classList.remove('border-green-500', 'bg-green-50'), 1500);
+                // Ubah UI kembali ke kondisi tenang
+                document.getElementById('file-ready-container').classList.add('hidden');
+                pendingExcelFile = null;
+                fileInput.value = ""; // reset file input
+                
             };
             reader.readAsArrayBuffer(file);
         }
@@ -536,7 +571,6 @@
                     let val = dataArray[i][header] !== undefined ? dataArray[i][header] : '';
                     
                     if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_BOOK') {
-                        // Support Item number pass to parameter modal
                         let id = escapeAttr(dataArray[i]['ID ORIN'] || dataArray[i]['Item Id'] || dataArray[i]['Item number'] || dataArray[i]['Item Number'] || '-');
                         let kd = escapeAttr(dataArray[i]['KODE BSOFT'] || dataArray[i]['iditem'] || '-');
                         let jd = escapeAttr(dataArray[i]['JUDUL ITEM'] || dataArray[i]['judul'] || '-');
