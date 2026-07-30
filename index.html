@@ -176,8 +176,8 @@
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
                             <tr>
                                 <th class="py-2 md:py-3 px-3 md:px-4 text-left">Nama Toko</th>
-                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (Terjual)</th>
-                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (Stok)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (Terjual Bulan Ini)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (Stok Akhir Gramedia)</th>
                             </tr>
                         </thead>
                         <tbody id="detailBody" class="divide-y"></tbody>
@@ -636,7 +636,7 @@
             let htmlChunks = [];
             validStores.forEach(item => {
                 htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
-                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
+                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
             });
             
             if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
@@ -692,7 +692,7 @@
                         <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td>
                     </tr>
                 `);
-                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
+                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
             });
             
             if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
