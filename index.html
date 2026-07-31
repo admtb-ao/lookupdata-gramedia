@@ -48,10 +48,18 @@
         <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
         <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
 
-        <!-- Status Database -->
-        <div class="mb-6 p-3 md:p-4 rounded bg-gray-50 border text-sm md:text-base">
-            <span class="font-semibold text-gray-700">Status Database: </span>
-            <span id="db-status" class="text-blue-600 font-bold">Sedang Menghubungkan ke 2 Google Sheet... ⏳</span>
+        <!-- Status Database (DENGAN TOMBOL REFRESH) -->
+        <div class="mb-6 p-3 md:p-4 rounded bg-gray-50 border flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="text-sm md:text-base">
+                <span class="font-semibold text-gray-700">Status Database: </span>
+                <span id="db-status" class="text-blue-600 font-bold">Sedang Menghubungkan... ⏳</span>
+            </div>
+            <button id="refresh-btn" onclick="loadData()" class="w-full sm:w-auto bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 px-4 rounded-lg border border-blue-300 shadow-sm transition text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg id="refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Refresh Data
+            </button>
         </div>
 
         <!-- FITUR 1: Pencarian Manual BUKU -->
@@ -107,7 +115,7 @@
                 <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
             </div>
             
-            <!-- Elemen baru: Tombol Eksekusi Manual (disembunyikan sebelum file dipilih) -->
+            <!-- Tombol Eksekusi Manual -->
             <div id="file-ready-container" class="hidden mt-4 bg-white p-4 border border-blue-200 rounded-lg shadow-sm text-center">
                 <p id="file-name-display" class="text-sm md:text-base font-semibold text-gray-700 mb-3"></p>
                 <button onclick="triggerProcessExcel()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
@@ -123,7 +131,7 @@
             </button>
         </div>
 
-        <!-- Tabel Preview (Multi-Fungsi) -->
+        <!-- Tabel Preview -->
         <div>
             <h2 class="text-base md:text-lg font-bold text-gray-800 mb-2">Preview Hasil Pencarian / Data</h2>
             <div class="overflow-x-auto shadow-sm rounded border">
@@ -176,8 +184,8 @@
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
                             <tr>
                                 <th class="py-2 md:py-3 px-3 md:px-4 text-left">Nama Toko</th>
-                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (Terjual Bulan Ini)</th>
-                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (Stok Akhir Gramedia)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (Terjual)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (Stok)</th>
                             </tr>
                         </thead>
                         <tbody id="detailBody" class="divide-y"></tbody>
@@ -246,7 +254,7 @@
         let database = [];     
         let dataStore = [];    
         let processedData = []; 
-        let pendingExcelFile = null; // Menyimpan file excel sementara
+        let pendingExcelFile = null; 
         
         // =====================================
         // OBJEK HASH MAP (KUNCI ANTI-LEMOT 🚀)
@@ -282,10 +290,39 @@
 
         const escapeAttr = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-        window.onload = async function() {
-            try {
-                const [resMain, resStore] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore) ]);
+        // ==========================================
+        // FUNGSI LOAD DATA (DIBUAT REUSABLE UNTUK REFRESH)
+        // ==========================================
+        window.onload = loadData;
 
+        async function loadData() {
+            const statusEl = document.getElementById('db-status');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const refreshIcon = document.getElementById('refresh-icon');
+            
+            // UI State: Sedang loading
+            statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`;
+            statusEl.className = "text-blue-600 font-bold";
+            if (refreshBtn) refreshBtn.disabled = true;
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+            
+            document.getElementById('manual-search-input').disabled = true;
+            document.getElementById('store-search-input').disabled = true;
+            document.getElementById('file-upload').disabled = true;
+            document.getElementById('search-btn').disabled = true;
+            document.getElementById('search-store-btn').disabled = true;
+
+            try {
+                // Reset semua memori cache lama sebelum download data baru
+                database = [];
+                dataStore = [];
+                dbMapByOrin = {};
+                dbMapByBsoft = {};
+                storeSummaryMap = {};
+                storeRecordsByOrin = {};
+                storeRecordsByToko = {};
+
+                const [resMain, resStore] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore) ]);
                 const csvMainText = await resMain.text();
                 const csvStoreText = await resStore.text();
 
@@ -333,25 +370,29 @@
                     }
                 });
 
-                document.getElementById('db-status').innerHTML = `✅ Terhubung! (${database.length} data buku & ${dataStore.length} riwayat toko siap digunakan)`;
-                document.getElementById('db-status').className = "text-green-600 font-bold";
+                // UI State: Sukses
+                statusEl.innerHTML = `✅ Terhubung! (${database.length} data buku & ${dataStore.length} riwayat toko)`;
+                statusEl.className = "text-green-600 font-bold";
                 
                 document.getElementById('manual-search-input').disabled = false;
                 document.getElementById('store-search-input').disabled = false;
                 document.getElementById('file-upload').disabled = false;
-                
                 document.getElementById('search-btn').disabled = false;
                 document.getElementById('search-btn').classList.remove('opacity-50', 'cursor-not-allowed');
-                
                 document.getElementById('search-store-btn').disabled = false;
                 document.getElementById('search-store-btn').classList.remove('opacity-50', 'cursor-not-allowed');
 
             } catch(e) {
-                document.getElementById('db-status').innerHTML = `❌ Gagal memuat data. Pastikan Sheet Anda diset ke "Anyone with the link".`;
-                document.getElementById('db-status').className = "text-red-600 font-bold";
+                // UI State: Error
+                statusEl.innerHTML = `❌ Gagal memuat data. Periksa koneksi atau hak akses Sheet.`;
+                statusEl.className = "text-red-600 font-bold";
                 console.error(e);
+            } finally {
+                // Hentikan loading spinner
+                if (refreshBtn) refreshBtn.disabled = false;
+                if (refreshIcon) refreshIcon.classList.remove('animate-spin');
             }
-        };
+        }
 
         function calcStoreData(idOrin) {
             let id = cleanStr(idOrin);
@@ -366,7 +407,7 @@
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
 
         // ==========================================
-        // FITUR 1: PENCARIAN BUKU (DILENGKAPI AUTO-SORT)
+        // FITUR 1: PENCARIAN BUKU 
         // ==========================================
         function searchManual() {
             if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
@@ -390,7 +431,6 @@
                     };
                 });
                 
-                // 🚀 PENGURUTAN OTOMATIS: Berdasarkan nilai SOLD tertinggi ke terendah
                 processedData.sort((a, b) => b['SOLD (TERJUAL BULAN INI)'] - a['SOLD (TERJUAL BULAN INI)']);
 
                 renderPreview(processedData);
@@ -435,7 +475,7 @@
         }
 
         // ==========================================
-        // FITUR 3: BULK UPLOAD EXCEL (DILENGKAPI TOMBOL PROSES MANUAL)
+        // FITUR 3: BULK UPLOAD EXCEL 
         // ==========================================
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-upload');
@@ -453,7 +493,6 @@
             if (e.target.files.length) handleFileSelection(e.target.files[0]); 
         });
 
-        // Tahan eksekusi, simpan file, lalu munculkan UI tombol Proses
         function handleFileSelection(file) {
             pendingExcelFile = file;
             const container = document.getElementById('file-ready-container');
@@ -462,12 +501,10 @@
             container.classList.remove('hidden');
             textDisplay.innerHTML = `📄 File terpilih: <span class="text-blue-600 font-bold">${file.name}</span><br><span class="text-xs text-gray-500 font-normal">Silakan atur centang kolom di atas, lalu klik Proses Data Sekarang.</span>`;
             
-            // Efek visual zona drop
             dropZone.classList.add('border-blue-400', 'bg-blue-50');
             setTimeout(() => dropZone.classList.remove('border-blue-400', 'bg-blue-50'), 2000);
         }
 
-        // Fungsi yang dipanggil saat tombol Proses Data ditekan
         function triggerProcessExcel() {
             if (!pendingExcelFile) return alert("Pilih atau drag file Excel terlebih dahulu.");
             processExcelFile(pendingExcelFile);
@@ -539,10 +576,9 @@
                 renderPreview(processedData);
                 document.getElementById('export-btn').classList.remove('hidden');
                 
-                // Ubah UI kembali ke kondisi tenang
                 document.getElementById('file-ready-container').classList.add('hidden');
                 pendingExcelFile = null;
-                fileInput.value = ""; // reset file input
+                fileInput.value = ""; 
                 
             };
             reader.readAsArrayBuffer(file);
@@ -604,7 +640,7 @@
         }
 
         // ==========================================
-        // MODAL 1: RINCIAN TOKO (DILENGKAPI AUTO-SORT)
+        // MODAL 1: RINCIAN TOKO 
         // ==========================================
         function lihatDetail(idOrin, kodeBsoft, judulItem, harga, stokBsoft) {
             document.getElementById('mdl-id').innerText = idOrin;
@@ -630,13 +666,12 @@
                 }
             });
 
-            // 🚀 PENGURUTAN OTOMATIS: Urutkan toko dari pembeli terbanyak
             validStores.sort((a, b) => b.valSold - a.valSold);
             
             let htmlChunks = [];
             validStores.forEach(item => {
                 htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
-                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
+                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
             });
             
             if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
@@ -647,7 +682,7 @@
         function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
         // ==========================================
-        // MODAL 2: KATALOG BUKU (DILENGKAPI AUTO-SORT)
+        // MODAL 2: KATALOG BUKU 
         // ==========================================
         function lihatDetailKatalog(namaToko) {
             document.getElementById('mdl-store-name').innerText = namaToko;
@@ -677,7 +712,6 @@
                 }
             });
 
-            // 🚀 PENGURUTAN OTOMATIS: Urutkan buku dari yang paling laku di toko tersebut
             validRecords.sort((a, b) => b.valSold - a.valSold);
 
             let htmlChunks = [];
@@ -692,7 +726,7 @@
                         <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td>
                     </tr>
                 `);
-                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
+                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
             });
             
             if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
@@ -712,7 +746,6 @@
             XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
 
-        // Export Modal 1
         function exportDetailToExcel() {
             if (currentDetailData.length === 0) return alert("Tidak ada data untuk di-export.");
             const workbook = XLSX.utils.book_new();
@@ -745,7 +778,6 @@
             });
         }
 
-        // Export Modal 2
         function exportStoreDetailToExcel() {
             if (currentStoreDetailData.length === 0) return alert("Tidak ada data katalog untuk di-export.");
             const workbook = XLSX.utils.book_new();
