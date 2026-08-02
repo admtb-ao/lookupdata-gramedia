@@ -48,18 +48,27 @@
         <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
         <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
 
-        <!-- Status Database (DENGAN TOMBOL REFRESH) -->
-        <div class="mb-6 p-3 md:p-4 rounded bg-gray-50 border flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="text-sm md:text-base">
-                <span class="font-semibold text-gray-700">Status Database: </span>
-                <span id="db-status" class="text-blue-600 font-bold">Sedang Menghubungkan... ⏳</span>
+        <!-- Status Database & Info Data (DENGAN BANNER CATATAN PENTING) -->
+        <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
+            <div class="p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-gray-100">
+                <div class="text-sm md:text-base">
+                    <span class="font-semibold text-gray-700">Status Database: </span>
+                    <span id="db-status" class="text-blue-600 font-bold">Sedang Menghubungkan... ⏳</span>
+                </div>
+                <button id="refresh-btn" onclick="loadData()" class="w-full sm:w-auto bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 px-4 rounded-lg border border-blue-200 shadow-sm transition text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg id="refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh Data
+                </button>
             </div>
-            <button id="refresh-btn" onclick="loadData()" class="w-full sm:w-auto bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 px-4 rounded-lg border border-blue-300 shadow-sm transition text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg id="refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                Refresh Data
-            </button>
+            <!-- Banner Catatan -->
+            <div class="bg-amber-50 p-3 md:p-4 text-amber-800 text-xs md:text-sm flex gap-3 items-start border-t border-amber-100">
+                <span class="text-lg leading-none mt-0.5">⚠️</span>
+                <p class="leading-relaxed text-justify md:text-left">
+                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem kasir, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets. Jika belum di-<i>update</i>, angka yang tertampil masih merupakan akumulasi data penjualan sebelumnya.
+                </p>
+            </div>
         </div>
 
         <!-- FITUR 1: Pencarian Manual BUKU -->
@@ -77,7 +86,7 @@
         <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-lg border border-purple-200">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di cabang tersebut.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -89,7 +98,7 @@
         <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
         <div class="mb-6">
             <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda (mengandung kolom Item Id/Item number/ID ORIN/KODE BSOFT/iditem). Sistem otomatis memindai dan mensinkronisasi datanya ke seluruh toko nasional.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda (mengandung kolom Item Id/Item number/ID ORIN/KODE BSOFT/iditem/KODE). Sistem otomatis memindai dan mensinkronisasi datanya ke seluruh toko nasional.</p>
             
             <!-- Pengaturan Checkbox Kolom -->
             <div class="mb-4 bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
@@ -184,8 +193,8 @@
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
                             <tr>
                                 <th class="py-2 md:py-3 px-3 md:px-4 text-left">Nama Toko</th>
-                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (Terjual)</th>
-                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (Stok)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (TERJUAL BULAN INI)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (STOK AKHIR GRAMEDIA)</th>
                             </tr>
                         </thead>
                         <tbody id="detailBody" class="divide-y"></tbody>
@@ -203,7 +212,7 @@
     <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
-                <h5 class="font-bold text-lg md:text-xl">Katalog Buku di Cabang Toko</h5>
+                <h5 class="font-bold text-lg md:text-xl">Katalog Buku di Toko</h5>
                 <button onclick="closeStoreModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
             
@@ -217,7 +226,7 @@
             
             <div id="store-pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="store-pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
-                    <h2 class="text-2xl font-bold text-gray-800">Laporan Katalog & Stok Cabang</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Laporan Katalog & Stok Toko</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="store-pdf-print-date"></span></p>
                 </div>
 
@@ -234,8 +243,8 @@
                                 <th class="py-2 md:py-3 px-3 text-left w-1/3">Judul Item</th>
                                 <th class="py-2 md:py-3 px-2 border-l">Harga</th>
                                 <th class="py-2 md:py-3 px-2 border-l">Stok BSOFT</th>
-                                <th class="py-2 md:py-3 px-2 border-l">SOLD</th>
-                                <th class="py-2 md:py-3 px-2 border-l">EOH</th>
+                                <th class="py-2 md:py-3 px-2 border-l">SOLD (TERJUAL BULAN INI)</th>
+                                <th class="py-2 md:py-3 px-2 border-l">EOH (STOK AKHIR GRAMEDIA)</th>
                             </tr>
                         </thead>
                         <tbody id="storeDetailBody" class="divide-y"></tbody>
@@ -523,11 +532,12 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i];
                     if (!row) continue;
-                    if (row.some(cell => ['id orin', 'item id', 'kode bsoft', 'iditem', 'item number'].includes(cleanStr(cell)))) {
+                    if (row.some(cell => ['id orin', 'item id', 'kode bsoft', 'iditem', 'item number', 'kode'].includes(cleanStr(cell)))) {
                         headerRowIndex = i; actualHeaders = row.map(h => String(h).trim()); break;
                     }
                 }
-                if (headerRowIndex === -1) return alert("Header ID tidak ditemukan di file Anda. (Pastikan ada kolom ID ORIN, Item Id, KODE BSOFT, iditem, atau Item number)");
+                
+                if (headerRowIndex === -1) return alert("Header ID tidak ditemukan di file Anda. (Pastikan ada kolom ID ORIN, Item Id, KODE BSOFT, iditem, Item number, atau KODE)");
 
                 let userExcelData = [];
                 for (let i = headerRowIndex + 1; i < dataAsArrays.length; i++) {
@@ -546,7 +556,7 @@
 
                 processedData = userExcelData.map(row => {
                     const userOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']) || cleanStr(row['Item number']) || cleanStr(row['Item Number']);
-                    const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']);
+                    const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']) || cleanStr(row['KODE']) || cleanStr(row['Kode']) || cleanStr(row['kode']);
                     
                     let match = userOrin ? dbMapByOrin[userOrin] : (userBsoft ? dbMapByBsoft[userBsoft] : null);
 
@@ -561,7 +571,7 @@
                         }
 
                         if (wants.orin) newRow['ID ORIN'] = finalId;
-                        if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || row['KODE BSOFT'] || row['iditem'] || '';
+                        if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || row['KODE BSOFT'] || row['iditem'] || row['KODE'] || row['Kode'] || row['kode'] || '';
                         if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || row['JUDUL ITEM'] || row['judul'] || row['Judul'] || '';
                         if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || '');
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : (row['STOK BSOFT'] || '');
@@ -608,11 +618,11 @@
                     
                     if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_BOOK') {
                         let id = escapeAttr(dataArray[i]['ID ORIN'] || dataArray[i]['Item Id'] || dataArray[i]['Item number'] || dataArray[i]['Item Number'] || '-');
-                        let kd = escapeAttr(dataArray[i]['KODE BSOFT'] || dataArray[i]['iditem'] || '-');
+                        let kd = escapeAttr(dataArray[i]['KODE BSOFT'] || dataArray[i]['iditem'] || dataArray[i]['KODE'] || dataArray[i]['Kode'] || dataArray[i]['kode'] || '-');
                         let jd = escapeAttr(dataArray[i]['JUDUL ITEM'] || dataArray[i]['judul'] || '-');
                         let hr = escapeAttr(dataArray[i]['HARGA'] || '-');
                         let st = escapeAttr(dataArray[i]['STOK BSOFT'] || '-');
-                        rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-green-600">Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Cabang Toko</button></td>`;
+                        rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-green-600">Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button></td>`;
                     } 
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_STORE') {
                         let nmToko = escapeAttr(dataArray[i]['NAMA TOKO TERDAFTAR']);
@@ -640,7 +650,7 @@
         }
 
         // ==========================================
-        // MODAL 1: RINCIAN TOKO 
+        // MODAL 1: RINCIAN TOKO (Pencarian Buku)
         // ==========================================
         function lihatDetail(idOrin, kodeBsoft, judulItem, harga, stokBsoft) {
             document.getElementById('mdl-id').innerText = idOrin;
@@ -669,20 +679,44 @@
             validStores.sort((a, b) => b.valSold - a.valSold);
             
             let htmlChunks = [];
+            let sumSold = 0, sumEoh = 0; // Variabel Kalkulasi Total
+
             validStores.forEach(item => {
+                sumSold += item.valSold;
+                sumEoh += item.valEoh;
                 htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
-                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
+                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
             });
             
-            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
-            else tbody.innerHTML = htmlChunks.join('');
+            if (validStores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
+            } else {
+                // Menambahkan baris TOTAL di bagian akhir HTML (tampil di Web & PDF)
+                htmlChunks.push(`
+                    <tr class="bg-gray-200 font-bold text-gray-800">
+                        <td class="py-3 px-3 text-right border-b uppercase">Total Keseluruhan</td>
+                        <td class="py-3 px-3 border-b border-l text-blue-700">${sumSold}</td>
+                        <td class="py-3 px-3 border-b border-l text-green-700">${sumEoh}</td>
+                    </tr>
+                `);
+                
+                // Menambahkan baris TOTAL ke dalam export Excel
+                currentDetailData.push({ 
+                    'ID ORIN': '', 'KODE BSOFT': '', 'JUDUL ITEM': '', 'HARGA': '', 'STOK BSOFT': '', 
+                    'NAMA TOKO': 'TOTAL KESELURUHAN', 
+                    'SOLD (TERJUAL BULAN INI)': sumSold, 
+                    'EOH (STOK AKHIR GRAMEDIA)': sumEoh 
+                });
+
+                tbody.innerHTML = htmlChunks.join('');
+            }
             
             document.getElementById('detailModal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
         // ==========================================
-        // MODAL 2: KATALOG BUKU 
+        // MODAL 2: KATALOG BUKU (Pencarian Toko)
         // ==========================================
         function lihatDetailKatalog(namaToko) {
             document.getElementById('mdl-store-name').innerText = namaToko;
@@ -715,7 +749,11 @@
             validRecords.sort((a, b) => b.valSold - a.valSold);
 
             let htmlChunks = [];
+            let sumStoreSold = 0, sumStoreEoh = 0; // Variabel Kalkulasi Total Katalog
+
             validRecords.forEach(item => {
+                sumStoreSold += item.valSold;
+                sumStoreEoh += item.valEoh;
                 htmlChunks.push(`
                     <tr class="hover:bg-purple-50">
                         <td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td>
@@ -726,11 +764,32 @@
                         <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td>
                     </tr>
                 `);
-                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL)': item.valSold, 'EOH (STOK AKHIR)': item.valEoh });
+                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
             });
             
-            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di cabang ini.</td></tr>`;
-            else tbody.innerHTML = htmlChunks.join('');
+            if (validRecords.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di toko ini.</td></tr>`;
+            } else {
+                // Menambahkan baris TOTAL di bagian akhir HTML Katalog (tampil di Web & PDF)
+                htmlChunks.push(`
+                    <tr class="bg-purple-100 font-bold text-gray-800">
+                        <td colspan="4" class="py-3 px-3 text-right border-b uppercase">Total Keseluruhan</td>
+                        <td class="py-3 px-2 border-b border-l text-blue-700 text-sm">${sumStoreSold}</td>
+                        <td class="py-3 px-2 border-b border-l text-green-700 text-sm">${sumStoreEoh}</td>
+                    </tr>
+                `);
+                
+                // Menambahkan baris TOTAL ke dalam export Excel Katalog
+                currentStoreDetailData.push({ 
+                    'NAMA TOKO': '', 'ID ORIN': '', 'KODE BSOFT': '', 
+                    'JUDUL ITEM': 'TOTAL KESELURUHAN', 
+                    'HARGA': '', 'STOK BSOFT': '', 
+                    'SOLD (TERJUAL BULAN INI)': sumStoreSold, 
+                    'EOH (STOK AKHIR GRAMEDIA)': sumStoreEoh 
+                });
+
+                tbody.innerHTML = htmlChunks.join('');
+            }
             
             document.getElementById('storeModal').classList.remove('hidden');
         }
