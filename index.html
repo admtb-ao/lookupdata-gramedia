@@ -48,7 +48,7 @@
         <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
         <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
 
-        <!-- Status Database & Info Data (DENGAN BANNER CATATAN PENTING) -->
+        <!-- Status Database & Info Data -->
         <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
             <div class="p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-gray-100">
                 <div class="text-sm md:text-base">
@@ -66,7 +66,7 @@
             <div class="bg-amber-50 p-3 md:p-4 text-amber-800 text-xs md:text-sm flex gap-3 items-start border-t border-amber-100">
                 <span class="text-lg leading-none mt-0.5">⚠️</span>
                 <p class="leading-relaxed text-justify md:text-left">
-                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets. Jika belum di-<i>update</i>, angka yang tertampil masih merupakan akumulasi data pada tanggal tersebut.
+                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets. Jika belum di-<i>update</i>, angka yang tertampil masih merupakan akumulasi data penjualan sebelumnya.
                 </p>
             </div>
         </div>
@@ -86,7 +86,7 @@
         <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-lg border border-purple-200">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>sudirman</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -160,7 +160,7 @@
     <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-blue-800 text-white">
-                <h5 class="font-bold text-lg md:text-xl">Distribusi Buku Per Toko</h5>
+                <h5 class="font-bold text-lg md:text-xl">Data Buku Per Toko</h5>
                 <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
             
@@ -174,7 +174,7 @@
             
             <div id="pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
-                    <h2 class="text-2xl font-bold text-gray-800">Laporan Distribusi Buku Gramedia</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Laporan Data Buku Gramedia</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="pdf-print-date"></span></p>
                 </div>
 
@@ -212,12 +212,12 @@
     <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
-                <h5 class="font-bold text-lg md:text-xl">Katalog Buku di Toko</h5>
+                <h5 class="font-bold text-lg md:text-xl">Data Buku di Toko</h5>
                 <button onclick="closeStoreModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
             
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
-                <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan Katalog:</span>
+                <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
                     <button onclick="exportStoreDetailToExcel()" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📥 Export Excel</button>
                     <button onclick="exportStoreDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
@@ -226,7 +226,7 @@
             
             <div id="store-pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="store-pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
-                    <h2 class="text-2xl font-bold text-gray-800">Laporan Katalog & Stok Toko</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Laporan Data & Stok Toko</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="store-pdf-print-date"></span></p>
                 </div>
 
@@ -275,10 +275,8 @@
         let storeRecordsByToko = {};   
         
         // State Export
-        let currentDetailData = []; 
         let currentDetailFileName = "Detail_Toko";
-        let currentStoreDetailData = [];
-        let currentStoreFileName = "Katalog_Toko";
+        let currentStoreFileName = "Data_Buku_Toko";
 
         // URL Google Sheet
         const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNkfOExIiFvmh8K-hNkM';
@@ -300,7 +298,7 @@
         const escapeAttr = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
         // ==========================================
-        // FUNGSI LOAD DATA (DIBUAT REUSABLE UNTUK REFRESH)
+        // FUNGSI LOAD DATA 
         // ==========================================
         window.onload = loadData;
 
@@ -309,7 +307,6 @@
             const refreshBtn = document.getElementById('refresh-btn');
             const refreshIcon = document.getElementById('refresh-icon');
             
-            // UI State: Sedang loading
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`;
             statusEl.className = "text-blue-600 font-bold";
             if (refreshBtn) refreshBtn.disabled = true;
@@ -322,7 +319,6 @@
             document.getElementById('search-store-btn').disabled = true;
 
             try {
-                // Reset semua memori cache lama sebelum download data baru
                 database = [];
                 dataStore = [];
                 dbMapByOrin = {};
@@ -335,7 +331,7 @@
                 const csvMainText = await resMain.text();
                 const csvStoreText = await resStore.text();
 
-                // 1. Parsing & Indexing Database Utama
+                // 1. Database Utama
                 Papa.parse(csvMainText, {
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
@@ -353,7 +349,7 @@
                     }
                 });
 
-                // 2. Parsing & Indexing Database Toko
+                // 2. Database Toko
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
@@ -379,7 +375,6 @@
                     }
                 });
 
-                // UI State: Sukses
                 statusEl.innerHTML = `✅ Terhubung! (${database.length} data buku & ${dataStore.length} riwayat toko)`;
                 statusEl.className = "text-green-600 font-bold";
                 
@@ -392,12 +387,10 @@
                 document.getElementById('search-store-btn').classList.remove('opacity-50', 'cursor-not-allowed');
 
             } catch(e) {
-                // UI State: Error
                 statusEl.innerHTML = `❌ Gagal memuat data. Periksa koneksi atau hak akses Sheet.`;
                 statusEl.className = "text-red-600 font-bold";
                 console.error(e);
             } finally {
-                // Hentikan loading spinner
                 if (refreshBtn) refreshBtn.disabled = false;
                 if (refreshIcon) refreshIcon.classList.remove('animate-spin');
             }
@@ -409,9 +402,6 @@
             return { totalSold: 0, totalEoh: 0 };
         }
 
-        // ==========================================
-        // TRIGGER ENTER KEY
-        // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
 
@@ -626,7 +616,7 @@
                     } 
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_STORE') {
                         let nmToko = escapeAttr(dataArray[i]['NAMA TOKO TERDAFTAR']);
-                        rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-purple-600">Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-2 text-[10px] md:text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 py-1.5 px-3 rounded font-bold border border-purple-300 shadow-sm transition whitespace-nowrap">Lihat Katalog Buku</button></td>`;
+                        rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-purple-600">Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-2 text-[10px] md:text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 py-1.5 px-3 rounded font-bold border border-purple-300 shadow-sm transition whitespace-nowrap">Lihat Data Buku</button></td>`;
                     }
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
                         rowHtml += `<td class="py-2 px-3 border font-bold text-center text-green-600">Terisi</td>`;
@@ -663,7 +653,6 @@
             const now = new Date(), dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             document.getElementById('pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
-            currentDetailData = [];
             currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || [];
@@ -679,19 +668,17 @@
             validStores.sort((a, b) => b.valSold - a.valSold);
             
             let htmlChunks = [];
-            let sumSold = 0, sumEoh = 0; // Variabel Kalkulasi Total
+            let sumSold = 0, sumEoh = 0; 
 
             validStores.forEach(item => {
                 sumSold += item.valSold;
                 sumEoh += item.valEoh;
                 htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
-                currentDetailData.push({ 'ID ORIN': idOrin, 'KODE BSOFT': kodeBsoft, 'JUDUL ITEM': judulItem, 'HARGA': harga, 'STOK BSOFT': stokBsoft, 'NAMA TOKO': item.namaToko, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
             });
             
             if (validStores.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
             } else {
-                // Menambahkan baris TOTAL di bagian akhir HTML (tampil di Web & PDF)
                 htmlChunks.push(`
                     <tr class="bg-gray-200 font-bold text-gray-800">
                         <td class="py-3 px-3 text-right border-b uppercase">Total Keseluruhan</td>
@@ -699,15 +686,6 @@
                         <td class="py-3 px-3 border-b border-l text-green-700">${sumEoh}</td>
                     </tr>
                 `);
-                
-                // Menambahkan baris TOTAL ke dalam export Excel
-                currentDetailData.push({ 
-                    'ID ORIN': '', 'KODE BSOFT': '', 'JUDUL ITEM': '', 'HARGA': '', 'STOK BSOFT': '', 
-                    'NAMA TOKO': 'TOTAL KESELURUHAN', 
-                    'SOLD (TERJUAL BULAN INI)': sumSold, 
-                    'EOH (STOK AKHIR GRAMEDIA)': sumEoh 
-                });
-
                 tbody.innerHTML = htmlChunks.join('');
             }
             
@@ -725,8 +703,7 @@
             const now = new Date(), dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             document.getElementById('store-pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
-            currentStoreDetailData = [];
-            currentStoreFileName = `Katalog_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
+            currentStoreFileName = `Data_Buku_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
             const records = storeRecordsByToko[cleanStr(namaToko)] || [];
             let validRecords = [];
@@ -749,7 +726,7 @@
             validRecords.sort((a, b) => b.valSold - a.valSold);
 
             let htmlChunks = [];
-            let sumStoreSold = 0, sumStoreEoh = 0; // Variabel Kalkulasi Total Katalog
+            let sumStoreSold = 0, sumStoreEoh = 0; 
 
             validRecords.forEach(item => {
                 sumStoreSold += item.valSold;
@@ -764,13 +741,11 @@
                         <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td>
                     </tr>
                 `);
-                currentStoreDetailData.push({ 'NAMA TOKO': item.namaToko, 'ID ORIN': item.idOrin, 'KODE BSOFT': item.kodeBsoft, 'JUDUL ITEM': item.judulItem, 'HARGA': item.harga, 'STOK BSOFT': item.stokBsoft, 'SOLD (TERJUAL BULAN INI)': item.valSold, 'EOH (STOK AKHIR GRAMEDIA)': item.valEoh });
             });
             
             if (validRecords.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di toko ini.</td></tr>`;
             } else {
-                // Menambahkan baris TOTAL di bagian akhir HTML Katalog (tampil di Web & PDF)
                 htmlChunks.push(`
                     <tr class="bg-purple-100 font-bold text-gray-800">
                         <td colspan="4" class="py-3 px-3 text-right border-b uppercase">Total Keseluruhan</td>
@@ -778,16 +753,6 @@
                         <td class="py-3 px-2 border-b border-l text-green-700 text-sm">${sumStoreEoh}</td>
                     </tr>
                 `);
-                
-                // Menambahkan baris TOTAL ke dalam export Excel Katalog
-                currentStoreDetailData.push({ 
-                    'NAMA TOKO': '', 'ID ORIN': '', 'KODE BSOFT': '', 
-                    'JUDUL ITEM': 'TOTAL KESELURUHAN', 
-                    'HARGA': '', 'STOK BSOFT': '', 
-                    'SOLD (TERJUAL BULAN INI)': sumStoreSold, 
-                    'EOH (STOK AKHIR GRAMEDIA)': sumStoreEoh 
-                });
-
                 tbody.innerHTML = htmlChunks.join('');
             }
             
@@ -806,14 +771,52 @@
         }
 
         function exportDetailToExcel() {
-            if (currentDetailData.length === 0) return alert("Tidak ada data untuk di-export.");
+            const tbody = document.getElementById('detailBody');
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
+                return alert("Tidak ada data untuk di-export.");
+            }
+
+            const idOrin = document.getElementById('mdl-id').innerText;
+            const kodeBsoft = document.getElementById('mdl-kode').innerText;
+            const judulItem = document.getElementById('mdl-judul').innerText;
+            const harga = document.getElementById('mdl-harga').innerText;
+            const stokBsoft = document.getElementById('mdl-stokbsoft').innerText;
+            const printDate = document.getElementById('pdf-print-date').innerText;
+
+            // Membuat layout laporan custom untuk Excel (Array of Arrays)
+            let aoa = [
+                ["LAPORAN DATA BUKU GRAMEDIA"],
+                ["Dicetak pada:", printDate],
+                [],
+                ["ID ORIN:", idOrin, "", "HARGA:", harga],
+                ["KODE BSOFT:", kodeBsoft, "", "STOK BSOFT:", stokBsoft],
+                ["JUDUL ITEM:", judulItem],
+                [],
+                ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+            ];
+
+            // Masukkan data tabel
+            rows.forEach(row => {
+                let cols = row.querySelectorAll('td');
+                if (cols.length === 3) {
+                    // Baris reguler dan baris total
+                    aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText]);
+                }
+            });
+
+            const sheet = XLSX.utils.aoa_to_sheet(aoa);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(currentDetailData), "Rincian_Toko");
+            XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko");
             XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
         }
         
         function exportDetailToPDF() {
-            if (currentDetailData.length === 0) return alert("Tidak ada data untuk di-export ke PDF.");
+            const tbody = document.getElementById('detailBody');
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
+                return alert("Tidak ada data untuk di-export ke PDF.");
+            }
             
             const el = document.getElementById('pdf-content');
             const hdr = document.getElementById('pdf-header-title');
@@ -838,14 +841,48 @@
         }
 
         function exportStoreDetailToExcel() {
-            if (currentStoreDetailData.length === 0) return alert("Tidak ada data katalog untuk di-export.");
+            const tbody = document.getElementById('storeDetailBody');
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
+                return alert("Tidak ada data untuk di-export.");
+            }
+
+            const namaToko = document.getElementById('mdl-store-name').innerText;
+            const printDate = document.getElementById('store-pdf-print-date').innerText;
+
+            // Membuat layout laporan custom untuk Excel (Array of Arrays)
+            let aoa = [
+                ["LAPORAN DATA & STOK TOKO"],
+                ["Dicetak pada:", printDate],
+                [],
+                ["LOKASI TOKO:", namaToko],
+                [],
+                ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+            ];
+
+            // Masukkan data tabel
+            rows.forEach(row => {
+                let cols = row.querySelectorAll('td');
+                if (cols.length === 6) {
+                    aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText, cols[4].innerText, cols[5].innerText]);
+                } else if (cols.length === 3) {
+                    // Baris Total memiliki atribut colspan=4 di td pertama (sehingga hanya 3 cell yg terbaca JS)
+                    aoa.push([cols[0].innerText, "", "", "", cols[1].innerText, cols[2].innerText]);
+                }
+            });
+
+            const sheet = XLSX.utils.aoa_to_sheet(aoa);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(currentStoreDetailData), "Katalog_Buku");
+            XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko");
             XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
         }
         
         function exportStoreDetailToPDF() {
-            if (currentStoreDetailData.length === 0) return alert("Tidak ada data katalog untuk di-export ke PDF.");
+            const tbody = document.getElementById('storeDetailBody');
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
+                return alert("Tidak ada data untuk di-export ke PDF.");
+            }
             
             const el = document.getElementById('store-pdf-content');
             const hdr = document.getElementById('store-pdf-header-title');
