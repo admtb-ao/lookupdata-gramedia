@@ -185,6 +185,8 @@
                         <div class="sm:col-span-2"><span class="font-semibold text-gray-600">JUDUL ITEM:</span> <span id="mdl-judul" class="font-bold text-gray-800 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">HARGA:</span> <span id="mdl-harga" class="font-bold text-gray-800 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">STOK BSOFT:</span> <span id="mdl-stokbsoft" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div><span class="font-semibold text-gray-600">TOTAL SOLD:</span> <span id="mdl-totalsold" class="font-bold text-blue-700 ml-1"></span></div>
+                        <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
                 </div>
 
@@ -231,8 +233,11 @@
                 </div>
 
                 <div class="bg-purple-50 border border-purple-200 p-3 md:p-4 rounded-lg mb-4 md:mb-5 text-sm md:text-base text-left">
-                    <span class="font-semibold text-gray-600">LOKASI TOKO:</span> 
-                    <span id="mdl-store-name" class="font-bold text-purple-800 ml-1 block mt-1 text-lg"></span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="sm:col-span-2"><span class="font-semibold text-gray-600">LOKASI TOKO:</span> <span id="mdl-store-name" class="font-bold text-purple-800 ml-1 text-lg"></span></div>
+                        <div><span class="font-semibold text-gray-600">TOTAL SOLD:</span> <span id="store-mdl-totalsold" class="font-bold text-blue-700 ml-1"></span></div>
+                        <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="store-mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
@@ -676,6 +681,10 @@
                 htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
             });
             
+            // Set total ke panel atas modal
+            document.getElementById('mdl-totalsold').innerText = sumSold;
+            document.getElementById('mdl-totaleoh').innerText = sumEoh;
+
             if (validStores.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
             } else {
@@ -743,6 +752,10 @@
                 `);
             });
             
+            // Set total ke panel atas modal toko
+            document.getElementById('store-mdl-totalsold').innerText = sumStoreSold;
+            document.getElementById('store-mdl-totaleoh').innerText = sumStoreEoh;
+
             if (validRecords.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di toko ini.</td></tr>`;
             } else {
@@ -769,7 +782,7 @@
                 dataArray.forEach(row => {
                     row.forEach((cell, i) => {
                         let len = cell ? String(cell).length + 2 : 5;
-                        if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; // Max limit 60
+                        if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) };
                     });
                 });
             } else {
@@ -792,8 +805,6 @@
         function exportToExcel() {
             if (!processedData || processedData.length === 0) return;
             const sheet = XLSX.utils.json_to_sheet(processedData);
-            
-            // Terapkan Auto-Width
             sheet['!cols'] = getColWidths(processedData, false);
             
             const workbook = XLSX.utils.book_new();
@@ -813,15 +824,22 @@
             const judulItem = document.getElementById('mdl-judul').innerText;
             const harga = document.getElementById('mdl-harga').innerText;
             const stokBsoft = document.getElementById('mdl-stokbsoft').innerText;
+            const totalSold = document.getElementById('mdl-totalsold').innerText;
+            const totalEoh = document.getElementById('mdl-totaleoh').innerText;
             const printDate = document.getElementById('pdf-print-date').innerText;
 
+            // Layout Vertikal Rapi di Kolom A & B (Aman dari Filter/Pivot)
             let aoa = [
                 ["LAPORAN DATA BUKU GRAMEDIA"],
                 ["Dicetak pada:", printDate],
                 [],
-                ["ID ORIN:", idOrin, "", "HARGA:", harga],
-                ["KODE BSOFT:", kodeBsoft, "", "STOK BSOFT:", stokBsoft],
+                ["ID ORIN:", idOrin],
+                ["KODE BSOFT:", kodeBsoft],
                 ["JUDUL ITEM:", judulItem],
+                ["HARGA:", harga],
+                ["STOK BSOFT:", stokBsoft],
+                ["TOTAL SOLD:", totalSold],
+                ["TOTAL EOH:", totalEoh],
                 [],
                 ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
@@ -832,8 +850,6 @@
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            
-            // Terapkan Auto-Width
             sheet['!cols'] = getColWidths(aoa, true);
             
             const workbook = XLSX.utils.book_new();
@@ -878,6 +894,8 @@
             }
 
             const namaToko = document.getElementById('mdl-store-name').innerText;
+            const totalSold = document.getElementById('store-mdl-totalsold').innerText;
+            const totalEoh = document.getElementById('store-mdl-totaleoh').innerText;
             const printDate = document.getElementById('store-pdf-print-date').innerText;
 
             let aoa = [
@@ -885,6 +903,8 @@
                 ["Dicetak pada:", printDate],
                 [],
                 ["LOKASI TOKO:", namaToko],
+                ["TOTAL SOLD:", totalSold],
+                ["TOTAL EOH:", totalEoh],
                 [],
                 ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
@@ -899,8 +919,6 @@
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            
-            // Terapkan Auto-Width
             sheet['!cols'] = getColWidths(aoa, true);
             
             const workbook = XLSX.utils.book_new();
