@@ -66,7 +66,7 @@
             <div class="bg-amber-50 p-3 md:p-4 text-amber-800 text-xs md:text-sm flex gap-3 items-start border-t border-amber-100">
                 <span class="text-lg leading-none mt-0.5">⚠️</span>
                 <p class="leading-relaxed text-justify md:text-left">
-                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem kasir, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets. Jika belum di-<i>update</i>, angka yang tertampil masih merupakan akumulasi data penjualan sebelumnya.
+                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets. Jika belum di-<i>update</i>, angka yang tertampil masih merupakan akumulasi data pada tanggal tersebut.
                 </p>
             </div>
         </div>
@@ -86,7 +86,7 @@
         <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-lg border border-purple-200">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>sudirman</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
