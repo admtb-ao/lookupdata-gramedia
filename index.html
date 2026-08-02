@@ -761,12 +761,43 @@
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
 
         // ==========================================
+        // FITUR AUTO-WIDTH (LEBAR KOLOM OTOMATIS) 🚀
+        // ==========================================
+        function getColWidths(dataArray, isAoa = false) {
+            let cols = [];
+            if (isAoa) {
+                dataArray.forEach(row => {
+                    row.forEach((cell, i) => {
+                        let len = cell ? String(cell).length + 2 : 5;
+                        if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; // Max limit 60
+                    });
+                });
+            } else {
+                if(dataArray.length === 0) return cols;
+                let headers = Object.keys(dataArray[0]);
+                headers.forEach((h, i) => cols[i] = { wch: h.length + 2 });
+                dataArray.forEach(row => {
+                    headers.forEach((h, i) => {
+                        let len = row[h] ? String(row[h]).length + 2 : 5;
+                        if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) };
+                    });
+                });
+            }
+            return cols;
+        }
+
+        // ==========================================
         // EXPORT EXCEL & PDF ENGINE
         // ==========================================
         function exportToExcel() {
             if (!processedData || processedData.length === 0) return;
+            const sheet = XLSX.utils.json_to_sheet(processedData);
+            
+            // Terapkan Auto-Width
+            sheet['!cols'] = getColWidths(processedData, false);
+            
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(processedData), "Data_Hasil_Lookup");
+            XLSX.utils.book_append_sheet(workbook, sheet, "Data_Hasil_Lookup");
             XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
 
@@ -784,7 +815,6 @@
             const stokBsoft = document.getElementById('mdl-stokbsoft').innerText;
             const printDate = document.getElementById('pdf-print-date').innerText;
 
-            // Membuat layout laporan custom untuk Excel (Array of Arrays)
             let aoa = [
                 ["LAPORAN DATA BUKU GRAMEDIA"],
                 ["Dicetak pada:", printDate],
@@ -796,16 +826,16 @@
                 ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
 
-            // Masukkan data tabel
             rows.forEach(row => {
                 let cols = row.querySelectorAll('td');
-                if (cols.length === 3) {
-                    // Baris reguler dan baris total
-                    aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText]);
-                }
+                if (cols.length === 3) aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText]);
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
+            
+            // Terapkan Auto-Width
+            sheet['!cols'] = getColWidths(aoa, true);
+            
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko");
             XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
@@ -850,7 +880,6 @@
             const namaToko = document.getElementById('mdl-store-name').innerText;
             const printDate = document.getElementById('store-pdf-print-date').innerText;
 
-            // Membuat layout laporan custom untuk Excel (Array of Arrays)
             let aoa = [
                 ["LAPORAN DATA & STOK TOKO"],
                 ["Dicetak pada:", printDate],
@@ -860,18 +889,20 @@
                 ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
 
-            // Masukkan data tabel
             rows.forEach(row => {
                 let cols = row.querySelectorAll('td');
                 if (cols.length === 6) {
                     aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText, cols[4].innerText, cols[5].innerText]);
                 } else if (cols.length === 3) {
-                    // Baris Total memiliki atribut colspan=4 di td pertama (sehingga hanya 3 cell yg terbaca JS)
                     aoa.push([cols[0].innerText, "", "", "", cols[1].innerText, cols[2].innerText]);
                 }
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
+            
+            // Terapkan Auto-Width
+            sheet['!cols'] = getColWidths(aoa, true);
+            
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko");
             XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
