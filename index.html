@@ -688,13 +688,6 @@
             if (validStores.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
             } else {
-                htmlChunks.push(`
-                    <tr class="bg-gray-200 font-bold text-gray-800">
-                        <td class="py-3 px-3 text-right border-b uppercase">Total Keseluruhan</td>
-                        <td class="py-3 px-3 border-b border-l text-blue-700">${sumSold}</td>
-                        <td class="py-3 px-3 border-b border-l text-green-700">${sumEoh}</td>
-                    </tr>
-                `);
                 tbody.innerHTML = htmlChunks.join('');
             }
             
@@ -759,13 +752,6 @@
             if (validRecords.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di toko ini.</td></tr>`;
             } else {
-                htmlChunks.push(`
-                    <tr class="bg-purple-100 font-bold text-gray-800">
-                        <td colspan="4" class="py-3 px-3 text-right border-b uppercase">Total Keseluruhan</td>
-                        <td class="py-3 px-2 border-b border-l text-blue-700 text-sm">${sumStoreSold}</td>
-                        <td class="py-3 px-2 border-b border-l text-green-700 text-sm">${sumStoreEoh}</td>
-                    </tr>
-                `);
                 tbody.innerHTML = htmlChunks.join('');
             }
             
@@ -828,7 +814,7 @@
             const totalEoh = document.getElementById('mdl-totaleoh').innerText;
             const printDate = document.getElementById('pdf-print-date').innerText;
 
-            // Layout Vertikal Rapi di Kolom A & B (Aman dari Filter/Pivot)
+            // Layout Vertikal Bersih di Kolom A & B (Tanpa baris total di bawah agar aman untuk filter/pivot)
             let aoa = [
                 ["LAPORAN DATA BUKU GRAMEDIA"],
                 ["Dicetak pada:", printDate],
@@ -913,8 +899,6 @@
                 let cols = row.querySelectorAll('td');
                 if (cols.length === 6) {
                     aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText, cols[4].innerText, cols[5].innerText]);
-                } else if (cols.length === 3) {
-                    aoa.push([cols[0].innerText, "", "", "", cols[1].innerText, cols[2].innerText]);
                 }
             });
 
