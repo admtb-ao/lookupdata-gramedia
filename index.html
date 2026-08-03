@@ -814,6 +814,14 @@
             const totalEoh = document.getElementById('mdl-totaleoh').innerText;
             const printDate = document.getElementById('pdf-print-date').innerText;
 
+            // Fungsi Helper untuk merubah Text menjadi Number di Excel
+            const toNum = (val) => {
+                let str = String(val).trim();
+                if (str === '' || str === '-') return str;
+                let num = Number(str);
+                return isNaN(num) ? str : num;
+            };
+
             // Layout Vertikal Bersih di Kolom A & B (Tanpa baris total di bawah agar aman untuk filter/pivot)
             let aoa = [
                 ["LAPORAN DATA BUKU GRAMEDIA"],
@@ -822,17 +830,18 @@
                 ["ID ORIN:", idOrin],
                 ["KODE BSOFT:", kodeBsoft],
                 ["JUDUL ITEM:", judulItem],
-                ["HARGA:", harga],
-                ["STOK BSOFT:", stokBsoft],
-                ["TOTAL SOLD:", totalSold],
-                ["TOTAL EOH:", totalEoh],
+                ["HARGA:", toNum(harga)],
+                ["STOK BSOFT:", toNum(stokBsoft)],
+                ["TOTAL SOLD:", toNum(totalSold)],
+                ["TOTAL EOH:", toNum(totalEoh)],
                 [],
                 ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
 
             rows.forEach(row => {
                 let cols = row.querySelectorAll('td');
-                if (cols.length === 3) aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText]);
+                // Mengkonversi isi kolom index ke-1 (SOLD) dan ke-2 (EOH) menjadi Number murni
+                if (cols.length === 3) aoa.push([cols[0].innerText, toNum(cols[1].innerText), toNum(cols[2].innerText)]);
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
@@ -884,21 +893,37 @@
             const totalEoh = document.getElementById('store-mdl-totaleoh').innerText;
             const printDate = document.getElementById('store-pdf-print-date').innerText;
 
+            // Fungsi Helper untuk merubah Text menjadi Number di Excel
+            const toNum = (val) => {
+                let str = String(val).trim();
+                if (str === '' || str === '-') return str;
+                let num = Number(str);
+                return isNaN(num) ? str : num;
+            };
+
             let aoa = [
                 ["LAPORAN DATA & STOK TOKO"],
                 ["Dicetak pada:", printDate],
                 [],
                 ["LOKASI TOKO:", namaToko],
-                ["TOTAL SOLD:", totalSold],
-                ["TOTAL EOH:", totalEoh],
+                ["TOTAL SOLD:", toNum(totalSold)],
+                ["TOTAL EOH:", toNum(totalEoh)],
                 [],
                 ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
 
             rows.forEach(row => {
                 let cols = row.querySelectorAll('td');
+                // Khusus ID ORIN & Judul tetap String agar aman. Sisanya dikonversi ke Number.
                 if (cols.length === 6) {
-                    aoa.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText, cols[4].innerText, cols[5].innerText]);
+                    aoa.push([
+                        cols[0].innerText, 
+                        cols[1].innerText, 
+                        toNum(cols[2].innerText), 
+                        toNum(cols[3].innerText), 
+                        toNum(cols[4].innerText), 
+                        toNum(cols[5].innerText)
+                    ]);
                 }
             });
 
