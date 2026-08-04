@@ -69,8 +69,8 @@
 
         <!-- TABS NAVIGATION -->
         <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
-            <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup</button>
-            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan</button>
+            <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup (Fitur 1-3)</button>
+            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan (Fitur 4)</button>
         </div>
 
         <!-- ============================================== -->
@@ -122,7 +122,8 @@
                 <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 md:p-8 text-center bg-white hover:bg-gray-50 transition cursor-pointer relative">
                     <div class="text-gray-500 pointer-events-none">
                         <span class="text-3xl md:text-4xl block mb-2">📥</span>
-                        <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel</p>
+                        <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel Anda ke sini</p>
+                        <p class="text-xs md:text-sm mt-1">atau klik untuk memilih file (.xlsx, .xls)</p>
                     </div>
                     <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
                 </div>
@@ -137,22 +138,32 @@
 
             <!-- Tombol Aksi Export -->
             <div class="mb-6 flex flex-col sm:flex-row justify-end gap-3">
-                <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
-                    📑 Export Multi-Sheet
+                <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
+                    📑 Export Multi-Sheet (Pilihan / Semua)
                 </button>
-                <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
-                    📥 Download Excel
+                <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
+                    📥 Download Excel Utama
                 </button>
             </div>
 
-            <!-- Tabel Preview Operasional -->
+            <!-- Tabel Preview & Filter & Pagination -->
             <div id="preview-section" class="hidden">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-3 gap-3">
+                    <h2 class="text-base md:text-lg font-bold text-gray-800">Preview Hasil Lookup Data</h2>
+                    <div class="flex gap-2 text-xs md:text-sm">
+                        <button onclick="setFilter('ALL')" id="filter-ALL" class="filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow">Semua</button>
+                        <button onclick="setFilter('MATCHED')" id="filter-MATCHED" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">✅ Terisi</button>
+                        <button onclick="setFilter('NOT_FOUND')" id="filter-NOT_FOUND" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">❌ Kosong</button>
+                    </div>
+                </div>
+                
                 <div class="table-container shadow-sm rounded-lg border bg-white">
                     <table class="min-w-full bg-white text-center w-full">
                         <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
                         <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
                     </table>
                 </div>
+
                 <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
                     <div id="page-info">Menampilkan - data</div>
                     <div class="flex gap-2">
@@ -385,7 +396,7 @@
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
-        let storeBranchMap = {}; // Mapping Cabang Referensi
+        let storeBranchMap = {}; 
         
         let monthlySalesMap = {}; 
         let currentAnalyticsData = []; 
@@ -538,7 +549,6 @@
                             
                             if(!id) return;
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
-                            // BUG FIXED HERE: Menggunakan property totalSold dan totalEoh
                             storeSummaryMap[id].totalSold += parseNum(st[7]); 
                             storeSummaryMap[id].totalEoh += parseNum(st[11]);
                             
@@ -608,7 +618,7 @@
         }
 
         // ==========================================
-        // FUNGSI TAB 1 (OPERASIONAL)
+        // FUNGSI TAB 1 (OPERASIONAL & PREVIEW)
         // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
@@ -617,7 +627,6 @@
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('manual-search-input').value;
-            
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
             let matches = [];
@@ -819,19 +828,11 @@
         function resetFilterAndPage() {
             currentFilter = 'ALL';
             currentPage = 1;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.className = "filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm";
-            });
-            document.getElementById('filter-ALL').className = "filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow";
         }
 
         function setFilter(filterType) {
             currentFilter = filterType;
             currentPage = 1;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.className = "filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm";
-            });
-            document.getElementById('filter-' + filterType).className = "filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow";
             renderPreview();
         }
 
@@ -965,9 +966,8 @@
             tbody.innerHTML = htmlChunks.join('');
         }
 
-
         // ==========================================
-        // FUNGSI FITUR 4: ANALITIK & BEST SELLER 
+        // FUNGSI TAB 2 (ANALITIK - FITUR 4)
         // ==========================================
         function generateTop50() {
             const sortBy = document.getElementById('analytic-sort').value;
@@ -978,10 +978,9 @@
 
             allOrins.forEach(orin => {
                 let db1 = dbMapByOrin[orin] || {}; 
-                let db2 = calcStoreData(orin); // Berisi totalSold & totalEoh
+                let db2 = calcStoreData(orin);     
                 let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
                 
-                // MENGGUNAKAN NAMA PROPERTY YANG BENAR (totalSold dan totalEoh) -> FIXED undefined/NaN
                 let ags = db2.totalSold || 0; 
                 let eoh = db2.totalEoh || 0;
                 let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
@@ -989,9 +988,7 @@
                 let judul = db1['JUDUL ITEM'] || '(Judul Tidak Ditemukan)';
                 let kodeBsoft = db1['KODE BSOFT'] || '-';
 
-                // Tampilkan hanya jika ada histori laku / stok
                 if (total26 > 0 || parseNum(db1['STOK BSOFT']) > 0 || eoh > 0) {
-                    
                     let isMatch = true;
                     if (keyword) {
                         isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword);
@@ -1011,10 +1008,8 @@
                 }
             });
 
-            // Sorting Dinamis berdasarkan Filter Terlengkap
             combinedData.sort((a, b) => {
                 let valA = 0, valB = 0;
-                
                 if (sortBy === 'TOTAL') { valA = a.total; valB = b.total; }
                 else if (sortBy === 'AGS') { valA = a.ags; valB = b.ags; }
                 else if (sortBy === 'JUL') { valA = a.jul; valB = b.jul; }
@@ -1026,11 +1021,9 @@
                 else if (sortBy === 'JAN') { valA = a.jan; valB = b.jan; }
                 else if (sortBy === 'Q1') { valA = a.jan + a.feb + a.mar; valB = b.jan + b.feb + b.mar; }
                 else if (sortBy === 'Q2') { valA = a.apr + a.mei + a.jun; valB = b.apr + b.mei + b.jun; }
-                
-                return valB - valA; // Diurutkan tertinggi ke terendah
+                return valB - valA;
             });
 
-            // Memotong array jadi Top 100 agar UI browser tidak berat, namun tetap mengakomodasi pencarian
             currentAnalyticsData = combinedData.slice(0, 100);
             renderAnalyticsTable();
         }
