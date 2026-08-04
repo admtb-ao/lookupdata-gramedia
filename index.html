@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Lookup Google Sheets ke Excel (Pro Version)</title>
+    <title>Auto-Lookup Google Sheets ke Excel</title>
     <!-- Tailwind CSS untuk Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS untuk membaca dan membuat file Excel -->
@@ -31,14 +31,14 @@
         /* TINGGI CONTAINER GRAFIK DITAMBAH UNTUK LABEL */
         .chart-container { position: relative; height: 350px; width: 100%; }
         /* Pembatasan tinggi tabel agar bisa scroll dan header sticky */
-        .table-container { max-height: 600px; overflow-y: auto; }
+        .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
 
     <div class="max-w-6xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
-        <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Automasi Lookup Data Gramedia (Pro)</h1>
-        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b>, pencarian multi-database, dan fitur Pro.</p>
+        <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
+        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian multi-database.</p>
 
         <!-- Status Database & Info Data -->
         <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
@@ -164,9 +164,10 @@
             </div>
             
             <div class="table-container shadow-sm rounded-lg border bg-white">
-                <table class="min-w-full bg-white text-center whitespace-nowrap md:whitespace-normal">
+                <!-- Tabel diperkecil fontnya dan dibolehkan wrap -->
+                <table class="min-w-full bg-white text-center w-full">
                     <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
-                    <tbody class="text-gray-700 text-xs md:text-sm align-middle divide-y" id="table-body"></tbody>
+                    <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
                 </table>
             </div>
 
@@ -184,7 +185,6 @@
 
     <!-- MODAL 1: BUKU -> RINCIAN PER TOKO -->
     <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
-        <!-- Kode Modal 1 sama dengan V1... -->
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-blue-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku Per Toko</h5>
@@ -245,7 +245,6 @@
 
     <!-- MODAL 2: TOKO -> RINCIAN KATALOG BUKU -->
     <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
-        <!-- Kode Modal 2 sama dengan V1... -->
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku di Toko</h5>
@@ -328,7 +327,7 @@
         // Fitur Filter & Pagination State
         let currentFilter = 'ALL'; 
         let currentPage = 1;
-        const rowsPerPage = 50; // Max render per halaman biar enteng
+        const rowsPerPage = 50; 
 
         // Chart Instance
         let chartBukuObj = null;
@@ -352,14 +351,14 @@
 
         // INIT DATA
         window.onload = () => {
-            initCheckboxPrefs(); // Load preferensi checkbox yg kesimpen
+            initCheckboxPrefs(); 
             loadData();
             renderHistory('book');
             renderHistory('store');
         };
 
         // ==========================================
-        // FITUR BARU: AUTO-SAVE CHECKBOX PREFS
+        // AUTO-SAVE CHECKBOX PREFS
         // ==========================================
         const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-harga', 'chk-stokbsoft', 'chk-sold', 'chk-eoh'];
         function initCheckboxPrefs() {
@@ -372,7 +371,7 @@
         }
 
         // ==========================================
-        // FITUR 5: RIWAYAT PENCARIAN
+        // FITUR RIWAYAT PENCARIAN
         // ==========================================
         let bookHistory = JSON.parse(localStorage.getItem('bookHistory')) || [];
         let storeHistory = JSON.parse(localStorage.getItem('storeHistory')) || [];
@@ -416,7 +415,7 @@
         }
 
         // ==========================================
-        // FUNGSI LOAD DATA (DENGAN CACHING CANGGIH ⚡)
+        // FUNGSI LOAD DATA (DENGAN CACHING ⚡)
         // ==========================================
         async function loadData(forceRefresh = false) {
             const statusEl = document.getElementById('db-status');
@@ -431,7 +430,6 @@
                 
                 let csvMainText, csvStoreText;
                 
-                // Logic Caching: Ambil dari localStorage kalau ada dan nggak di-force refresh
                 if (!forceRefresh && localStorage.getItem('cacheCsvMain') && localStorage.getItem('cacheCsvStore')) {
                     csvMainText = localStorage.getItem('cacheCsvMain');
                     csvStoreText = localStorage.getItem('cacheCsvStore');
@@ -440,7 +438,6 @@
                     csvMainText = await resMain.text(); 
                     csvStoreText = await resStore.text();
                     
-                    // Simpan ke cache (pakai try catch kalau quota localStorage penuh)
                     try {
                         localStorage.setItem('cacheCsvMain', csvMainText);
                         localStorage.setItem('cacheCsvStore', csvStoreText);
@@ -453,8 +450,8 @@
                         database = results.data.map(row => {
                             let cleanRow = {}; 
                             for (let key in row) { cleanRow[key.trim()] = row[key]; }
-                            let orin = cleanStr(cleanRow['ID ORIN']); 
-                            let bsoft = cleanStr(cleanRow['KODE BSOFT']);
+                            let orin = cleanRow['ID ORIN'] ? cleanStr(cleanRow['ID ORIN']) : "";
+                            let bsoft = cleanRow['KODE BSOFT'] ? cleanStr(cleanRow['KODE BSOFT']) : "";
                             if(orin) dbMapByOrin[orin] = cleanRow; 
                             if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
                             return cleanRow;
@@ -486,7 +483,6 @@
                     }
                 });
 
-                // Update UI & Dashboard Stats
                 statusEl.innerHTML = `✅ Terhubung (Cached)`; 
                 statusEl.className = "text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full text-xs shadow-sm";
                 document.getElementById('summary-sku').innerText = database.length.toLocaleString('id-ID');
@@ -521,7 +517,6 @@
             const rawVal = document.getElementById('manual-search-input').value;
             saveHistory('book', rawVal.trim());
             
-            // Pisahkan dengan koma untuk Multi-Search
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
             let matches = [];
@@ -529,7 +524,6 @@
                 matches = database;
             } else {
                 matches = database.filter(dbRow => {
-                    // Tampilkan buku kalau mengandung SALAH SATU dari term pencarian
                     return searchTerms.some(term => 
                         cleanStr(dbRow['ID ORIN']).includes(term) || 
                         cleanStr(dbRow['KODE BSOFT']).includes(term) || 
@@ -709,7 +703,7 @@
         }
 
         // ==========================================
-        // FITUR BARU: FILTERING & PAGINATION 
+        // FILTERING, PAGINATION & SORTING
         // ==========================================
         function resetFilterAndPage() {
             currentFilter = 'ALL';
@@ -724,7 +718,6 @@
             currentFilter = filterType;
             currentPage = 1;
             
-            // Ubah tampilan tombol filter
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.className = "filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm";
             });
@@ -763,6 +756,9 @@
             renderPreview();
         }
 
+        // ==========================================
+        // RENDER PREVIEW TABEL (DIPERKECIL AGAR FIT)
+        // ==========================================
         function renderPreview() {
             if (processedData.length === 0) {
                 document.getElementById('preview-section').classList.add('hidden');
@@ -770,7 +766,6 @@
             }
             document.getElementById('preview-section').classList.remove('hidden');
 
-            // Apply Filter
             let filteredData = processedData;
             if (currentFilter === 'MATCHED') {
                 filteredData = processedData.filter(d => String(d['STATUS SYSTEM']).includes('✅'));
@@ -778,7 +773,6 @@
                 filteredData = processedData.filter(d => String(d['STATUS SYSTEM']).includes('❌'));
             }
 
-            // Pagination Logic
             const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
             if (currentPage < 1) currentPage = 1;
             if (currentPage > totalPages) currentPage = totalPages;
@@ -793,7 +787,6 @@
             document.getElementById('page-info').innerText = `Menampilkan ${startIndex + 1}-${endIndex} dari ${filteredData.length} data`;
             const paginatedData = filteredData.slice(startIndex, endIndex);
 
-            // Render Table
             const thead = document.getElementById('table-head');
             const tbody = document.getElementById('table-body');
             const headers = Object.keys(processedData[0]);
@@ -801,7 +794,8 @@
             let headerRow = '<tr>';
             headers.forEach(header => { 
                 let indicator = sortCol === header ? (sortAsc ? ' 🔼' : ' 🔽') : ' ↕️';
-                headerRow += `<th class="py-3 px-4 border-b border-gray-600 cursor-pointer hover:bg-gray-700 select-none whitespace-nowrap" onclick="handleSort('${escapeAttr(header)}')">${header} <span class="text-[10px] text-gray-400">${indicator}</span></th>`; 
+                // HEADER SEKARANG MENGGUNAKAN text-[10px], whitespace-normal (BOLEH WRAP), DAN padding LEBIH KECIL
+                headerRow += `<th class="py-2 px-2 border-b border-gray-600 cursor-pointer hover:bg-gray-700 select-none whitespace-normal leading-tight text-[10px] md:text-xs min-w-[60px]" onclick="handleSort('${escapeAttr(header)}')">${header} <span class="text-[9px] text-gray-400 block sm:inline-block">${indicator}</span></th>`; 
             });
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
@@ -809,34 +803,38 @@
             let htmlChunks = [];
             
             for (let i = 0; i < paginatedData.length; i++) {
-                let rowHtml = '<tr class="hover:bg-blue-50 transition-colors">';
+                // ROW DI DALAM TABEL MENGGUNAKAN FONT LEBIH KECIL AGAR FIT
+                let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 headers.forEach(header => {
                     let val = paginatedData[i][header] !== undefined ? paginatedData[i][header] : '';
                     
-                    // Render Badges untuk Status
                     if (header === 'STATUS SYSTEM') {
                         if (val === '✅ MATCHED_BOOK') {
                             let id = escapeAttr(paginatedData[i]['ID ORIN'] || '-'); let kd = escapeAttr(paginatedData[i]['KODE BSOFT'] || '-'); 
                             let jd = escapeAttr(paginatedData[i]['JUDUL ITEM'] || '-'); let hr = escapeAttr(paginatedData[i]['HARGA'] || '-'); 
                             let st = escapeAttr(paginatedData[i]['STOK BSOFT'] || '-');
-                            rowHtml += `<td class="py-2 px-3 border-b font-bold text-center"><span class="bg-green-100 text-green-800 py-1 px-2 rounded-full text-xs">✅ Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button></td>`;
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-1.5 text-[9px] md:text-[10px] bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button></td>`;
                         } 
                         else if (val === '✅ MATCHED_STORE') {
                             let nmToko = escapeAttr(paginatedData[i]['NAMA TOKO TERDAFTAR']);
-                            rowHtml += `<td class="py-2 px-3 border-b font-bold text-center"><span class="bg-purple-100 text-purple-800 py-1 px-2 rounded-full text-xs">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-2 text-[10px] md:text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 py-1.5 px-3 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Data Buku</button></td>`;
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-purple-100 text-purple-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-1.5 text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button></td>`;
                         }
                         else if (val === '✅ MATCHED') {
-                            rowHtml += `<td class="py-2 px-3 border-b font-bold text-center"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">✅ Terisi</span></td>`;
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-2 rounded-full text-[10px]">✅ Terisi</span></td>`;
                         }
                         else if (String(val).includes('❌')) {
-                            rowHtml += `<td class="py-2 px-3 border-b font-bold text-center"><span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs">${val}</span></td>`;
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-red-100 text-red-800 py-0.5 px-2 rounded-full text-[10px] whitespace-nowrap">${val}</span></td>`;
                         }
                     }
                     else if (header.includes('SOLD') || header.includes('EOH')) {
-                        rowHtml += `<td class="py-2 px-3 border-b font-bold text-center text-gray-800 bg-gray-50/50">${val}</td>`;
+                        rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center text-gray-800 bg-gray-50/50">${val}</td>`;
+                    }
+                    else if (header === 'JUDUL ITEM') {
+                        // Kusus judul item diizinkan turun baris agar kolom lain tidak terdorong (max-width)
+                        rowHtml += `<td class="py-1.5 px-2 border-b text-left whitespace-normal max-w-[180px] md:max-w-[250px] leading-tight">${val}</td>`;
                     }
                     else {
-                        rowHtml += `<td class="py-2 px-3 border-b">${val}</td>`;
+                        rowHtml += `<td class="py-1.5 px-2 border-b whitespace-nowrap text-center">${val}</td>`;
                     }
                 });
                 rowHtml += '</tr>'; 
@@ -844,14 +842,14 @@
             }
 
             if (paginatedData.length === 0) {
-                htmlChunks.push(`<tr><td colspan="${headers.length}" class="py-6 text-center text-gray-500 font-semibold bg-gray-50 text-sm">Tidak ada data untuk filter ini.</td></tr>`);
+                htmlChunks.push(`<tr><td colspan="${headers.length}" class="py-6 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data untuk filter ini.</td></tr>`);
             }
             
             tbody.innerHTML = htmlChunks.join('');
         }
 
         // ==========================================
-        // GRAFIK & MODAL (SAMA SEPERTI V1)
+        // GRAFIK & MODAL
         // ==========================================
         function buildChartBuku(validStores) {
             const ctx = document.getElementById('chartBuku').getContext('2d');
@@ -996,7 +994,7 @@
         }
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
 
-        // EXPORT ENGINE (SAMA SEPERTI V1)
+        // EXPORT ENGINE
         function getColWidths(dataArray, isAoa = false) {
             let cols = [];
             if (isAoa) {
