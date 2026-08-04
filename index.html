@@ -12,6 +12,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- html2pdf untuk convert HTML ke PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Chart.js untuk Visualisasi Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .drag-active {
             border-color: #3b82f6 !important;
@@ -20,26 +22,13 @@
             transition: all 0.2s ease;
         }
         /* Custom scrollbar untuk tabel */
-        ::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #c1c1c1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8; 
-        }
-        
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
         /* CSS Khusus Anti-Terpotong untuk PDF */
-        tr {
-            page-break-inside: avoid !important;
-        }
+        tr { page-break-inside: avoid !important; }
+        .chart-container { position: relative; height: 250px; width: 100%; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
@@ -62,11 +51,10 @@
                     Refresh Data
                 </button>
             </div>
-            <!-- Banner Catatan -->
             <div class="bg-amber-50 p-3 md:p-4 text-amber-800 text-xs md:text-sm flex gap-3 items-start border-t border-amber-100">
                 <span class="text-lg leading-none mt-0.5">⚠️</span>
                 <p class="leading-relaxed text-justify md:text-left">
-                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets. Jika belum di-<i>update</i>, angka yang tertampil masih merupakan akumulasi data penjualan sebelumnya.
+                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets.
                 </p>
             </div>
         </div>
@@ -74,44 +62,52 @@
         <!-- FITUR 1: Pencarian Manual BUKU -->
         <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-200">
             <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul Buku (contoh: <i>garda</i> / <i>leika</i>) lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data secara berurutan dari SOLD terbanyak)</b>.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul Buku. <b>(Kosongkan lalu Cari untuk memuat semua data)</b>.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="manual-search-input" placeholder="Masukkan ID atau Judul Buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                 <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari Buku
                 </button>
             </div>
+            <!-- Fitur 5: Riwayat Pencarian -->
+            <div id="book-history-container" class="mt-3 hidden">
+                <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
+                <div id="book-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
+            </div>
         </div>
 
         <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-lg border border-purple-200">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>).</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari Toko
                 </button>
             </div>
+            <!-- Fitur 5: Riwayat Pencarian Toko -->
+            <div id="store-history-container" class="mt-3 hidden">
+                <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
+                <div id="store-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
+            </div>
         </div>
 
         <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
         <div class="mb-6">
             <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda (mengandung kolom Item Id/Item number/ID ORIN/KODE BSOFT/iditem/KODE). Sistem otomatis memindai dan mensinkronisasi datanya ke seluruh toko nasional.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda. Sistem otomatis memindai dan mensinkronisasi datanya.</p>
             
-            <!-- Pengaturan Checkbox Kolom -->
             <div class="mb-4 bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik (Khusus Upload):</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-3">Centang data apa saja yang ingin disisipkan ke dalam file Excel Anda.</p>
+                <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik:</label>
                 <div class="flex flex-wrap gap-4 text-xs md:text-sm font-semibold text-gray-700">
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> ID ORIN</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> KODE BSOFT</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> JUDUL ITEM</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> HARGA</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> STOK BSOFT</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-sold" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> SOLD</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-eoh" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked> EOH</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded" checked> ID ORIN</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded" checked> KODE BSOFT</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded" checked> JUDUL ITEM</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-sold" class="w-4 h-4 text-blue-600 rounded" checked> SOLD</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-eoh" class="w-4 h-4 text-blue-600 rounded" checked> EOH</label>
                 </div>
             </div>
 
@@ -124,16 +120,15 @@
                 <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
             </div>
             
-            <!-- Tombol Eksekusi Manual -->
             <div id="file-ready-container" class="hidden mt-4 bg-white p-4 border border-blue-200 rounded-lg shadow-sm text-center">
                 <p id="file-name-display" class="text-sm md:text-base font-semibold text-gray-700 mb-3"></p>
-                <button onclick="triggerProcessExcel()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
+                <!-- Fitur 4: Animasi Loading Proses -->
+                <button id="process-btn-ui" onclick="triggerProcessExcel()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
                     🚀 Proses Data Sekarang
                 </button>
             </div>
         </div>
 
-        <!-- Tombol Export -->
         <div class="mb-6 md:mb-8">
             <button id="export-btn" onclick="exportToExcel()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded shadow-lg text-sm md:text-lg transition">
                 📥 Download Excel Hasil (Export)
@@ -145,12 +140,8 @@
             <h2 class="text-base md:text-lg font-bold text-gray-800 mb-2">Preview Hasil Pencarian / Data</h2>
             <div class="overflow-x-auto shadow-sm rounded border">
                 <table class="min-w-full bg-white text-center whitespace-nowrap md:whitespace-normal">
-                    <thead class="bg-gray-800 text-white" id="table-head">
-                        <!-- Header akan muncul di sini -->
-                    </thead>
-                    <tbody class="text-gray-700 text-xs md:text-sm align-middle" id="table-body">
-                        <!-- Data akan muncul di sini -->
-                    </tbody>
+                    <thead class="bg-gray-800 text-white" id="table-head"></thead>
+                    <tbody class="text-gray-700 text-xs md:text-sm align-middle" id="table-body"></tbody>
                 </table>
             </div>
         </div>
@@ -167,6 +158,8 @@
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
                 <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
+                    <!-- Fitur 2: Copy WA -->
+                    <button onclick="copyToWA('buku')" class="flex-1 sm:flex-none bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold py-2 px-4 rounded-lg border border-blue-300 transition text-sm shadow-sm">📋 Copy WA</button>
                     <button onclick="exportDetailToExcel()" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📥 Export Excel</button>
                     <button onclick="exportDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
                 </div>
@@ -178,7 +171,8 @@
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="pdf-print-date"></span></p>
                 </div>
 
-                <div class="bg-blue-50 border border-blue-200 p-3 md:p-4 rounded-lg mb-4 md:mb-5 text-xs md:text-sm text-left">
+                <!-- Header Modal Info -->
+                <div class="bg-blue-50 border border-blue-200 p-3 md:p-4 rounded-lg mb-4 text-xs md:text-sm text-left">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                         <div><span class="font-semibold text-gray-600">ID ORIN:</span> <span id="mdl-id" class="font-bold text-gray-800 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">KODE BSOFT:</span> <span id="mdl-kode" class="font-bold text-gray-800 ml-1"></span></div>
@@ -188,6 +182,12 @@
                         <div><span class="font-semibold text-gray-600">TOTAL SOLD:</span> <span id="mdl-totalsold" class="font-bold text-blue-700 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
+                </div>
+
+                <!-- Fitur 3: Chart.js Container -->
+                <div class="mb-4 bg-white border p-3 rounded-lg">
+                    <div class="text-center font-bold text-sm text-gray-700 mb-2">📊 Top 5 Toko Tertinggi</div>
+                    <div class="chart-container"><canvas id="chartBuku"></canvas></div>
                 </div>
 
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
@@ -221,6 +221,8 @@
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
                 <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
+                    <!-- Fitur 2: Copy WA -->
+                    <button onclick="copyToWA('toko')" class="flex-1 sm:flex-none bg-purple-100 hover:bg-purple-200 text-purple-800 font-semibold py-2 px-4 rounded-lg border border-purple-300 transition text-sm shadow-sm">📋 Copy WA</button>
                     <button onclick="exportStoreDetailToExcel()" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📥 Export Excel</button>
                     <button onclick="exportStoreDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
                 </div>
@@ -232,12 +234,18 @@
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="store-pdf-print-date"></span></p>
                 </div>
 
-                <div class="bg-purple-50 border border-purple-200 p-3 md:p-4 rounded-lg mb-4 md:mb-5 text-sm md:text-base text-left">
+                <div class="bg-purple-50 border border-purple-200 p-3 md:p-4 rounded-lg mb-4 text-sm md:text-base text-left">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div class="sm:col-span-2"><span class="font-semibold text-gray-600">LOKASI TOKO:</span> <span id="mdl-store-name" class="font-bold text-purple-800 ml-1 text-lg"></span></div>
                         <div><span class="font-semibold text-gray-600">TOTAL SOLD:</span> <span id="store-mdl-totalsold" class="font-bold text-blue-700 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="store-mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
+                </div>
+
+                <!-- Fitur 3: Chart.js Container -->
+                <div class="mb-4 bg-white border p-3 rounded-lg">
+                    <div class="text-center font-bold text-sm text-gray-700 mb-2">📊 Top 5 Buku Terlaris</div>
+                    <div class="chart-container"><canvas id="chartToko"></canvas></div>
                 </div>
 
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
@@ -270,20 +278,23 @@
         let processedData = []; 
         let pendingExcelFile = null; 
         
-        // =====================================
-        // OBJEK HASH MAP (KUNCI ANTI-LEMOT 🚀)
-        // =====================================
-        let dbMapByOrin = {};          
-        let dbMapByBsoft = {};         
-        let storeSummaryMap = {};      
-        let storeRecordsByOrin = {};   
-        let storeRecordsByToko = {};   
+        // Hash Map
+        let dbMapByOrin = {}; let dbMapByBsoft = {}; let storeSummaryMap = {}; let storeRecordsByOrin = {}; let storeRecordsByToko = {};   
         
-        // State Export
+        // State Export & Copy
         let currentDetailFileName = "Detail_Toko";
         let currentStoreFileName = "Data_Buku_Toko";
+        let currentValidStores = [];
+        let currentValidRecords = [];
 
-        // URL Google Sheet
+        // Sorting State
+        let sortCol = '';
+        let sortAsc = true;
+
+        // Chart Instance
+        let chartBukuObj = null;
+        let chartTokoObj = null;
+
         const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNkfOExIiFvmh8K-hNkM';
         const csvUrlMain = `https://docs.google.com/spreadsheets/d/${sheetIdMain}/export?format=csv`;
 
@@ -291,7 +302,6 @@
         const csvUrlStore = `https://docs.google.com/spreadsheets/d/${sheetIdStore}/export?format=csv`;
 
         const cleanStr = (str) => str ? String(str).trim().toLowerCase() : "";
-
         const parseNum = (val) => {
             if (!val) return 0;
             let s = String(val).trim();
@@ -299,105 +309,94 @@
             s = s.replace(/[,.]00$/, '').replace(/[,.]/g, '');
             return Math.abs(parseInt(s, 10) || 0);
         };
-
         const escapeAttr = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+        // INIT DATA
+        window.onload = () => {
+            loadData();
+            renderHistory('book');
+            renderHistory('store');
+        };
+
+        // ==========================================
+        // FITUR 5: RIWAYAT PENCARIAN 🕒
+        // ==========================================
+        let bookHistory = JSON.parse(localStorage.getItem('bookHistory')) || [];
+        let storeHistory = JSON.parse(localStorage.getItem('storeHistory')) || [];
+
+        function saveHistory(type, term) {
+            if(!term) return;
+            let hist = type === 'book' ? bookHistory : storeHistory;
+            hist = hist.filter(t => t !== term); 
+            hist.unshift(term); 
+            if(hist.length > 5) hist.pop(); 
+            if(type === 'book') { bookHistory = hist; localStorage.setItem('bookHistory', JSON.stringify(hist)); renderHistory('book'); }
+            else { storeHistory = hist; localStorage.setItem('storeHistory', JSON.stringify(hist)); renderHistory('store'); }
+        }
+
+        function renderHistory(type) {
+            const hist = type === 'book' ? bookHistory : storeHistory;
+            const container = document.getElementById(type + '-history-container');
+            const tags = document.getElementById(type + '-history-tags');
+            if(hist.length > 0) {
+                container.classList.remove('hidden');
+                tags.innerHTML = hist.map(t => `<button onclick="useHistory('${type}', '${escapeAttr(t)}')" class="text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 py-1 px-3 rounded-full transition shadow-sm border border-gray-300">${t}</button>`).join('');
+            }
+        }
+
+        function useHistory(type, term) {
+            if(type === 'book') { document.getElementById('manual-search-input').value = term; searchManual(); }
+            else { document.getElementById('store-search-input').value = term; searchStoreManual(); }
+        }
 
         // ==========================================
         // FUNGSI LOAD DATA 
         // ==========================================
-        window.onload = loadData;
-
         async function loadData() {
             const statusEl = document.getElementById('db-status');
-            const refreshBtn = document.getElementById('refresh-btn');
-            const refreshIcon = document.getElementById('refresh-icon');
-            
-            statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`;
-            statusEl.className = "text-blue-600 font-bold";
-            if (refreshBtn) refreshBtn.disabled = true;
-            if (refreshIcon) refreshIcon.classList.add('animate-spin');
-            
-            document.getElementById('manual-search-input').disabled = true;
-            document.getElementById('store-search-input').disabled = true;
-            document.getElementById('file-upload').disabled = true;
-            document.getElementById('search-btn').disabled = true;
-            document.getElementById('search-store-btn').disabled = true;
+            statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; statusEl.className = "text-blue-600 font-bold";
+            const btns = ['manual-search-input','store-search-input','file-upload','search-btn','search-store-btn'];
+            btns.forEach(id => document.getElementById(id).disabled = true);
 
             try {
-                database = [];
-                dataStore = [];
-                dbMapByOrin = {};
-                dbMapByBsoft = {};
-                storeSummaryMap = {};
-                storeRecordsByOrin = {};
-                storeRecordsByToko = {};
-
+                database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {};
                 const [resMain, resStore] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore) ]);
-                const csvMainText = await resMain.text();
-                const csvStoreText = await resStore.text();
+                const csvMainText = await resMain.text(); const csvStoreText = await resStore.text();
 
-                // 1. Database Utama
                 Papa.parse(csvMainText, {
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
                         database = results.data.map(row => {
-                            let cleanRow = {};
-                            for (let key in row) cleanRow[key.trim()] = row[key];
-                            
-                            let orin = cleanStr(cleanRow['ID ORIN']);
-                            let bsoft = cleanStr(cleanRow['KODE BSOFT']);
-                            if(orin) dbMapByOrin[orin] = cleanRow;
-                            if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
-                            
+                            let cleanRow = {}; for (let key in row) cleanRow[key.trim()] = row[key];
+                            let orin = cleanStr(cleanRow['ID ORIN']); let bsoft = cleanStr(cleanRow['KODE BSOFT']);
+                            if(orin) dbMapByOrin[orin] = cleanRow; if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
                             return cleanRow;
                         });
                     }
                 });
 
-                // 2. Database Toko
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
                         dataStore = results.data.slice(9);
                         dataStore.forEach(st => {
-                            let id = cleanStr(st[1]);
-                            let namaToko = cleanStr(st[3]);
-                            
+                            let id = cleanStr(st[1]); let namaToko = cleanStr(st[3]);
                             if(!id) return;
-                            
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
-                            storeSummaryMap[id].totalSold += parseNum(st[7]);
-                            storeSummaryMap[id].totalEoh += parseNum(st[11]);
-                            
-                            if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = [];
-                            storeRecordsByOrin[id].push(st);
-                            
-                            if(namaToko) {
-                                if(!storeRecordsByToko[namaToko]) storeRecordsByToko[namaToko] = [];
-                                storeRecordsByToko[namaToko].push(st);
-                            }
+                            storeSummaryMap[id].totalSold += parseNum(st[7]); storeSummaryMap[id].totalEoh += parseNum(st[11]);
+                            if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = []; storeRecordsByOrin[id].push(st);
+                            if(namaToko) { if(!storeRecordsByToko[namaToko]) storeRecordsByToko[namaToko] = []; storeRecordsByToko[namaToko].push(st); }
                         });
                     }
                 });
 
-                statusEl.innerHTML = `✅ Terhubung! (${database.length} data buku & ${dataStore.length} riwayat toko)`;
-                statusEl.className = "text-green-600 font-bold";
-                
-                document.getElementById('manual-search-input').disabled = false;
-                document.getElementById('store-search-input').disabled = false;
-                document.getElementById('file-upload').disabled = false;
-                document.getElementById('search-btn').disabled = false;
-                document.getElementById('search-btn').classList.remove('opacity-50', 'cursor-not-allowed');
-                document.getElementById('search-store-btn').disabled = false;
-                document.getElementById('search-store-btn').classList.remove('opacity-50', 'cursor-not-allowed');
-
+                statusEl.innerHTML = `✅ Terhubung! (${database.length} data buku)`; statusEl.className = "text-green-600 font-bold";
+                btns.forEach(id => {
+                    const el = document.getElementById(id); el.disabled = false;
+                    if(el.tagName === 'BUTTON') el.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
             } catch(e) {
-                statusEl.innerHTML = `❌ Gagal memuat data. Periksa koneksi atau hak akses Sheet.`;
-                statusEl.className = "text-red-600 font-bold";
-                console.error(e);
-            } finally {
-                if (refreshBtn) refreshBtn.disabled = false;
-                if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                statusEl.innerHTML = `❌ Gagal memuat data.`; statusEl.className = "text-red-600 font-bold";
             }
         }
 
@@ -411,558 +410,413 @@
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
 
         // ==========================================
-        // FITUR 1: PENCARIAN BUKU 
+        // PENCARIAN 
         // ==========================================
         function searchManual() {
-            if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
+            if (database.length === 0) return alert("Database belum siap.");
+            const searchVal = document.getElementById('manual-search-input').value.trim().toLowerCase();
+            saveHistory('book', document.getElementById('manual-search-input').value.trim());
 
-            const searchInput = document.getElementById('manual-search-input');
-            const searchVal = searchInput.value.trim().toLowerCase();
             let matches = !searchVal ? database : database.filter(dbRow => cleanStr(dbRow['ID ORIN']).includes(searchVal) || cleanStr(dbRow['KODE BSOFT']).includes(searchVal) || cleanStr(dbRow['JUDUL ITEM']).includes(searchVal));
 
             if (matches.length > 0) {
                 processedData = matches.map(match => {
                     const { totalSold, totalEoh } = calcStoreData(match['ID ORIN']);
-                    return {
-                        'ID ORIN': match['ID ORIN'] || '',
-                        'KODE BSOFT': match['KODE BSOFT'] || '',
-                        'JUDUL ITEM': match['JUDUL ITEM'] || '',
-                        'HARGA': match['HARGA'] !== undefined ? match['HARGA'] : '',
-                        'STOK BSOFT': match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '',
-                        'SOLD (TERJUAL BULAN INI)': totalSold,
-                        'EOH (STOK AKHIR GRAMEDIA)': totalEoh,
-                        'STATUS SYSTEM': '✅ MATCHED_BOOK'
-                    };
+                    return { 'ID ORIN': match['ID ORIN'] || '', 'KODE BSOFT': match['KODE BSOFT'] || '', 'JUDUL ITEM': match['JUDUL ITEM'] || '', 'HARGA': match['HARGA'] !== undefined ? match['HARGA'] : '', 'STOK BSOFT': match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '', 'SOLD (TERJUAL BULAN INI)': totalSold, 'EOH (STOK AKHIR GRAMEDIA)': totalEoh, 'STATUS SYSTEM': '✅ MATCHED_BOOK' };
                 });
-                
-                processedData.sort((a, b) => b['SOLD (TERJUAL BULAN INI)'] - a['SOLD (TERJUAL BULAN INI)']);
-
-                renderPreview(processedData);
+                sortCol = 'SOLD (TERJUAL BULAN INI)'; sortAsc = false; doSortData();
                 document.getElementById('export-btn').classList.remove('hidden');
             } else {
-                processedData = [{'KATA KUNCI DICARI': searchVal, 'STATUS SYSTEM': '❌ NOT FOUND'}];
-                renderPreview(processedData);
-                document.getElementById('export-btn').classList.add('hidden');
-                alert("Data buku tidak ditemukan.");
+                processedData = [{'KATA KUNCI DICARI': searchVal, 'STATUS SYSTEM': '❌ NOT FOUND'}]; renderPreview(); document.getElementById('export-btn').classList.add('hidden');
+                alert("Buku tidak ditemukan.");
             }
-            searchInput.focus();
         }
 
-        // ==========================================
-        // FITUR 2: PENCARIAN TOKO
-        // ==========================================
         function searchStoreManual() {
-            if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
-
-            const searchInput = document.getElementById('store-search-input');
-            const searchVal = searchInput.value.trim().toLowerCase();
-            
-            if(!searchVal) return alert("Silakan ketikkan nama toko atau kota yang dicari.");
+            if (dataStore.length === 0) return alert("Database belum siap.");
+            const searchVal = document.getElementById('store-search-input').value.trim().toLowerCase();
+            if(!searchVal) return alert("Ketik nama toko.");
+            saveHistory('store', document.getElementById('store-search-input').value.trim());
 
             let uniqueStores = Object.keys(storeRecordsByToko);
             let matches = uniqueStores.filter(storeName => storeName.includes(searchVal));
 
             if (matches.length > 0) {
-                processedData = matches.map(storeName => ({
-                    'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3],
-                    'STATUS SYSTEM': '✅ MATCHED_STORE'
-                }));
-                renderPreview(processedData);
-                document.getElementById('export-btn').classList.add('hidden'); 
+                processedData = matches.map(storeName => ({ 'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3], 'STATUS SYSTEM': '✅ MATCHED_STORE' }));
+                renderPreview(); document.getElementById('export-btn').classList.add('hidden'); 
             } else {
-                processedData = [{'KATA KUNCI DICARI': searchVal, 'STATUS SYSTEM': '❌ NOT FOUND'}];
-                renderPreview(processedData);
-                document.getElementById('export-btn').classList.add('hidden');
+                processedData = [{'KATA KUNCI DICARI': searchVal, 'STATUS SYSTEM': '❌ NOT FOUND'}]; renderPreview(); document.getElementById('export-btn').classList.add('hidden');
                 alert("Toko tidak ditemukan.");
             }
-            searchInput.focus();
         }
 
         // ==========================================
-        // FITUR 3: BULK UPLOAD EXCEL 
+        // BULK UPLOAD 
         // ==========================================
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-upload');
-
+        const dropZone = document.getElementById('drop-zone'); const fileInput = document.getElementById('file-upload');
         dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
         dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('drag-active'); });
         dropZone.addEventListener('drop', e => {
             e.preventDefault(); dropZone.classList.remove('drag-active');
-            if (!fileInput.disabled && e.dataTransfer.files.length) { 
-                fileInput.files = e.dataTransfer.files; 
-                handleFileSelection(e.dataTransfer.files[0]); 
-            }
+            if (!fileInput.disabled && e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFileSelection(e.dataTransfer.files[0]); }
         });
-        fileInput.addEventListener('change', e => { 
-            if (e.target.files.length) handleFileSelection(e.target.files[0]); 
-        });
+        fileInput.addEventListener('change', e => { if (e.target.files.length) handleFileSelection(e.target.files[0]); });
 
         function handleFileSelection(file) {
             pendingExcelFile = file;
-            const container = document.getElementById('file-ready-container');
-            const textDisplay = document.getElementById('file-name-display');
-            
-            container.classList.remove('hidden');
-            textDisplay.innerHTML = `📄 File terpilih: <span class="text-blue-600 font-bold">${file.name}</span><br><span class="text-xs text-gray-500 font-normal">Silakan atur centang kolom di atas, lalu klik Proses Data Sekarang.</span>`;
-            
-            dropZone.classList.add('border-blue-400', 'bg-blue-50');
-            setTimeout(() => dropZone.classList.remove('border-blue-400', 'bg-blue-50'), 2000);
+            document.getElementById('file-ready-container').classList.remove('hidden');
+            document.getElementById('file-name-display').innerHTML = `📄 File terpilih: <span class="text-blue-600 font-bold">${file.name}</span>`;
+            document.getElementById('process-btn-ui').innerHTML = '🚀 Proses Data Sekarang';
         }
 
         function triggerProcessExcel() {
-            if (!pendingExcelFile) return alert("Pilih atau drag file Excel terlebih dahulu.");
-            processExcelFile(pendingExcelFile);
+            if (!pendingExcelFile) return alert("Pilih file.");
+            
+            // Animasi Fitur 4: Async Processing Alert
+            const btn = document.getElementById('process-btn-ui');
+            btn.innerHTML = `<span class="animate-pulse">⏳ Sedang memproses Excel...</span>`;
+            
+            // Timeout agar UI sempet kerender sebelum logic mapping yang berat berjalan
+            setTimeout(() => { processExcelFile(pendingExcelFile); }, 100);
         }
 
         function processExcelFile(file) {
-            if (database.length === 0 || dataStore.length === 0) return alert("Database belum siap.");
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
                 const dataAsArrays = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, defval: ""});
-                if (dataAsArrays.length === 0) return alert('File Excel kosong!');
+                if (dataAsArrays.length === 0) return alert('File kosong!');
 
                 let headerRowIndex = -1, actualHeaders = [];
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
-                    const row = dataAsArrays[i];
-                    if (!row) continue;
-                    if (row.some(cell => ['id orin', 'item id', 'kode bsoft', 'iditem', 'item number', 'kode'].includes(cleanStr(cell)))) {
-                        headerRowIndex = i; actualHeaders = row.map(h => String(h).trim()); break;
-                    }
+                    const row = dataAsArrays[i]; if (!row) continue;
+                    if (row.some(cell => ['id orin', 'item id', 'kode bsoft', 'iditem', 'item number', 'kode'].includes(cleanStr(cell)))) { headerRowIndex = i; actualHeaders = row.map(h => String(h).trim()); break; }
                 }
-                
-                if (headerRowIndex === -1) return alert("Header ID tidak ditemukan di file Anda. (Pastikan ada kolom ID ORIN, Item Id, KODE BSOFT, iditem, Item number, atau KODE)");
+                if (headerRowIndex === -1) return alert("Header ID tidak ditemukan.");
 
                 let userExcelData = [];
                 for (let i = headerRowIndex + 1; i < dataAsArrays.length; i++) {
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
-                    let rowObj = {};
-                    for (let j = 0; j < actualHeaders.length; j++) rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j];
-                    userExcelData.push(rowObj);
+                    let rowObj = {}; for (let j = 0; j < actualHeaders.length; j++) rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j]; userExcelData.push(rowObj);
                 }
 
                 const wants = {
-                    orin: document.getElementById('chk-orin').checked, bsoft: document.getElementById('chk-bsoft').checked,
-                    judul: document.getElementById('chk-judul').checked, harga: document.getElementById('chk-harga').checked,
-                    stokbsoft: document.getElementById('chk-stokbsoft').checked, sold: document.getElementById('chk-sold').checked,
-                    eoh: document.getElementById('chk-eoh').checked
+                    orin: document.getElementById('chk-orin').checked, bsoft: document.getElementById('chk-bsoft').checked, judul: document.getElementById('chk-judul').checked, harga: document.getElementById('chk-harga').checked, stokbsoft: document.getElementById('chk-stokbsoft').checked, sold: document.getElementById('chk-sold').checked, eoh: document.getElementById('chk-eoh').checked
                 };
 
                 processedData = userExcelData.map(row => {
                     const userOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']) || cleanStr(row['Item number']) || cleanStr(row['Item Number']);
                     const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']) || cleanStr(row['KODE']) || cleanStr(row['Kode']) || cleanStr(row['kode']);
-                    
                     let match = userOrin ? dbMapByOrin[userOrin] : (userBsoft ? dbMapByBsoft[userBsoft] : null);
 
                     if (match) {
                         let newRow = { ...row };
-                        const finalId = match['ID ORIN'] || row['ID ORIN'] || row['Item Id'] || row['Item Number'] || row['Item number'] || '';
-                        
+                        const finalId = match['ID ORIN'] || row['ID ORIN'] || row['Item Id'] || row['Item Number'] || '';
                         if (wants.sold || wants.eoh) {
                             const { totalSold, totalEoh } = calcStoreData(finalId);
                             if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = totalSold;
                             if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
                         }
-
                         if (wants.orin) newRow['ID ORIN'] = finalId;
-                        if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || row['KODE BSOFT'] || row['iditem'] || row['KODE'] || row['Kode'] || row['kode'] || '';
-                        if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || row['JUDUL ITEM'] || row['judul'] || row['Judul'] || '';
+                        if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || row['KODE BSOFT'] || '';
+                        if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || row['JUDUL ITEM'] || '';
                         if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || '');
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : (row['STOK BSOFT'] || '');
-                        
-                        newRow['STATUS SYSTEM'] = '✅ MATCHED';
-                        return newRow;
+                        newRow['STATUS SYSTEM'] = '✅ MATCHED'; return newRow;
                     } else {
                         return { ...row, 'STATUS SYSTEM': '❌ NOT FOUND' };
                     }
                 });
 
-                renderPreview(processedData);
+                renderPreview();
                 document.getElementById('export-btn').classList.remove('hidden');
-                
                 document.getElementById('file-ready-container').classList.add('hidden');
-                pendingExcelFile = null;
-                fileInput.value = ""; 
-                
+                pendingExcelFile = null; fileInput.value = ""; 
             };
             reader.readAsArrayBuffer(file);
         }
 
         // ==========================================
-        // RENDER PREVIEW DINAMIS 
+        // FITUR 1: SORTIR TABEL UTAMA INTERAKTIF ↕️
         // ==========================================
-        function renderPreview(dataArray) {
-            if (dataArray.length === 0) return;
+        function handleSort(col) {
+            if(sortCol === col) sortAsc = !sortAsc; else { sortCol = col; sortAsc = true; }
+            doSortData();
+        }
+        
+        function doSortData() {
+            if(!sortCol || processedData.length === 0) { renderPreview(); return; }
+            processedData.sort((a, b) => {
+                let valA = a[sortCol] !== undefined ? a[sortCol] : '';
+                let valB = b[sortCol] !== undefined ? b[sortCol] : '';
+                
+                // Coba konversi ke Number kalau memungkinkan
+                let numA = parseFloat(valA); let numB = parseFloat(valB);
+                let isNumA = !isNaN(numA) && valA !== ''; let isNumB = !isNaN(numB) && valB !== '';
+                
+                if (isNumA && isNumB) { return sortAsc ? numA - numB : numB - numA; }
+                
+                // Fallback ke String
+                let strA = String(valA).toLowerCase(); let strB = String(valB).toLowerCase();
+                if (strA < strB) return sortAsc ? -1 : 1;
+                if (strA > strB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+            renderPreview();
+        }
+
+        function renderPreview() {
+            if (processedData.length === 0) return;
             const thead = document.getElementById('table-head'), tbody = document.getElementById('table-body');
+            const headers = Object.keys(processedData[0]);
             
-            const headers = Object.keys(dataArray[0]);
+            // Render Header dengan ↕️ dan onclick
             let headerRow = '<tr>';
-            headers.forEach(header => { headerRow += `<th class="py-2 md:py-3 px-3 md:px-4 border">${header}</th>`; });
+            headers.forEach(header => { 
+                let indicator = sortCol === header ? (sortAsc ? ' 🔼' : ' 🔽') : ' ↕️';
+                headerRow += `<th class="py-2 md:py-3 px-3 md:px-4 border cursor-pointer hover:bg-gray-700 select-none" onclick="handleSort('${escapeAttr(header)}')">${header} <span class="text-xs text-gray-400">${indicator}</span></th>`; 
+            });
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
 
             let htmlChunks = [];
-            const limit = Math.min(dataArray.length, 100); 
+            const limit = Math.min(processedData.length, 100); 
             
             for (let i = 0; i < limit; i++) {
                 let rowHtml = '<tr class="hover:bg-gray-50 border-b">';
-                
                 headers.forEach(header => {
-                    let val = dataArray[i][header] !== undefined ? dataArray[i][header] : '';
-                    
-                    if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_BOOK') {
-                        let id = escapeAttr(dataArray[i]['ID ORIN'] || dataArray[i]['Item Id'] || dataArray[i]['Item number'] || dataArray[i]['Item Number'] || '-');
-                        let kd = escapeAttr(dataArray[i]['KODE BSOFT'] || dataArray[i]['iditem'] || dataArray[i]['KODE'] || dataArray[i]['Kode'] || dataArray[i]['kode'] || '-');
-                        let jd = escapeAttr(dataArray[i]['JUDUL ITEM'] || dataArray[i]['judul'] || '-');
-                        let hr = escapeAttr(dataArray[i]['HARGA'] || '-');
-                        let st = escapeAttr(dataArray[i]['STOK BSOFT'] || '-');
+                    let val = processedData[i][header] !== undefined ? processedData[i][header] : '';
+                    if (header === 'STATUS SYSTEM' && processedData[i]['STATUS SYSTEM'] === '✅ MATCHED_BOOK') {
+                        let id = escapeAttr(processedData[i]['ID ORIN'] || '-'); let kd = escapeAttr(processedData[i]['KODE BSOFT'] || '-'); let jd = escapeAttr(processedData[i]['JUDUL ITEM'] || '-'); let hr = escapeAttr(processedData[i]['HARGA'] || '-'); let st = escapeAttr(processedData[i]['STOK BSOFT'] || '-');
                         rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-green-600">Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button></td>`;
                     } 
-                    else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED_STORE') {
-                        let nmToko = escapeAttr(dataArray[i]['NAMA TOKO TERDAFTAR']);
+                    else if (header === 'STATUS SYSTEM' && processedData[i]['STATUS SYSTEM'] === '✅ MATCHED_STORE') {
+                        let nmToko = escapeAttr(processedData[i]['NAMA TOKO TERDAFTAR']);
                         rowHtml += `<td class="py-2 px-3 border font-bold text-center"><span class="text-purple-600">Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-2 text-[10px] md:text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 py-1.5 px-3 rounded font-bold border border-purple-300 shadow-sm transition whitespace-nowrap">Lihat Data Buku</button></td>`;
                     }
-                    else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
-                        rowHtml += `<td class="py-2 px-3 border font-bold text-center text-green-600">Terisi</td>`;
-                    } 
-                    else if (header === 'STATUS SYSTEM' && String(dataArray[i]['STATUS SYSTEM']).includes('❌')) {
-                        rowHtml += `<td class="py-2 px-3 border font-bold text-center text-red-600">${val}</td>`;
-                    }
-                    else if (header.includes('SOLD') || header.includes('EOH')) {
-                        rowHtml += `<td class="py-2 px-3 border font-bold text-center text-gray-800">${val}</td>`;
-                    }
-                    else {
-                        rowHtml += `<td class="py-2 px-3 border">${val}</td>`;
-                    }
+                    else if (header === 'STATUS SYSTEM' && processedData[i]['STATUS SYSTEM'] === '✅ MATCHED') rowHtml += `<td class="py-2 px-3 border font-bold text-center text-green-600">Terisi</td>`;
+                    else if (header === 'STATUS SYSTEM' && String(processedData[i]['STATUS SYSTEM']).includes('❌')) rowHtml += `<td class="py-2 px-3 border font-bold text-center text-red-600">${val}</td>`;
+                    else if (header.includes('SOLD') || header.includes('EOH')) rowHtml += `<td class="py-2 px-3 border font-bold text-center text-gray-800">${val}</td>`;
+                    else rowHtml += `<td class="py-2 px-3 border">${val}</td>`;
                 });
-                rowHtml += '</tr>'; 
-                htmlChunks.push(rowHtml);
+                rowHtml += '</tr>'; htmlChunks.push(rowHtml);
             }
-            if (dataArray.length > limit) htmlChunks.push(`<tr><td colspan="${headers.length}" class="py-3 md:py-4 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Menampilkan ${limit} dari ${dataArray.length} data.</td></tr>`);
-            
+            if (processedData.length > limit) htmlChunks.push(`<tr><td colspan="${headers.length}" class="py-3 md:py-4 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Menampilkan ${limit} dari ${processedData.length} data.</td></tr>`);
             tbody.innerHTML = htmlChunks.join('');
         }
 
         // ==========================================
-        // MODAL 1: RINCIAN TOKO (Pencarian Buku)
+        // FITUR 3: FUNGSI RENDER GRAFIK CHART.JS 📊
+        // ==========================================
+        function buildChartBuku(validStores) {
+            const ctx = document.getElementById('chartBuku').getContext('2d');
+            if(chartBukuObj) chartBukuObj.destroy();
+            const top5 = validStores.slice(0, 5); // Ambil 5 toko terbesar
+            chartBukuObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top5.map(s => {
+                        let name = s.namaToko.replace('GRAMEDIA ', '');
+                        return name.length > 15 ? name.substring(0, 15) + '...' : name;
+                    }),
+                    datasets: [
+                        { label: 'SOLD', data: top5.map(s => s.valSold), backgroundColor: 'rgba(59, 130, 246, 0.8)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 },
+                        { label: 'EOH', data: top5.map(s => s.valEoh), backgroundColor: 'rgba(16, 185, 129, 0.8)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function buildChartToko(validRecords) {
+            const ctx = document.getElementById('chartToko').getContext('2d');
+            if(chartTokoObj) chartTokoObj.destroy();
+            const top5 = validRecords.slice(0, 5); // Ambil 5 buku terbesar
+            chartTokoObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top5.map(s => s.judulItem.length > 15 ? s.judulItem.substring(0, 15) + '...' : s.judulItem),
+                    datasets: [
+                        { label: 'SOLD', data: top5.map(s => s.valSold), backgroundColor: 'rgba(59, 130, 246, 0.8)' },
+                        { label: 'EOH', data: top5.map(s => s.valEoh), backgroundColor: 'rgba(16, 185, 129, 0.8)' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // ==========================================
+        // FITUR 2: COPY KE WHATSAPP / CLIPBOARD 📋
+        // ==========================================
+        function copyToWA(jenis) {
+            let text = "";
+            if (jenis === 'buku') {
+                text += `*INFO STOK BUKU*\n`;
+                text += `📕 Judul: ${document.getElementById('mdl-judul').innerText}\n`;
+                text += `🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n\n`;
+                text += `*Top 10 Toko Terlaris:*\n`;
+                currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                text += `\n*Total Nasional*\nSold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`;
+            } else {
+                text += `*INFO STOK TOKO*\n`;
+                text += `🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}\n\n`;
+                text += `*Top 10 Buku Terlaris:*\n`;
+                currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                text += `\n*Total Toko*\nSold: ${document.getElementById('store-mdl-totalsold').innerText} | EOH: ${document.getElementById('store-mdl-totaleoh').innerText}`;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Data berhasil disalin! Silakan Paste (Ctrl+V) di WA atau Excel.");
+            }).catch(err => {
+                alert("Gagal menyalin, browser kamu mungkin tidak mengizinkan akses Clipboard.");
+            });
+        }
+
+        // ==========================================
+        // MODAL 1: RINCIAN TOKO 
         // ==========================================
         function lihatDetail(idOrin, kodeBsoft, judulItem, harga, stokBsoft) {
-            document.getElementById('mdl-id').innerText = idOrin;
-            document.getElementById('mdl-kode').innerText = kodeBsoft;
-            document.getElementById('mdl-judul').innerText = judulItem;
-            document.getElementById('mdl-harga').innerText = harga;
-            document.getElementById('mdl-stokbsoft').innerText = stokBsoft;
+            document.getElementById('mdl-id').innerText = idOrin; document.getElementById('mdl-kode').innerText = kodeBsoft; document.getElementById('mdl-judul').innerText = judulItem; document.getElementById('mdl-harga').innerText = harga; document.getElementById('mdl-stokbsoft').innerText = stokBsoft;
             
             const tbody = document.getElementById('detailBody');
             const now = new Date(), dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             document.getElementById('pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
-
             currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
-            const stores = storeRecordsByOrin[cleanStr(idOrin)] || [];
-            let validStores = [];
-
+            const stores = storeRecordsByOrin[cleanStr(idOrin)] || []; let validStores = [];
             stores.forEach(store => {
                 const namaToko = store[3] || '-'; const valSold = parseNum(store[7]); const valEoh = parseNum(store[11]); 
-                if (valSold > 0 || valEoh > 0) {
-                    validStores.push({ namaToko, valSold, valEoh });
-                }
+                if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, valSold, valEoh });
             });
 
             validStores.sort((a, b) => b.valSold - a.valSold);
-            
-            let htmlChunks = [];
-            let sumSold = 0, sumEoh = 0; 
+            currentValidStores = validStores; // Simpan untuk Copy WA
 
+            let htmlChunks = []; let sumSold = 0, sumEoh = 0; 
             validStores.forEach(item => {
-                sumSold += item.valSold;
-                sumEoh += item.valEoh;
+                sumSold += item.valSold; sumEoh += item.valEoh;
                 htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
             });
             
-            // Set total ke panel atas modal
-            document.getElementById('mdl-totalsold').innerText = sumSold;
-            document.getElementById('mdl-totaleoh').innerText = sumEoh;
-
-            if (validStores.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
-            } else {
-                tbody.innerHTML = htmlChunks.join('');
-            }
+            document.getElementById('mdl-totalsold').innerText = sumSold; document.getElementById('mdl-totaleoh').innerText = sumEoh;
+            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
+            else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('detailModal').classList.remove('hidden');
+            
+            // Build Chart
+            setTimeout(() => { buildChartBuku(validStores); }, 100);
         }
         function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
         // ==========================================
-        // MODAL 2: KATALOG BUKU (Pencarian Toko)
+        // MODAL 2: KATALOG BUKU 
         // ==========================================
         function lihatDetailKatalog(namaToko) {
             document.getElementById('mdl-store-name').innerText = namaToko;
             const tbody = document.getElementById('storeDetailBody');
-            
             const now = new Date(), dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             document.getElementById('store-pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
-
             currentStoreFileName = `Data_Buku_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
 
-            const records = storeRecordsByToko[cleanStr(namaToko)] || [];
-            let validRecords = [];
-
+            const records = storeRecordsByToko[cleanStr(namaToko)] || []; let validRecords = [];
             records.forEach(st => {
-                const idOrin = st[1] ? String(st[1]).trim() : '';
-                const valSold = parseNum(st[7]); const valEoh = parseNum(st[11]);
-                
+                const idOrin = st[1] ? String(st[1]).trim() : ''; const valSold = parseNum(st[7]); const valEoh = parseNum(st[11]);
                 if (valSold > 0 || valEoh > 0) {
                     let dbMatch = dbMapByOrin[cleanStr(idOrin)];
                     let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st[2] || '-');
                     let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
                     let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
                     let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
-                    
                     validRecords.push({ idOrin, judulItem, harga, stokBsoft, valSold, valEoh, kodeBsoft, namaToko });
                 }
             });
 
             validRecords.sort((a, b) => b.valSold - a.valSold);
+            currentValidRecords = validRecords; // Simpan untuk Copy WA
 
-            let htmlChunks = [];
-            let sumStoreSold = 0, sumStoreEoh = 0; 
-
+            let htmlChunks = []; let sumStoreSold = 0, sumStoreEoh = 0; 
             validRecords.forEach(item => {
-                sumStoreSold += item.valSold;
-                sumStoreEoh += item.valEoh;
-                htmlChunks.push(`
-                    <tr class="hover:bg-purple-50">
-                        <td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td>
-                        <td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td>
-                        <td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td>
-                        <td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td>
-                        <td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td>
-                        <td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td>
-                    </tr>
-                `);
+                sumStoreSold += item.valSold; sumStoreEoh += item.valEoh;
+                htmlChunks.push(`<tr class="hover:bg-purple-50"><td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td><td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td><td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td><td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td><td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td></tr>`);
             });
             
-            // Set total ke panel atas modal toko
-            document.getElementById('store-mdl-totalsold').innerText = sumStoreSold;
-            document.getElementById('store-mdl-totaleoh').innerText = sumStoreEoh;
-
-            if (validRecords.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok buku maupun rekam penjualan di toko ini.</td></tr>`;
-            } else {
-                tbody.innerHTML = htmlChunks.join('');
-            }
+            document.getElementById('store-mdl-totalsold').innerText = sumStoreSold; document.getElementById('store-mdl-totaleoh').innerText = sumStoreEoh;
+            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok.</td></tr>`;
+            else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('storeModal').classList.remove('hidden');
+
+            // Build Chart
+            setTimeout(() => { buildChartToko(validRecords); }, 100);
         }
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
 
         // ==========================================
-        // FITUR AUTO-WIDTH (LEBAR KOLOM OTOMATIS) 🚀
+        // EXPORT ENGINE 
         // ==========================================
         function getColWidths(dataArray, isAoa = false) {
             let cols = [];
             if (isAoa) {
-                dataArray.forEach(row => {
-                    row.forEach((cell, i) => {
-                        let len = cell ? String(cell).length + 2 : 5;
-                        if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) };
-                    });
-                });
+                dataArray.forEach(row => { row.forEach((cell, i) => { let len = cell ? String(cell).length + 2 : 5; if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); });
             } else {
                 if(dataArray.length === 0) return cols;
-                let headers = Object.keys(dataArray[0]);
-                headers.forEach((h, i) => cols[i] = { wch: h.length + 2 });
-                dataArray.forEach(row => {
-                    headers.forEach((h, i) => {
-                        let len = row[h] ? String(row[h]).length + 2 : 5;
-                        if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) };
-                    });
-                });
-            }
-            return cols;
+                let headers = Object.keys(dataArray[0]); headers.forEach((h, i) => cols[i] = { wch: h.length + 2 });
+                dataArray.forEach(row => { headers.forEach((h, i) => { let len = row[h] ? String(row[h]).length + 2 : 5; if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); });
+            } return cols;
         }
 
-        // ==========================================
-        // EXPORT EXCEL & PDF ENGINE
-        // ==========================================
         function exportToExcel() {
             if (!processedData || processedData.length === 0) return;
-            const sheet = XLSX.utils.json_to_sheet(processedData);
-            sheet['!cols'] = getColWidths(processedData, false);
-            
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, "Data_Hasil_Lookup");
-            XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
+            const sheet = XLSX.utils.json_to_sheet(processedData); sheet['!cols'] = getColWidths(processedData, false);
+            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Hasil_Lookup"); XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
 
         function exportDetailToExcel() {
-            const tbody = document.getElementById('detailBody');
-            const rows = tbody.querySelectorAll('tr');
-            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
-                return alert("Tidak ada data untuk di-export.");
-            }
-
-            const idOrin = document.getElementById('mdl-id').innerText;
-            const kodeBsoft = document.getElementById('mdl-kode').innerText;
-            const judulItem = document.getElementById('mdl-judul').innerText;
-            const harga = document.getElementById('mdl-harga').innerText;
-            const stokBsoft = document.getElementById('mdl-stokbsoft').innerText;
-            const totalSold = document.getElementById('mdl-totalsold').innerText;
-            const totalEoh = document.getElementById('mdl-totaleoh').innerText;
-            const printDate = document.getElementById('pdf-print-date').innerText;
-
-            // Fungsi Helper untuk merubah Text menjadi Number di Excel (Khusus tabel di bawah)
-            const toNum = (val) => {
-                let str = String(val).trim();
-                if (str === '' || str === '-') return str;
-                let num = Number(str);
-                return isNaN(num) ? str : num;
-            };
-
-            // Bagian Header/Kop tetap dijaga sebagai TEXT/String (tidak pakai toNum) agar Excel mengaturnya jadi rata kiri
+            const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
+            const toNum = (val) => { let str = String(val).trim(); if (str === '' || str === '-') return str; let num = Number(str); return isNaN(num) ? str : num; };
             let aoa = [
-                ["LAPORAN DATA BUKU GRAMEDIA"],
-                ["Dicetak pada:", printDate],
-                [],
-                ["ID ORIN:", idOrin],
-                ["KODE BSOFT:", kodeBsoft],
-                ["JUDUL ITEM:", judulItem],
-                ["HARGA:", harga],
-                ["STOK BSOFT:", stokBsoft],
-                ["TOTAL SOLD:", totalSold],
-                ["TOTAL EOH:", totalEoh],
-                [],
+                ["LAPORAN DATA BUKU GRAMEDIA"], ["Dicetak pada:", document.getElementById('pdf-print-date').innerText], [],
+                ["ID ORIN:", document.getElementById('mdl-id').innerText], ["KODE BSOFT:", document.getElementById('mdl-kode').innerText], ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText],
+                ["HARGA:", document.getElementById('mdl-harga').innerText], ["STOK BSOFT:", document.getElementById('mdl-stokbsoft').innerText], ["TOTAL SOLD:", document.getElementById('mdl-totalsold').innerText], ["TOTAL EOH:", document.getElementById('mdl-totaleoh').innerText], [],
                 ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
-
-            rows.forEach(row => {
-                let cols = row.querySelectorAll('td');
-                // Sedangkan bagian tabel data penjualan, kita konversi ke Number agar fungsi filter Z-A berfungsi lancar
-                if (cols.length === 3) aoa.push([cols[0].innerText, toNum(cols[1].innerText), toNum(cols[2].innerText)]);
-            });
-
-            const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            sheet['!cols'] = getColWidths(aoa, true);
-            
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko");
-            XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
+            rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 3) aoa.push([cols[0].innerText, toNum(cols[1].innerText), toNum(cols[2].innerText)]); });
+            const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true);
+            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko"); XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
         }
         
         function exportDetailToPDF() {
-            const tbody = document.getElementById('detailBody');
-            const rows = tbody.querySelectorAll('tr');
-            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
-                return alert("Tidak ada data untuk di-export ke PDF.");
-            }
-            
-            const el = document.getElementById('pdf-content');
-            const hdr = document.getElementById('pdf-header-title');
-            const origClass = el.className;
-            
-            hdr.classList.remove('hidden'); 
-            el.className = "p-2 bg-white w-full"; 
-            
-            const opt = {
-                margin:       [0.5, 0.4, 0.5, 0.4], 
-                filename:     currentDetailFileName + ".pdf",
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { avoid: 'tr' }
-            };
-            
-            html2pdf().set(opt).from(el).save().then(() => { 
-                hdr.classList.add('hidden'); 
-                el.className = origClass; 
-            });
+            const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
+            const el = document.getElementById('pdf-content'); const hdr = document.getElementById('pdf-header-title'); const origClass = el.className;
+            hdr.classList.remove('hidden'); el.className = "p-2 bg-white w-full"; 
+            const opt = { margin: [0.5, 0.4, 0.5, 0.4], filename: currentDetailFileName + ".pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }, pagebreak: { avoid: 'tr' } };
+            html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
 
         function exportStoreDetailToExcel() {
-            const tbody = document.getElementById('storeDetailBody');
-            const rows = tbody.querySelectorAll('tr');
-            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
-                return alert("Tidak ada data untuk di-export.");
-            }
-
-            const namaToko = document.getElementById('mdl-store-name').innerText;
-            const totalSold = document.getElementById('store-mdl-totalsold').innerText;
-            const totalEoh = document.getElementById('store-mdl-totaleoh').innerText;
-            const printDate = document.getElementById('store-pdf-print-date').innerText;
-
-            // Fungsi Helper untuk merubah Text menjadi Number di Excel (Khusus tabel di bawah)
-            const toNum = (val) => {
-                let str = String(val).trim();
-                if (str === '' || str === '-') return str;
-                let num = Number(str);
-                return isNaN(num) ? str : num;
-            };
-
-            // Bagian Header/Kop tetap dijaga sebagai TEXT/String agar Excel mengaturnya jadi rata kiri
+            const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
+            const toNum = (val) => { let str = String(val).trim(); if (str === '' || str === '-') return str; let num = Number(str); return isNaN(num) ? str : num; };
             let aoa = [
-                ["LAPORAN DATA & STOK TOKO"],
-                ["Dicetak pada:", printDate],
-                [],
-                ["LOKASI TOKO:", namaToko],
-                ["TOTAL SOLD:", totalSold],
-                ["TOTAL EOH:", totalEoh],
-                [],
+                ["LAPORAN DATA & STOK TOKO"], ["Dicetak pada:", document.getElementById('store-pdf-print-date').innerText], [],
+                ["LOKASI TOKO:", document.getElementById('mdl-store-name').innerText], ["TOTAL SOLD:", document.getElementById('store-mdl-totalsold').innerText], ["TOTAL EOH:", document.getElementById('store-mdl-totaleoh').innerText], [],
                 ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
-
-            rows.forEach(row => {
-                let cols = row.querySelectorAll('td');
-                // Bagian isi tabel tetap dikonversi ke Number agar filter & sort jalan dengan sempurna
-                if (cols.length === 6) {
-                    aoa.push([
-                        cols[0].innerText, 
-                        cols[1].innerText, 
-                        toNum(cols[2].innerText), 
-                        toNum(cols[3].innerText), 
-                        toNum(cols[4].innerText), 
-                        toNum(cols[5].innerText)
-                    ]);
-                }
-            });
-
-            const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            sheet['!cols'] = getColWidths(aoa, true);
-            
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko");
-            XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
+            rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 6) { aoa.push([cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText), toNum(cols[4].innerText), toNum(cols[5].innerText)]); } });
+            const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true);
+            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko"); XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
         }
         
         function exportStoreDetailToPDF() {
-            const tbody = document.getElementById('storeDetailBody');
-            const rows = tbody.querySelectorAll('tr');
-            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) {
-                return alert("Tidak ada data untuk di-export ke PDF.");
-            }
-            
-            const el = document.getElementById('store-pdf-content');
-            const hdr = document.getElementById('store-pdf-header-title');
-            const origClass = el.className;
-            
-            hdr.classList.remove('hidden'); 
-            el.className = "p-2 bg-white w-full"; 
-            
-            const opt = {
-                margin:       [0.5, 0.5, 0.5, 0.5], 
-                filename:     currentStoreFileName + ".pdf",
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }, 
-                pagebreak:    { avoid: 'tr' }
-            };
-            
-            html2pdf().set(opt).from(el).save().then(() => { 
-                hdr.classList.add('hidden'); 
-                el.className = origClass; 
-            });
+            const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
+            const el = document.getElementById('store-pdf-content'); const hdr = document.getElementById('store-pdf-header-title'); const origClass = el.className;
+            hdr.classList.remove('hidden'); el.className = "p-2 bg-white w-full"; 
+            const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: currentStoreFileName + ".pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { avoid: 'tr' } };
+            html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
     </script>
 </body>
