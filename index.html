@@ -86,7 +86,7 @@
         <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-lg border border-purple-200">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>sudirman</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>surabaya</i>). Klik Detail pada hasil pencarian untuk melihat stok seluruh buku di toko tersebut.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -814,7 +814,7 @@
             const totalEoh = document.getElementById('mdl-totaleoh').innerText;
             const printDate = document.getElementById('pdf-print-date').innerText;
 
-            // Fungsi Helper untuk merubah Text menjadi Number di Excel
+            // Fungsi Helper untuk merubah Text menjadi Number di Excel (Khusus tabel di bawah)
             const toNum = (val) => {
                 let str = String(val).trim();
                 if (str === '' || str === '-') return str;
@@ -822,7 +822,7 @@
                 return isNaN(num) ? str : num;
             };
 
-            // Layout Vertikal Bersih di Kolom A & B (Tanpa baris total di bawah agar aman untuk filter/pivot)
+            // Bagian Header/Kop tetap dijaga sebagai TEXT/String (tidak pakai toNum) agar Excel mengaturnya jadi rata kiri
             let aoa = [
                 ["LAPORAN DATA BUKU GRAMEDIA"],
                 ["Dicetak pada:", printDate],
@@ -830,17 +830,17 @@
                 ["ID ORIN:", idOrin],
                 ["KODE BSOFT:", kodeBsoft],
                 ["JUDUL ITEM:", judulItem],
-                ["HARGA:", toNum(harga)],
-                ["STOK BSOFT:", toNum(stokBsoft)],
-                ["TOTAL SOLD:", toNum(totalSold)],
-                ["TOTAL EOH:", toNum(totalEoh)],
+                ["HARGA:", harga],
+                ["STOK BSOFT:", stokBsoft],
+                ["TOTAL SOLD:", totalSold],
+                ["TOTAL EOH:", totalEoh],
                 [],
                 ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
 
             rows.forEach(row => {
                 let cols = row.querySelectorAll('td');
-                // Mengkonversi isi kolom index ke-1 (SOLD) dan ke-2 (EOH) menjadi Number murni
+                // Sedangkan bagian tabel data penjualan, kita konversi ke Number agar fungsi filter Z-A berfungsi lancar
                 if (cols.length === 3) aoa.push([cols[0].innerText, toNum(cols[1].innerText), toNum(cols[2].innerText)]);
             });
 
@@ -893,7 +893,7 @@
             const totalEoh = document.getElementById('store-mdl-totaleoh').innerText;
             const printDate = document.getElementById('store-pdf-print-date').innerText;
 
-            // Fungsi Helper untuk merubah Text menjadi Number di Excel
+            // Fungsi Helper untuk merubah Text menjadi Number di Excel (Khusus tabel di bawah)
             const toNum = (val) => {
                 let str = String(val).trim();
                 if (str === '' || str === '-') return str;
@@ -901,20 +901,21 @@
                 return isNaN(num) ? str : num;
             };
 
+            // Bagian Header/Kop tetap dijaga sebagai TEXT/String agar Excel mengaturnya jadi rata kiri
             let aoa = [
                 ["LAPORAN DATA & STOK TOKO"],
                 ["Dicetak pada:", printDate],
                 [],
                 ["LOKASI TOKO:", namaToko],
-                ["TOTAL SOLD:", toNum(totalSold)],
-                ["TOTAL EOH:", toNum(totalEoh)],
+                ["TOTAL SOLD:", totalSold],
+                ["TOTAL EOH:", totalEoh],
                 [],
                 ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
 
             rows.forEach(row => {
                 let cols = row.querySelectorAll('td');
-                // Khusus ID ORIN & Judul tetap String agar aman. Sisanya dikonversi ke Number.
+                // Bagian isi tabel tetap dikonversi ke Number agar filter & sort jalan dengan sempurna
                 if (cols.length === 6) {
                     aoa.push([
                         cols[0].innerText, 
