@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Lookup Google Sheets ke Excel</title>
+    <title>Auto-Lookup & Analytics Gramedia</title>
     <!-- Tailwind CSS untuk Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS untuk membaca dan membuat file Excel -->
@@ -28,38 +28,47 @@
         tr { page-break-inside: avoid !important; }
         .chart-container { position: relative; height: 350px; width: 100%; }
         .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; }
+        .tab-btn.active { border-bottom-width: 2px; border-color: #2563eb; color: #1d4ed8; font-weight: bold; background-color: #eff6ff; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
 
-    <div class="max-w-6xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
-        <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
-        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Dilengkapi Multi-Search, Multi-Sheet Export, & Cabang Referensi.</p>
+    <div class="max-w-7xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
+        <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Dashboard System Gramedia</h1>
+        <p class="text-sm md:text-base text-gray-600 mb-6">Pencarian Katalog, Multi-Sheet Export, Cabang Referensi, & Analitik Penjualan 2026.</p>
 
         <!-- Status Database & Info Data -->
         <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
             <div class="p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-gray-100 bg-gray-50">
                 <div class="text-sm md:text-base flex items-center gap-2">
-                    <span class="font-semibold text-gray-700">Status Database: </span>
-                    <span id="db-status" class="text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-xs">Sedang Menghubungkan... ⏳</span>
+                    <span class="font-semibold text-gray-700">Status System: </span>
+                    <span id="db-status" class="text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-xs">Sedang Sinkronisasi 4 Database... ⏳</span>
                 </div>
                 <button id="refresh-btn" onclick="loadData(true)" class="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-700 font-bold py-2 px-4 rounded-lg border border-blue-200 shadow-sm transition text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg id="refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
-                    Refresh Data (Sync Sheets)
+                    Refresh (Sync Sheets)
                 </button>
             </div>
             
-            <!-- Dashboard Summary -->
-            <div class="grid grid-cols-2 gap-4 p-4 bg-white">
-                <div class="border border-gray-200 rounded-lg p-3 text-center bg-gradient-to-br from-blue-50 to-white">
-                    <div class="text-xs text-gray-500 font-semibold mb-1">TOTAL BUKU / SKU (DATA MASTER)</div>
-                    <div id="summary-sku" class="text-2xl font-black text-blue-700">-</div>
+            <!-- Dashboard Summary 4 Database -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white">
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-blue-50">
+                    <div class="text-xs text-gray-500 font-semibold mb-1">SKU MASTER</div>
+                    <div id="summary-sku" class="text-xl md:text-2xl font-black text-blue-700">-</div>
                 </div>
-                <div class="border border-gray-200 rounded-lg p-3 text-center bg-gradient-to-br from-purple-50 to-white">
-                    <div class="text-xs text-gray-500 font-semibold mb-1">TOTAL TOKO AKTIF (LOKASI)</div>
-                    <div id="summary-toko" class="text-2xl font-black text-purple-700">-</div>
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-purple-50">
+                    <div class="text-xs text-gray-500 font-semibold mb-1">TOKO AKTIF</div>
+                    <div id="summary-toko" class="text-xl md:text-2xl font-black text-purple-700">-</div>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-green-50">
+                    <div class="text-xs text-gray-500 font-semibold mb-1">DATA HISTORI LAKU</div>
+                    <div id="summary-histori" class="text-xl md:text-2xl font-black text-green-700">-</div>
+                </div>
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-amber-50">
+                    <div class="text-xs text-gray-500 font-semibold mb-1">CABANG REF</div>
+                    <div id="summary-cabang" class="text-xl md:text-2xl font-black text-amber-700">-</div>
                 </div>
             </div>
 
@@ -71,114 +80,205 @@
             </div>
         </div>
 
-        <!-- FITUR 1: Pencarian Manual BUKU -->
-        <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
-            <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="manual-search-input" placeholder="Contoh: 10101, harry potter, matematika..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
-                <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
-                    Cari Buku
-                </button>
-            </div>
-            <div id="book-history-container" class="mt-3 hidden">
-                <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
-                <div id="book-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
-            </div>
+        <!-- TABS NAVIGATION -->
+        <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+            <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup</button>
+            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik & Best Seller</button>
         </div>
 
-        <!-- FITUR 2: Pencarian Manual TOKO -->
-        <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
-            <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="store-search-input" placeholder="Contoh: gajah mada, surabaya, bintaro..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
-                <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
-                    Cari Toko
-                </button>
-            </div>
-            <div id="store-history-container" class="mt-3 hidden">
-                <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
-                <div id="store-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
-            </div>
-        </div>
-
-        <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
-        <div class="mb-6 bg-gray-50 p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
-            <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda. Sistem otomatis memindai dan mensinkronisasi datanya.</p>
-            
-            <div class="mb-4 bg-white border border-gray-300 p-4 rounded-lg shadow-inner">
-                <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik (Auto-Saved):</label>
-                <div class="flex flex-wrap gap-4 text-xs md:text-sm font-semibold text-gray-700">
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded" checked> ID ORIN</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded" checked> KODE BSOFT</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded" checked> JUDUL ITEM</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-sold" class="w-4 h-4 text-blue-600 rounded" checked> SOLD</label>
-                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-eoh" class="w-4 h-4 text-blue-600 rounded" checked> EOH</label>
+        <!-- ============================================== -->
+        <!-- TAB 1: OPERASIONAL & LOOKUP (FITUR 1-3) -->
+        <!-- ============================================== -->
+        <div id="tab-operasional" class="tab-content block">
+            <!-- FITUR 1: Pencarian Manual BUKU -->
+            <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
+                <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, harry potter, matematika..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
+                        Cari Buku
+                    </button>
+                </div>
+                <div id="book-history-container" class="mt-3 hidden">
+                    <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
+                    <div id="book-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
                 </div>
             </div>
 
-            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 md:p-8 text-center bg-white hover:bg-gray-50 transition cursor-pointer relative">
-                <div class="text-gray-500 pointer-events-none">
-                    <span class="text-3xl md:text-4xl block mb-2">📥</span>
-                    <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel Anda ke sini</p>
-                    <p class="text-xs md:text-sm mt-1">atau klik untuk memilih file (.xlsx, .xls)</p>
+            <!-- FITUR 2: Pencarian Manual TOKO -->
+            <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
+                <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada, surabaya, bintaro..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                    <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
+                        Cari Toko
+                    </button>
                 </div>
-                <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
+                <div id="store-history-container" class="mt-3 hidden">
+                    <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
+                    <div id="store-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
+                </div>
             </div>
-            
-            <div id="file-ready-container" class="hidden mt-4 bg-blue-50 p-4 border border-blue-200 rounded-lg shadow-sm text-center">
-                <p id="file-name-display" class="text-sm md:text-base font-semibold text-gray-700 mb-3"></p>
-                <button id="process-btn-ui" onclick="triggerProcessExcel()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
-                    🚀 Proses Data Sekarang
+
+            <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
+            <div class="mb-6 bg-gray-50 p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
+                <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
+                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda. Sistem otomatis memindai dan mensinkronisasi datanya.</p>
+                
+                <div class="mb-4 bg-white border border-gray-300 p-4 rounded-lg shadow-inner">
+                    <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik (Auto-Saved):</label>
+                    <div class="flex flex-wrap gap-4 text-xs md:text-sm font-semibold text-gray-700">
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded" checked> ID ORIN</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded" checked> KODE BSOFT</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded" checked> JUDUL ITEM</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-sold" class="w-4 h-4 text-blue-600 rounded" checked> SOLD</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-eoh" class="w-4 h-4 text-blue-600 rounded" checked> EOH</label>
+                    </div>
+                </div>
+
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 md:p-8 text-center bg-white hover:bg-gray-50 transition cursor-pointer relative">
+                    <div class="text-gray-500 pointer-events-none">
+                        <span class="text-3xl md:text-4xl block mb-2">📥</span>
+                        <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel Anda ke sini</p>
+                        <p class="text-xs md:text-sm mt-1">atau klik untuk memilih file (.xlsx, .xls)</p>
+                    </div>
+                    <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
+                </div>
+                
+                <div id="file-ready-container" class="hidden mt-4 bg-blue-50 p-4 border border-blue-200 rounded-lg shadow-sm text-center">
+                    <p id="file-name-display" class="text-sm md:text-base font-semibold text-gray-700 mb-3"></p>
+                    <button id="process-btn-ui" onclick="triggerProcessExcel()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
+                        🚀 Proses Data Sekarang
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi Export (Fitur 1-3) -->
+            <div class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-end gap-3">
+                <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
+                    📑 Export Multi-Sheet (Pilihan / Semua)
+                </button>
+                <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
+                    📥 Download Excel Utama
                 </button>
             </div>
-        </div>
 
-        <!-- Tombol Aksi Export -->
-        <div class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-end gap-3">
-            <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
-                📑 Export Multi-Sheet (Pilihan / Semua)
-            </button>
-            <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
-                📥 Download Excel Utama
-            </button>
-        </div>
+            <!-- Tabel Preview & Filter & Pagination -->
+            <div id="preview-section" class="hidden">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-3 gap-3">
+                    <h2 class="text-base md:text-lg font-bold text-gray-800">Preview Hasil Lookup Data</h2>
+                    <div class="flex gap-2 text-xs md:text-sm">
+                        <button onclick="setFilter('ALL')" id="filter-ALL" class="filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow">Semua</button>
+                        <button onclick="setFilter('MATCHED')" id="filter-MATCHED" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">✅ Terisi</button>
+                        <button onclick="setFilter('NOT_FOUND')" id="filter-NOT_FOUND" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">❌ Kosong</button>
+                    </div>
+                </div>
+                
+                <div class="table-container shadow-sm rounded-lg border bg-white">
+                    <table class="min-w-full bg-white text-center w-full">
+                        <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
+                        <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
+                    </table>
+                </div>
 
-        <!-- Tabel Preview & Filter & Pagination -->
-        <div id="preview-section" class="hidden">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-3 gap-3">
-                <h2 class="text-base md:text-lg font-bold text-gray-800">Preview Hasil Lookup Data</h2>
-                <div class="flex gap-2 text-xs md:text-sm">
-                    <button onclick="setFilter('ALL')" id="filter-ALL" class="filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow">Semua</button>
-                    <button onclick="setFilter('MATCHED')" id="filter-MATCHED" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">✅ Terisi</button>
-                    <button onclick="setFilter('NOT_FOUND')" id="filter-NOT_FOUND" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">❌ Kosong</button>
+                <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
+                    <div id="page-info">Menampilkan - data</div>
+                    <div class="flex gap-2">
+                        <button onclick="changePage(-1)" id="btn-prev" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Sebelumnya</button>
+                        <span id="page-number" class="px-4 py-2 font-bold">1 / 1</span>
+                        <button onclick="changePage(1)" id="btn-next" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Selanjutnya</button>
+                    </div>
                 </div>
             </div>
-            
-            <div class="table-container shadow-sm rounded-lg border bg-white">
-                <table class="min-w-full bg-white text-center w-full">
-                    <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
-                    <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
-                </table>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: ANALITIK & BEST SELLER (FITUR 4) -->
+        <!-- ============================================== -->
+        <div id="tab-analytics" class="tab-content hidden">
+            <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 p-5 md:p-6 rounded-xl border border-green-200 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div>
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Fitur 4: Top 50 Best Seller & Analisis Cetak Ulang</h2>
+                        <p class="text-sm text-gray-600 mt-1">Menggabungkan data Histori 2026 (Jan-Jul) + Status Stok Berjalan (Ags) + Data BSOFT.</p>
+                    </div>
+                    <button onclick="exportAnalyticsExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
+                        📥 Export Laporan Analitik
+                    </button>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 items-center bg-white p-3 rounded-lg border shadow-inner">
+                    <label class="font-semibold text-sm text-gray-700 whitespace-nowrap">Urutkan Berdasarkan:</label>
+                    <select id="analytic-sort" class="w-full sm:w-auto border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="TOTAL">Total Penjualan Keseluruhan (Jan - Ags)</option>
+                        <option value="AGS">Penjualan Bulan Ini (Agustus - Data Stok)</option>
+                        <option value="JUL">Penjualan Bulan Lalu (Juli - Data Histori)</option>
+                        <option value="JUN">Penjualan Juni</option>
+                    </select>
+                    <button onclick="generateTop50()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg transition shadow">Terapkan & Tampilkan Data</button>
+                </div>
             </div>
 
-            <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
-                <div id="page-info">Menampilkan - data</div>
-                <div class="flex gap-2">
-                    <button onclick="changePage(-1)" id="btn-prev" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Sebelumnya</button>
-                    <span id="page-number" class="px-4 py-2 font-bold">1 / 1</span>
-                    <button onclick="changePage(1)" id="btn-next" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Selanjutnya</button>
+            <!-- Tabel Analytics -->
+            <div id="analytics-table-section" class="hidden">
+                <div class="table-container shadow-sm rounded-lg border bg-white">
+                    <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
+                        <thead class="bg-emerald-800 text-white sticky top-0 z-10 text-xs shadow-sm">
+                            <tr>
+                                <th class="py-3 px-3">Rank</th>
+                                <th class="py-3 px-3 text-left">Judul Item</th>
+                                <th class="py-3 px-3 border-l">ID ORIN</th>
+                                <th class="py-3 px-3">KODE BSOFT</th>
+                                <th class="py-3 px-2 border-l border-emerald-700">Jan</th>
+                                <th class="py-3 px-2 border-emerald-700">Feb</th>
+                                <th class="py-3 px-2 border-emerald-700">Mar</th>
+                                <th class="py-3 px-2 border-emerald-700">Apr</th>
+                                <th class="py-3 px-2 border-emerald-700">Mei</th>
+                                <th class="py-3 px-2 border-emerald-700">Jun</th>
+                                <th class="py-3 px-2 border-emerald-700">Jul</th>
+                                <th class="py-3 px-2 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300">Ags<br><span class="text-[9px] font-normal">(Berjalan)</span></th>
+                                <th class="py-3 px-3 bg-emerald-700 font-bold">TOTAL<br>2026</th>
+                                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK<br>BSOFT</th>
+                                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK<br>GRAMEDIA</th>
+                                <th class="py-3 px-3 border-l border-emerald-600">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700 align-middle divide-y text-xs" id="analytics-table-body"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL 3: TREN PENJUALAN BUKU -->
+    <div id="trendModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-4 md:p-5 bg-emerald-800 text-white">
+                <h5 class="font-bold text-lg">📈 Analisis Tren Penjualan 2026</h5>
+                <button onclick="closeTrendModal()" class="text-white hover:text-gray-300 font-bold text-2xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 md:p-6 bg-white">
+                <div class="mb-4 bg-emerald-50 border border-emerald-200 p-3 rounded-lg text-sm">
+                    <p class="font-semibold text-gray-700">Judul: <span id="trend-judul" class="text-emerald-800 font-bold ml-1"></span></p>
+                    <div class="flex gap-4 mt-1 text-xs">
+                        <p class="text-gray-600">ORIN: <span id="trend-orin" class="font-mono font-bold"></span></p>
+                        <p class="text-gray-600">KODE BSOFT: <span id="trend-bsoft" class="font-mono font-bold"></span></p>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 300px;"><canvas id="chartTrend"></canvas></div>
+            </div>
+            <div class="p-3 border-t bg-gray-50 flex justify-end">
+                <button onclick="closeTrendModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition text-sm">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL 1: BUKU -> RINCIAN PER TOKO -->
-    <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
+    <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-blue-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku Per Toko</h5>
@@ -239,7 +339,7 @@
     </div>
 
     <!-- MODAL 2: TOKO -> RINCIAN KATALOG BUKU -->
-    <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
+    <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku di Toko</h5>
@@ -308,8 +408,12 @@
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
-        let storeBranchMap = {}; // Mapping Cabang Referensi berdasarkan ID Toko (Kolom B -> E)
+        let storeBranchMap = {}; // Mapping Cabang Referensi
         
+        // NEW: Database Analitik (Jan-Jul)
+        let monthlySalesMap = {}; 
+        let currentAnalyticsData = []; 
+
         let currentDetailFileName = "Detail_Toko";
         let currentStoreFileName = "Data_Buku_Toko";
         let currentValidStores = [];
@@ -323,16 +427,20 @@
 
         let chartBukuObj = null;
         let chartTokoObj = null;
+        let chartTrendObj = null;
 
+        // URL DATABASE (1, 2, 3, dan 4)
         const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNkfOExIiFvmh8K-hNkM';
         const csvUrlMain = `https://docs.google.com/spreadsheets/d/${sheetIdMain}/export?format=csv`;
 
         const sheetIdStore = '1w5mvbBtPe8hgw-eu6MinYbOalU-vndW4Qkr4XBGE9N8';
         const csvUrlStore = `https://docs.google.com/spreadsheets/d/${sheetIdStore}/export?format=csv`;
 
-        // URL Database Ketiga (Mapping Cabang Toko)
         const sheetIdBranch = '1couv8mRz4L92kXgRdARpoS6aTj_z6zTRrbXzy1jmngk';
         const csvUrlBranch = `https://docs.google.com/spreadsheets/d/${sheetIdBranch}/export?format=csv`;
+
+        const sheetIdSales = '1YwpiOAdlZ2jgPtng1EODpiyeTJTbQLw3kXhz-HZKJOo';
+        const csvUrlSales = `https://docs.google.com/spreadsheets/d/${sheetIdSales}/export?format=csv`;
 
         const cleanStr = (str) => { return str ? String(str).trim().toLowerCase() : ""; };
         const parseNum = (val) => {
@@ -362,6 +470,13 @@
             renderHistory('book');
             renderHistory('store');
         };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active', 'border-b-2'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active', 'border-b-2');
+        }
 
         const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-harga', 'chk-stokbsoft', 'chk-sold', 'chk-eoh'];
         function initCheckboxPrefs() {
@@ -423,24 +538,27 @@
 
             try {
                 database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; 
-                storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {}; storeBranchMap = {};
+                storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {}; storeBranchMap = {}; monthlySalesMap = {};
                 
-                let csvMainText, csvStoreText, csvBranchText;
+                let csvMainText, csvStoreText, csvBranchText, csvSalesText;
                 
-                if (!forceRefresh && localStorage.getItem('cacheCsvMain') && localStorage.getItem('cacheCsvStore') && localStorage.getItem('cacheCsvBranch')) {
+                if (!forceRefresh && localStorage.getItem('cacheCsvMain') && localStorage.getItem('cacheCsvStore') && localStorage.getItem('cacheCsvBranch') && localStorage.getItem('cacheCsvSales')) {
                     csvMainText = localStorage.getItem('cacheCsvMain');
                     csvStoreText = localStorage.getItem('cacheCsvStore');
                     csvBranchText = localStorage.getItem('cacheCsvBranch');
+                    csvSalesText = localStorage.getItem('cacheCsvSales');
                 } else {
-                    const [resMain, resStore, resBranch] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore), fetch(csvUrlBranch) ]);
+                    const [resMain, resStore, resBranch, resSales] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore), fetch(csvUrlBranch), fetch(csvUrlSales) ]);
                     csvMainText = await resMain.text(); 
                     csvStoreText = await resStore.text();
                     csvBranchText = await resBranch.text();
+                    csvSalesText = await resSales.text();
                     
                     try {
                         localStorage.setItem('cacheCsvMain', csvMainText);
                         localStorage.setItem('cacheCsvStore', csvStoreText);
                         localStorage.setItem('cacheCsvBranch', csvBranchText);
+                        localStorage.setItem('cacheCsvSales', csvSalesText);
                     } catch (err) { console.warn("Cache quota exceeded"); }
                 }
 
@@ -460,7 +578,7 @@
                     }
                 });
 
-                // 2. Parsing Mapping Cabang Toko (Database Ketiga)
+                // 2. Parsing Mapping Cabang Toko
                 Papa.parse(csvBranchText, {
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
@@ -469,14 +587,12 @@
                             for (let key in row) { cleanRow[key.trim().toLowerCase()] = row[key]; }
                             let idToko = cleanStr(cleanRow['id toko']);
                             let cabangRef = cleanRow['cabang referensi'] ? String(cleanRow['cabang referensi']).trim() : "-";
-                            if (idToko) {
-                                storeBranchMap[idToko] = cabangRef;
-                            }
+                            if (idToko) { storeBranchMap[idToko] = cabangRef; }
                         });
                     }
                 });
 
-                // 3. Parsing Data Stock Toko
+                // 3. Parsing Data Stock Toko (Agustus Berjalan)
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
@@ -501,10 +617,29 @@
                     }
                 });
 
-                statusEl.innerHTML = `✅ Terhubung (Cached)`; 
+                // 4. Parsing Data Penjualan Histori Bulanan
+                Papa.parse(csvSalesText, {
+                    header: true, skipEmptyLines: true,
+                    complete: function(results) {
+                        results.data.forEach(row => {
+                            let orin = cleanStr(row['Item Id']);
+                            if (orin) {
+                                monthlySalesMap[orin] = {
+                                    jan: parseNum(row['JANUARI']), feb: parseNum(row['FEBRUARI']),
+                                    mar: parseNum(row['MARET']), apr: parseNum(row['APRIL']),
+                                    mei: parseNum(row['MEI']), jun: parseNum(row['JUNI']), jul: parseNum(row['JULI'])
+                                };
+                            }
+                        });
+                    }
+                });
+
+                statusEl.innerHTML = `✅ Terhubung (4 Database)`; 
                 statusEl.className = "text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full text-xs shadow-sm";
                 document.getElementById('summary-sku').innerText = database.length.toLocaleString('id-ID');
                 document.getElementById('summary-toko').innerText = Object.keys(storeRecordsByToko).length.toLocaleString('id-ID');
+                document.getElementById('summary-histori').innerText = Object.keys(monthlySalesMap).length.toLocaleString('id-ID');
+                document.getElementById('summary-cabang').innerText = Object.keys(storeBranchMap).length.toLocaleString('id-ID');
 
                 btns.forEach(id => {
                     const el = document.getElementById(id); 
@@ -520,7 +655,6 @@
 
         function getBranchRef(storeNameOrString) {
             let s = String(storeNameOrString).trim();
-            // Ambil kode toko di awal (sebelum tanda strip '-')
             let parts = s.split('-');
             let extractedId = cleanStr(parts[0]);
             if (storeBranchMap[extractedId]) {
@@ -837,7 +971,6 @@
             let htmlChunks = [];
             
             paginatedData.forEach((rowObj, index) => {
-                let actualIndex = startIndex + index;
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 
                 let orinVal = rowObj['ID ORIN'] || '';
@@ -845,10 +978,8 @@
                 let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK';
                 
                 if (isBookMatched && orinVal) {
-                    htmlChunks.push('');
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
                 } else {
-                    htmlChunks.push('');
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle">-</td>`;
                 }
 
@@ -894,7 +1025,142 @@
         }
 
         // ==========================================
-        // EXPORT MULTI-SHEET EXCEL (DENGAN CABANG REFERENSI OTOMATIS)
+        // FUNGSI FITUR 4: ANALITIK & BEST SELLER
+        // ==========================================
+        function generateTop50() {
+            const sortBy = document.getElementById('analytic-sort').value;
+            let combinedData = [];
+            
+            let allOrins = new Set([...Object.keys(dbMapByOrin), ...Object.keys(storeSummaryMap), ...Object.keys(monthlySalesMap)]);
+
+            allOrins.forEach(orin => {
+                let db1 = dbMapByOrin[orin] || {}; 
+                let db2 = calcStoreData(orin);     
+                let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
+                
+                let ags = db2.sold; 
+                let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
+
+                if (total26 > 0 || parseNum(db1['STOK BSOFT']) > 0 || db2.eoh > 0) {
+                    combinedData.push({
+                        orin: db1['ID ORIN'] || orin,
+                        judul: db1['JUDUL ITEM'] || '(Judul Tidak Ditemukan)',
+                        kodeBsoft: db1['KODE BSOFT'] || '-',
+                        stokBsoft: parseNum(db1['STOK BSOFT']),
+                        stokGramedia: db2.eoh,
+                        jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
+                        total: total26
+                    });
+                }
+            });
+
+            combinedData.sort((a, b) => {
+                if (sortBy === 'TOTAL') return b.total - a.total;
+                if (sortBy === 'AGS') return b.ags - a.ags;
+                if (sortBy === 'JUL') return b.jul - a.jul;
+                if (sortBy === 'JUN') return b.jun - a.jun;
+                return b.total - a.total;
+            });
+
+            currentAnalyticsData = combinedData.slice(0, 50);
+            renderAnalyticsTable();
+        }
+
+        function renderAnalyticsTable() {
+            const tbody = document.getElementById('analytics-table-body');
+            document.getElementById('analytics-table-section').classList.remove('hidden');
+            
+            let html = '';
+            currentAnalyticsData.forEach((row, i) => {
+                let rnkStr = i < 3 ? ['🥇', '🥈', '🥉'][i] : (i + 1);
+                let orinEsc = escapeAttr(row.orin); let judulEsc = escapeAttr(row.judul); let bsEsc = escapeAttr(row.kodeBsoft);
+                let arrSales = `[${row.jan},${row.feb},${row.mar},${row.apr},${row.mei},${row.jun},${row.jul},${row.ags}]`;
+
+                html += `<tr class="hover:bg-emerald-50 transition-colors">
+                    <td class="py-2 px-3 border-b font-bold text-gray-500">${rnkStr}</td>
+                    <td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">${row.judul}</td>
+                    <td class="py-2 px-3 border-b border-l font-mono text-gray-500">${row.orin}</td>
+                    <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>
+                    <td class="py-2 px-2 border-b border-l border-emerald-100">${row.jan}</td>
+                    <td class="py-2 px-2 border-b border-emerald-100">${row.feb}</td>
+                    <td class="py-2 px-2 border-b border-emerald-100">${row.mar}</td>
+                    <td class="py-2 px-2 border-b border-emerald-100">${row.apr}</td>
+                    <td class="py-2 px-2 border-b border-emerald-100">${row.mei}</td>
+                    <td class="py-2 px-2 border-b border-emerald-100">${row.jun}</td>
+                    <td class="py-2 px-2 border-b border-emerald-100">${row.jul}</td>
+                    <td class="py-2 px-2 border-b border-l border-r border-emerald-200 bg-emerald-50 font-bold text-emerald-800">${row.ags}</td>
+                    <td class="py-2 px-3 border-b font-black text-emerald-900 bg-emerald-100/50">${row.total}</td>
+                    <td class="py-2 px-3 border-b border-l border-emerald-200 font-bold bg-gray-100 text-gray-800">${row.stokBsoft}</td>
+                    <td class="py-2 px-3 border-b font-bold bg-gray-50 text-emerald-700">${row.stokGramedia}</td>
+                    <td class="py-2 px-3 border-b border-l border-emerald-200">
+                        <button onclick="openTrendModal('${judulEsc}', '${orinEsc}', '${bsEsc}', ${arrSales})" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">📈 Trend</button>
+                    </td>
+                </tr>`;
+            });
+            
+            if (currentAnalyticsData.length === 0) html = `<tr><td colspan="16" class="py-8 text-center text-gray-500">Silakan klik "Terapkan" untuk memuat data.</td></tr>`;
+            tbody.innerHTML = html;
+        }
+
+        function openTrendModal(judul, orin, bsoft, arrSales) {
+            document.getElementById('trend-judul').innerText = judul;
+            document.getElementById('trend-orin').innerText = orin;
+            document.getElementById('trend-bsoft').innerText = bsoft;
+            document.getElementById('trendModal').classList.remove('hidden');
+
+            const ctx = document.getElementById('chartTrend').getContext('2d');
+            if (chartTrendObj) chartTrendObj.destroy();
+
+            chartTrendObj = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus'],
+                    datasets: [{
+                        label: 'Penjualan Nasional 2026',
+                        data: arrSales,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(4, 120, 87, 1)',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        function closeTrendModal() { document.getElementById('trendModal').classList.add('hidden'); }
+
+        function exportAnalyticsExcel() {
+            if(currentAnalyticsData.length === 0) return alert('Tampilkan data Top 50 terlebih dahulu sebelum export.');
+            
+            let aoa = [
+                ["LAPORAN ANALISIS TOP 50 BEST SELLER BUKU & KEBUTUHAN CETAK ULANG"],
+                ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
+                [],
+                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags (Berjalan)", "TOTAL KESELURUHAN (2026)", "STOK BSOFT (Pusat)", "STOK GRAMEDIA (EOH)"]
+            ];
+
+            currentAnalyticsData.forEach((r, i) => {
+                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia ]);
+            });
+
+            const sheet = XLSX.utils.aoa_to_sheet(aoa);
+            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:12}, {wch:25}, {wch:18}, {wch:20}];
+            sheet['!cols'] = cols;
+
+            const workbook = XLSX.utils.book_new(); 
+            XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_Top50"); 
+            XLSX.writeFile(workbook, "Laporan_Analitik_Top50_Buku.xlsx");
+        }
+
+        // ==========================================
+        // EXPORT MULTI-SHEET EXCEL (DENGAN STRING/TEKS UNTUK KOP)
         // ==========================================
         function exportMultiSheetExcel() {
             const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
@@ -939,7 +1205,7 @@
 
                 stores.forEach(store => {
                     const namaToko = store[3] || '-';
-                    const cabangRef = getBranchRef(namaToko); // Ambil Cabang Referensi otomatis dari database ke-3
+                    const cabangRef = getBranchRef(namaToko);
                     const valSold = parseNum(store[7]);
                     const valEoh = parseNum(store[11]);
                     if (valSold > 0 || valEoh > 0) {
@@ -950,6 +1216,7 @@
                 });
                 validStores.sort((a, b) => b.valSold - a.valSold);
 
+                // MEMASTIKAN VALUE KOP MENGGUNAKAN STRING () AGAR MENJADI TEKS DI EXCEL RATA KIRI
                 let rowsData = [
                     ["LAPORAN DATA BUKU GRAMEDIA"],
                     ["Dicetak pada:", dateStrFull],
@@ -957,10 +1224,10 @@
                     ["ID ORIN:", item.idOrin],
                     ["KODE BSOFT:", kodeBsoft],
                     ["JUDUL ITEM:", item.judul],
-                    ["HARGA:", harga],
-                    ["STOK BSOFT:", stokBsoft],
-                    ["TOTAL SOLD:", sumSold],
-                    ["TOTAL EOH:", sumEoh],
+                    ["HARGA:", String(harga)],
+                    ["STOK BSOFT:", String(stokBsoft)],
+                    ["TOTAL SOLD:", String(sumSold)],
+                    ["TOTAL EOH:", String(sumEoh)],
                     [],
                     ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
                 ];
@@ -1154,6 +1421,7 @@
             XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
 
+        // MEMASTIKAN KOP MENGGUNAKAN STRING () AGAR RATA KIRI
         function exportDetailToExcel() {
             const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr');
             if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
@@ -1161,9 +1429,11 @@
             let aoa = [
                 ["LAPORAN DATA BUKU GRAMEDIA"], ["Dicetak pada:", document.getElementById('pdf-print-date').innerText], [],
                 ["ID ORIN:", document.getElementById('mdl-id').innerText], ["KODE BSOFT:", document.getElementById('mdl-kode').innerText], 
-                ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText], ["HARGA:", document.getElementById('mdl-harga').innerText], 
-                ["STOK BSOFT:", document.getElementById('mdl-stokbsoft').innerText], ["TOTAL SOLD:", document.getElementById('mdl-totalsold').innerText], 
-                ["TOTAL EOH:", document.getElementById('mdl-totaleoh').innerText], [],
+                ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText], 
+                ["HARGA:", String(document.getElementById('mdl-harga').innerText)], 
+                ["STOK BSOFT:", String(document.getElementById('mdl-stokbsoft').innerText)], 
+                ["TOTAL SOLD:", String(document.getElementById('mdl-totalsold').innerText)], 
+                ["TOTAL EOH:", String(document.getElementById('mdl-totaleoh').innerText)], [],
                 ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
             rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 4) aoa.push([cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText)]); });
@@ -1180,14 +1450,16 @@
             html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
 
+        // MEMASTIKAN KOP MENGGUNAKAN STRING () AGAR RATA KIRI
         function exportStoreDetailToExcel() {
             const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
             if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
             const toNum = (val) => { let str = String(val).trim(); if (str === '' || str === '-') return str; let num = Number(str); return isNaN(num) ? str : num; };
             let aoa = [
                 ["LAPORAN DATA & STOK TOKO"], ["Dicetak pada:", document.getElementById('store-pdf-print-date').innerText], [],
-                ["LOKASI TOKO:", document.getElementById('mdl-store-name').innerText], ["TOTAL SOLD:", document.getElementById('store-mdl-totalsold').innerText], 
-                ["TOTAL EOH:", document.getElementById('store-mdl-totaleoh').innerText], [],
+                ["LOKASI TOKO:", document.getElementById('mdl-store-name').innerText], 
+                ["TOTAL SOLD:", String(document.getElementById('store-mdl-totalsold').innerText)], 
+                ["TOTAL EOH:", String(document.getElementById('store-mdl-totaleoh').innerText)], [],
                 ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
             rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 6) aoa.push([ cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText), toNum(cols[4].innerText), toNum(cols[5].innerText) ]); });
