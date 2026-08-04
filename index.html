@@ -21,12 +21,10 @@
             transform: scale(1.02);
             transition: all 0.2s ease;
         }
-        /* Custom scrollbar untuk tabel */
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        /* CSS Khusus Anti-Terpotong untuk PDF */
         tr { page-break-inside: avoid !important; }
         .chart-container { position: relative; height: 350px; width: 100%; }
         .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; }
@@ -36,7 +34,7 @@
 
     <div class="max-w-6xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
         <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
-        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Dilengkapi Multi-Search dan Multi-Sheet Export.</p>
+        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Dilengkapi Multi-Search, Multi-Sheet Export, & Cabang Referensi.</p>
 
         <!-- Status Database & Info Data -->
         <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
@@ -89,10 +87,10 @@
             </div>
         </div>
 
-        <!-- FITUR 2: Pencarian Manual TOKO (Support Multi-Search) -->
+        <!-- FITUR 2: Pencarian Manual TOKO -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma! Contoh: gajah mada, surabaya)</b></p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="text" id="store-search-input" placeholder="Contoh: gajah mada, surabaya, bintaro..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -140,7 +138,7 @@
             </div>
         </div>
 
-        <!-- Tombol Aksi Export (Standar & Multi-Sheet) -->
+        <!-- Tombol Aksi Export -->
         <div class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-end gap-3">
             <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
                 📑 Export Multi-Sheet (Pilihan / Semua)
@@ -168,7 +166,6 @@
                 </table>
             </div>
 
-            <!-- Pagination Controls -->
             <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
                 <div id="page-info">Menampilkan - data</div>
                 <div class="flex gap-2">
@@ -225,6 +222,7 @@
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
                             <tr>
                                 <th class="py-2 md:py-3 px-3 md:px-4 text-left">Nama Toko</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">Cabang Referensi</th>
                                 <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (TERJUAL BULAN INI)</th>
                                 <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (STOK AKHIR GRAMEDIA)</th>
                             </tr>
@@ -310,6 +308,7 @@
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
+        let storeBranchMap = {}; // Mapping Cabang Referensi berdasarkan ID Toko (Kolom B -> E)
         
         let currentDetailFileName = "Detail_Toko";
         let currentStoreFileName = "Data_Buku_Toko";
@@ -330,6 +329,10 @@
 
         const sheetIdStore = '1w5mvbBtPe8hgw-eu6MinYbOalU-vndW4Qkr4XBGE9N8';
         const csvUrlStore = `https://docs.google.com/spreadsheets/d/${sheetIdStore}/export?format=csv`;
+
+        // URL Database Ketiga (Mapping Cabang Toko)
+        const sheetIdBranch = '1couv8mRz4L92kXgRdARpoS6aTj_z6zTRrbXzy1jmngk';
+        const csvUrlBranch = `https://docs.google.com/spreadsheets/d/${sheetIdBranch}/export?format=csv`;
 
         const cleanStr = (str) => { return str ? String(str).trim().toLowerCase() : ""; };
         const parseNum = (val) => {
@@ -420,24 +423,28 @@
 
             try {
                 database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; 
-                storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {};
+                storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {}; storeBranchMap = {};
                 
-                let csvMainText, csvStoreText;
+                let csvMainText, csvStoreText, csvBranchText;
                 
-                if (!forceRefresh && localStorage.getItem('cacheCsvMain') && localStorage.getItem('cacheCsvStore')) {
+                if (!forceRefresh && localStorage.getItem('cacheCsvMain') && localStorage.getItem('cacheCsvStore') && localStorage.getItem('cacheCsvBranch')) {
                     csvMainText = localStorage.getItem('cacheCsvMain');
                     csvStoreText = localStorage.getItem('cacheCsvStore');
+                    csvBranchText = localStorage.getItem('cacheCsvBranch');
                 } else {
-                    const [resMain, resStore] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore) ]);
+                    const [resMain, resStore, resBranch] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore), fetch(csvUrlBranch) ]);
                     csvMainText = await resMain.text(); 
                     csvStoreText = await resStore.text();
+                    csvBranchText = await resBranch.text();
                     
                     try {
                         localStorage.setItem('cacheCsvMain', csvMainText);
                         localStorage.setItem('cacheCsvStore', csvStoreText);
+                        localStorage.setItem('cacheCsvBranch', csvBranchText);
                     } catch (err) { console.warn("Cache quota exceeded"); }
                 }
 
+                // 1. Parsing Master Buku
                 Papa.parse(csvMainText, {
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
@@ -453,6 +460,23 @@
                     }
                 });
 
+                // 2. Parsing Mapping Cabang Toko (Database Ketiga)
+                Papa.parse(csvBranchText, {
+                    header: true, skipEmptyLines: true,
+                    complete: function(results) {
+                        results.data.forEach(row => {
+                            let cleanRow = {};
+                            for (let key in row) { cleanRow[key.trim().toLowerCase()] = row[key]; }
+                            let idToko = cleanStr(cleanRow['id toko']);
+                            let cabangRef = cleanRow['cabang referensi'] ? String(cleanRow['cabang referensi']).trim() : "-";
+                            if (idToko) {
+                                storeBranchMap[idToko] = cabangRef;
+                            }
+                        });
+                    }
+                });
+
+                // 3. Parsing Data Stock Toko
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
@@ -492,6 +516,17 @@
                 statusEl.className = "text-red-700 font-bold bg-red-100 px-3 py-1 rounded-full text-xs";
                 document.getElementById('refresh-btn').disabled = false;
             }
+        }
+
+        function getBranchRef(storeNameOrString) {
+            let s = String(storeNameOrString).trim();
+            // Ambil kode toko di awal (sebelum tanda strip '-')
+            let parts = s.split('-');
+            let extractedId = cleanStr(parts[0]);
+            if (storeBranchMap[extractedId]) {
+                return storeBranchMap[extractedId];
+            }
+            return "-";
         }
 
         function calcStoreData(idOrin) {
@@ -859,7 +894,7 @@
         }
 
         // ==========================================
-        // EXPORT MULTI-SHEET EXCEL (KOP PERSIS GAMBAR 2)
+        // EXPORT MULTI-SHEET EXCEL (DENGAN CABANG REFERENSI OTOMATIS)
         // ==========================================
         function exportMultiSheetExcel() {
             const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
@@ -904,17 +939,17 @@
 
                 stores.forEach(store => {
                     const namaToko = store[3] || '-';
+                    const cabangRef = getBranchRef(namaToko); // Ambil Cabang Referensi otomatis dari database ke-3
                     const valSold = parseNum(store[7]);
                     const valEoh = parseNum(store[11]);
                     if (valSold > 0 || valEoh > 0) {
                         sumSold += valSold;
                         sumEoh += valEoh;
-                        validStores.push({ namaToko, valSold, valEoh });
+                        validStores.push({ namaToko, cabangRef, valSold, valEoh });
                     }
                 });
                 validStores.sort((a, b) => b.valSold - a.valSold);
 
-                // KOP PERSIS GAMBAR 2 (Lengkap di atas, tanpa baris total di bawah)
                 let rowsData = [
                     ["LAPORAN DATA BUKU GRAMEDIA"],
                     ["Dicetak pada:", dateStrFull],
@@ -927,11 +962,11 @@
                     ["TOTAL SOLD:", sumSold],
                     ["TOTAL EOH:", sumEoh],
                     [],
-                    ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+                    ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
                 ];
 
                 validStores.forEach(st => {
-                    rowsData.push([st.namaToko, st.valSold, st.valEoh]);
+                    rowsData.push([st.namaToko, st.cabangRef, st.valSold, st.valEoh]);
                 });
 
                 const sheet = XLSX.utils.aoa_to_sheet(rowsData);
@@ -1015,7 +1050,7 @@
             let text = "";
             if (jenis === 'buku') {
                 text += `*INFO STOK BUKU*\n📕 Judul: ${document.getElementById('mdl-judul').innerText}\n🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n\n*Top 10 Toko Terlaris:*\n`;
-                currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} [${st.cabangRef}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
                 text += `\n*Total Nasional*\nSold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`;
             } else {
                 text += `*INFO STOK TOKO*\n🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}\n\n*Top 10 Buku Terlaris:*\n`;
@@ -1039,8 +1074,11 @@
 
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || []; let validStores = [];
             stores.forEach(store => {
-                const namaToko = store[3] || '-'; const valSold = parseNum(store[7]); const valEoh = parseNum(store[11]); 
-                if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, valSold, valEoh });
+                const namaToko = store[3] || '-'; 
+                const cabangRef = getBranchRef(namaToko);
+                const valSold = parseNum(store[7]); 
+                const valEoh = parseNum(store[11]); 
+                if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, cabangRef, valSold, valEoh });
             });
 
             validStores.sort((a, b) => b.valSold - a.valSold); currentValidStores = validStores;
@@ -1048,11 +1086,11 @@
             
             validStores.forEach(item => {
                 sumSold += item.valSold; sumEoh += item.valEoh;
-                htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
+                htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 text-center border-b border-l font-semibold text-gray-600">${item.cabangRef}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
             });
             
             document.getElementById('mdl-totalsold').innerText = sumSold; document.getElementById('mdl-totaleoh').innerText = sumEoh;
-            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
+            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
             else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('detailModal').classList.remove('hidden');
@@ -1126,9 +1164,9 @@
                 ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText], ["HARGA:", document.getElementById('mdl-harga').innerText], 
                 ["STOK BSOFT:", document.getElementById('mdl-stokbsoft').innerText], ["TOTAL SOLD:", document.getElementById('mdl-totalsold').innerText], 
                 ["TOTAL EOH:", document.getElementById('mdl-totaleoh').innerText], [],
-                ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+                ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
-            rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 3) aoa.push([cols[0].innerText, toNum(cols[1].innerText), toNum(cols[2].innerText)]); });
+            rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 4) aoa.push([cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText)]); });
             const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true);
             const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko"); XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
         }
