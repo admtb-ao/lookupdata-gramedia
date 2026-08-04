@@ -28,9 +28,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
         /* CSS Khusus Anti-Terpotong untuk PDF */
         tr { page-break-inside: avoid !important; }
-        /* TINGGI CONTAINER GRAFIK DITAMBAH UNTUK LABEL */
         .chart-container { position: relative; height: 350px; width: 100%; }
-        /* Pembatasan tinggi tabel agar bisa scroll dan header sticky */
         .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; }
     </style>
 </head>
@@ -38,7 +36,7 @@
 
     <div class="max-w-6xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
         <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
-        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian multi-database.</p>
+        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (Buku & Toko) atau upload Excel massal. Dilengkapi Multi-Search dan Multi-Sheet Export.</p>
 
         <!-- Status Database & Info Data -->
         <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
@@ -48,7 +46,7 @@
                     <span id="db-status" class="text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-xs">Sedang Menghubungkan... ⏳</span>
                 </div>
                 <button id="refresh-btn" onclick="loadData(true)" class="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-700 font-bold py-2 px-4 rounded-lg border border-blue-200 shadow-sm transition text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <svg id="refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg id="refresh-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
                     Refresh Data (Sync Sheets)
@@ -80,29 +78,27 @@
             <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
             <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
             <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="manual-search-input" placeholder="Contoh: garda, leika, ibu..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                <input type="text" id="manual-search-input" placeholder="Contoh: 10101, harry potter, matematika..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                 <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari Buku
                 </button>
             </div>
-            <!-- Riwayat Pencarian -->
             <div id="book-history-container" class="mt-3 hidden">
                 <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
                 <div id="book-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
             </div>
         </div>
 
-        <!-- FITUR 2: Pencarian Manual TOKO -->
+        <!-- FITUR 2: Pencarian Manual TOKO (Support Multi-Search) -->
         <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
             <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik bagian dari nama toko (contoh: <i>gajah mada</i> atau <i>sudirman</i>).</p>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma! Contoh: gajah mada, surabaya)</b></p>
             <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="store-search-input" placeholder="Masukkan nama kota atau toko..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                <input type="text" id="store-search-input" placeholder="Contoh: gajah mada, surabaya, bintaro..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                 <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari Toko
                 </button>
             </div>
-            <!-- Riwayat Pencarian Toko -->
             <div id="store-history-container" class="mt-3 hidden">
                 <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
                 <div id="store-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
@@ -144,10 +140,13 @@
             </div>
         </div>
 
-        <div class="mb-6 md:mb-8 flex flex-col items-end">
-            <button id="export-btn" onclick="exportToExcel()" class="hidden w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Download Excel (Export)
+        <!-- Tombol Aksi Export (Standar & Multi-Sheet) -->
+        <div class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-end gap-3">
+            <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
+                📑 Export Multi-Sheet (Pilihan / Semua)
+            </button>
+            <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
+                📥 Download Excel Utama
             </button>
         </div>
 
@@ -155,7 +154,6 @@
         <div id="preview-section" class="hidden">
             <div class="flex flex-col md:flex-row justify-between items-center mb-3 gap-3">
                 <h2 class="text-base md:text-lg font-bold text-gray-800">Preview Hasil Lookup Data</h2>
-                <!-- Quick Filter -->
                 <div class="flex gap-2 text-xs md:text-sm">
                     <button onclick="setFilter('ALL')" id="filter-ALL" class="filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow">Semua</button>
                     <button onclick="setFilter('MATCHED')" id="filter-MATCHED" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">✅ Terisi</button>
@@ -323,7 +321,6 @@
         let sortCol = '';
         let sortAsc = true;
         
-        // Fitur Filter & Pagination State
         let currentFilter = 'ALL'; 
         let currentPage = 1;
         const rowsPerPage = 50; 
@@ -348,13 +345,9 @@
         };
         const escapeAttr = (str) => { return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;'); };
 
-        // ==========================================
-        // FITUR BARU: SMART ALIAS SCANNER 
-        // Mengabaikan spasi, dash, dan besar kecil huruf
-        // ==========================================
         const isOrinAlias = (str) => {
             if (!str) return false;
-            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, ''); // Hapus semua spasi & karakter unik
+            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
             return ['idorin', 'orin', 'axcode', 'kodeax', 'itemid', 'itemnumber'].includes(s);
         };
 
@@ -364,7 +357,6 @@
             return ['kodebsoft', 'iditem', 'kode'].includes(s);
         };
 
-        // INIT DATA
         window.onload = () => {
             initCheckboxPrefs(); 
             loadData();
@@ -372,9 +364,6 @@
             renderHistory('store');
         };
 
-        // ==========================================
-        // AUTO-SAVE CHECKBOX PREFS
-        // ==========================================
         const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-harga', 'chk-stokbsoft', 'chk-sold', 'chk-eoh'];
         function initCheckboxPrefs() {
             chkIds.forEach(id => {
@@ -385,9 +374,6 @@
             });
         }
 
-        // ==========================================
-        // FITUR RIWAYAT PENCARIAN
-        // ==========================================
         let bookHistory = JSON.parse(localStorage.getItem('bookHistory')) || [];
         let storeHistory = JSON.parse(localStorage.getItem('storeHistory')) || [];
 
@@ -429,9 +415,6 @@
             }
         }
 
-        // ==========================================
-        // FUNGSI LOAD DATA (DENGAN CACHING ⚡)
-        // ==========================================
         async function loadData(forceRefresh = false) {
             const statusEl = document.getElementById('db-status');
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; 
@@ -524,9 +507,6 @@
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
 
-        // ==========================================
-        // PENCARIAN (FITUR MULTI-SEARCH DENGAN KOMA)
-        // ==========================================
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('manual-search-input').value;
@@ -566,44 +546,52 @@
                 resetFilterAndPage();
                 doSortData();
                 document.getElementById('export-btn').classList.remove('hidden');
+                document.getElementById('export-multi-btn').classList.remove('hidden');
             } else {
                 processedData = [{'KATA KUNCI DICARI': rawVal, 'STATUS SYSTEM': '❌ NOT FOUND'}]; 
                 resetFilterAndPage();
                 renderPreview(); 
                 document.getElementById('export-btn').classList.add('hidden');
+                document.getElementById('export-multi-btn').classList.add('hidden');
                 alert("Buku tidak ditemukan.");
             }
         }
 
+        // ==========================================
+        // FITUR BARU: MULTI-SEARCH TOKO
+        // ==========================================
         function searchStoreManual() {
             if (dataStore.length === 0) return alert("Database belum siap.");
-            const searchVal = document.getElementById('store-search-input').value.trim().toLowerCase();
-            if(!searchVal) return alert("Ketik nama toko.");
-            saveHistory('store', document.getElementById('store-search-input').value.trim());
+            const rawVal = document.getElementById('store-search-input').value;
+            if(!rawVal.trim()) return alert("Ketik nama toko.");
+            saveHistory('store', rawVal.trim());
 
+            const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
             let uniqueStores = Object.keys(storeRecordsByToko);
-            let matches = uniqueStores.filter(storeName => storeName.includes(searchVal));
+            
+            let matchedStoreNames = uniqueStores.filter(storeName => {
+                return searchTerms.some(term => storeName.includes(term));
+            });
 
-            if (matches.length > 0) {
-                processedData = matches.map(storeName => ({ 
+            if (matchedStoreNames.length > 0) {
+                processedData = matchedStoreNames.map(storeName => ({ 
                     'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3], 
                     'STATUS SYSTEM': '✅ MATCHED_STORE' 
                 }));
                 resetFilterAndPage();
                 renderPreview(); 
                 document.getElementById('export-btn').classList.add('hidden'); 
+                document.getElementById('export-multi-btn').classList.add('hidden');
             } else {
-                processedData = [{'KATA KUNCI DICARI': searchVal, 'STATUS SYSTEM': '❌ NOT FOUND'}]; 
+                processedData = [{'KATA KUNCI DICARI': rawVal, 'STATUS SYSTEM': '❌ NOT FOUND'}]; 
                 resetFilterAndPage();
                 renderPreview(); 
                 document.getElementById('export-btn').classList.add('hidden');
+                document.getElementById('export-multi-btn').classList.add('hidden');
                 alert("Toko tidak ditemukan.");
             }
         }
 
-        // ==========================================
-        // BULK UPLOAD DENGAN SMART ALIAS
-        // ==========================================
         const dropZone = document.getElementById('drop-zone'); 
         const fileInput = document.getElementById('file-upload');
         
@@ -646,10 +634,7 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i]; 
                     if (!row) continue;
-                    
-                    // Gunakan Smart Scanner
                     let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
-                    
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
                         actualHeaders = row.map(h => String(h).trim()); 
@@ -683,7 +668,6 @@
                     let rawUserOrin = "", rawUserBsoft = "";
                     let userOrin = "", userBsoft = "";
                     
-                    // Mencari nilai dari kolom yang alias-nya cocok (tidak peduli huruf besar/kecil/spasi)
                     for (let key in row) {
                         if (isOrinAlias(key) && !rawUserOrin) {
                             rawUserOrin = String(row[key]);
@@ -721,6 +705,7 @@
                 resetFilterAndPage();
                 renderPreview();
                 document.getElementById('export-btn').classList.remove('hidden');
+                document.getElementById('export-multi-btn').classList.remove('hidden');
                 document.getElementById('file-ready-container').classList.add('hidden');
                 pendingExcelFile = null; 
                 fileInput.value = ""; 
@@ -728,9 +713,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // ==========================================
-        // FILTERING, PAGINATION & SORTING
-        // ==========================================
         function resetFilterAndPage() {
             currentFilter = 'ALL';
             currentPage = 1;
@@ -743,12 +725,10 @@
         function setFilter(filterType) {
             currentFilter = filterType;
             currentPage = 1;
-            
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.className = "filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm";
             });
             document.getElementById('filter-' + filterType).className = "filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow";
-            
             renderPreview();
         }
 
@@ -768,12 +748,9 @@
             processedData.sort((a, b) => {
                 let valA = a[sortCol] !== undefined ? a[sortCol] : '';
                 let valB = b[sortCol] !== undefined ? b[sortCol] : '';
-                
                 let numA = parseFloat(valA); let numB = parseFloat(valB);
                 let isNumA = !isNaN(numA) && valA !== ''; let isNumB = !isNaN(numB) && valB !== '';
-                
                 if (isNumA && isNumB) return sortAsc ? numA - numB : numB - numA; 
-                
                 let strA = String(valA).toLowerCase(); let strB = String(valB).toLowerCase();
                 if (strA < strB) return sortAsc ? -1 : 1;
                 if (strA > strB) return sortAsc ? 1 : -1;
@@ -782,9 +759,12 @@
             renderPreview();
         }
 
-        // ==========================================
-        // RENDER PREVIEW TABEL
-        // ==========================================
+        // Toggle Select All Checkbox
+        function toggleSelectAll(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.row-select-chk');
+            checkboxes.forEach(chk => chk.checked = masterCheckbox.checked);
+        }
+
         function renderPreview() {
             if (processedData.length === 0) {
                 document.getElementById('preview-section').classList.add('hidden');
@@ -818,6 +798,9 @@
             const headers = Object.keys(processedData[0]);
             
             let headerRow = '<tr>';
+            // Tambahkan kolom checkbox select di awal
+            headerRow += `<th class="py-2 px-2 border-b border-gray-600 text-center w-10"><input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded cursor-pointer" title="Pilih Semua"></th>`;
+            
             headers.forEach(header => { 
                 let indicator = sortCol === header ? (sortAsc ? ' 🔼' : ' 🔽') : ' ↕️';
                 headerRow += `<th class="py-2 px-2 border-b border-gray-600 cursor-pointer hover:bg-gray-700 select-none whitespace-normal leading-tight text-[10px] md:text-xs min-w-[60px]" onclick="handleSort('${escapeAttr(header)}')">${header} <span class="text-[9px] text-gray-400 block sm:inline-block">${indicator}</span></th>`; 
@@ -827,20 +810,36 @@
 
             let htmlChunks = [];
             
-            for (let i = 0; i < paginatedData.length; i++) {
+            paginatedData.forEach((rowObj, index) => {
+                let actualIndex = startIndex + index;
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
+                
+                // Checkbox baris untuk Multi-Export
+                let orinVal = rowObj['ID ORIN'] || '';
+                let judulVal = rowObj['JUDUL ITEM'] || '';
+                let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK';
+                
+                if (isBookMatched && orinVal) {
+                    htmlChunks.push(''); // placeholder
+                    // Simpan data untuk diakses saat multi-export
+                    rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
+                } else {
+                    htmlChunks.push('');
+                    htmlHtml = `<td class="py-1.5 px-2 border-b text-center align-middle">-</td>`;
+                    rowHtml += htmlHtml;
+                }
+
                 headers.forEach(header => {
-                    let val = paginatedData[i][header] !== undefined ? paginatedData[i][header] : '';
-                    
+                    let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
                         if (val === '✅ MATCHED_BOOK') {
-                            let id = escapeAttr(paginatedData[i]['ID ORIN'] || '-'); let kd = escapeAttr(paginatedData[i]['KODE BSOFT'] || '-'); 
-                            let jd = escapeAttr(paginatedData[i]['JUDUL ITEM'] || '-'); let hr = escapeAttr(paginatedData[i]['HARGA'] || '-'); 
-                            let st = escapeAttr(paginatedData[i]['STOK BSOFT'] || '-');
+                            let id = escapeAttr(rowObj['ID ORIN'] || '-'); let kd = escapeAttr(rowObj['KODE BSOFT'] || '-'); 
+                            let jd = escapeAttr(rowObj['JUDUL ITEM'] || '-'); let hr = escapeAttr(rowObj['HARGA'] || '-'); 
+                            let st = escapeAttr(rowObj['STOK BSOFT'] || '-');
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-1.5 text-[9px] md:text-[10px] bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button></td>`;
                         } 
                         else if (val === '✅ MATCHED_STORE') {
-                            let nmToko = escapeAttr(paginatedData[i]['NAMA TOKO TERDAFTAR']);
+                            let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-purple-100 text-purple-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-1.5 text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button></td>`;
                         }
                         else if (val === '✅ MATCHED') {
@@ -862,18 +861,100 @@
                 });
                 rowHtml += '</tr>'; 
                 htmlChunks.push(rowHtml);
-            }
+            });
 
             if (paginatedData.length === 0) {
-                htmlChunks.push(`<tr><td colspan="${headers.length}" class="py-6 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data untuk filter ini.</td></tr>`);
+                htmlChunks.push(`<tr><td colspan="${headers.length + 1}" class="py-6 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data untuk filter ini.</td></tr>`);
             }
             
             tbody.innerHTML = htmlChunks.join('');
         }
 
         // ==========================================
-        // GRAFIK & MODAL
+        // FITUR BARU: EXPORT MULTI-SHEET EXCEL
         // ==========================================
+        function exportMultiSheetExcel() {
+            const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
+            
+            // Jika tidak ada yang dicentang, tawarkan untuk export SEMUA buku yang ditemukan
+            let itemsToExport = [];
+            if (checkedBoxes.length === 0) {
+                // Cari semua buku yang berstatus MATCHED_BOOK di processedData
+                processedData.forEach(d => {
+                    if (d['STATUS SYSTEM'] === '✅ MATCHED_BOOK' && d['ID ORIN']) {
+                        itemsToExport.push({ idOrin: d['ID ORIN'], judul: d['JUDUL ITEM'] });
+                    }
+                });
+                if (itemsToExport.length === 0) {
+                    return alert("Tidak ada data buku valid yang bisa di-export multi-sheet.");
+                }
+                if (!confirm(`Tidak ada baris yang dicentang. Apakah Anda ingin meng-export SEMUA (${itemsToExport.length} buku) ke dalam multi-sheet Excel?`)) {
+                    return;
+                }
+            } else {
+                checkedBoxes.forEach(chk => {
+                    itemsToExport.push({
+                        idOrin: chk.getAttribute('data-orin'),
+                        judul: chk.getAttribute('data-judul')
+                    });
+                });
+            }
+
+            const workbook = XLSX.utils.book_new();
+
+            itemsToExport.forEach((item, idx) => {
+                const stores = storeRecordsByOrin[cleanStr(item.idOrin)] || [];
+                let validStores = [];
+                stores.forEach(store => {
+                    const namaToko = store[3] || '-';
+                    const valSold = parseNum(store[7]);
+                    const valEoh = parseNum(store[11]);
+                    if (valSold > 0 || valEoh > 0) {
+                        validStores.push({ namaToko, valSold, valEoh });
+                    }
+                });
+                validStores.sort((a, b) => b.valSold - a.valSold);
+
+                let sumSold = 0, sumEoh = 0;
+                let rowsData = [
+                    ["LAPORAN DATA BUKU PER TOKO"],
+                    ["ID ORIN:", item.idOrin],
+                    ["JUDUL ITEM:", item.judul],
+                    [],
+                    ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+                ];
+
+                validStores.forEach(st => {
+                    sumSold += st.valSold;
+                    sumEoh += st.valEoh;
+                    rowsData.push([st.namaToko, st.valSold, st.valEoh]);
+                });
+
+                rowsData.push([], ["TOTAL KESELURUHAN", sumSold, sumEoh]);
+
+                const sheet = XLSX.utils.aoa_to_sheet(rowsData);
+                sheet['!cols'] = getColWidths(rowsData, true);
+
+                // Buat nama sheet aman (maksimal 31 karakter, tidak boleh ada karakter khusus terlarang seperti / \ ? * [ ])
+                let safeSheetName = String(item.judul).replace(/[\/\\\?\*\[\]\:]/g, "").substring(0, 28);
+                if (!safeSheetName) safeSheetName = `Buku_${idx + 1}`;
+                
+                // Pastikan nama sheet unik jika ada judul kembar
+                let finalSheetName = safeSheetName;
+                let counter = 1;
+                while (workbook.SheetNames.includes(finalSheetName)) {
+                    finalSheetName = `${safeSheetName.substring(0, 25)}_${counter}`;
+                    counter++;
+                }
+
+                XLSX.utils.book_append_sheet(workbook, sheet, finalSheetName);
+            });
+
+            const now = new Date();
+            const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
+            XLSX.writeFile(workbook, `MultiSheet_Laporan_Buku_${dateStr}.xlsx`);
+        }
+
         function buildChartBuku(validStores) {
             const ctx = document.getElementById('chartBuku').getContext('2d');
             if(chartBukuObj) chartBukuObj.destroy();
@@ -1017,7 +1098,6 @@
         }
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
 
-        // EXPORT ENGINE
         function getColWidths(dataArray, isAoa = false) {
             let cols = [];
             if (isAoa) {
