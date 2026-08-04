@@ -300,20 +300,17 @@
     </div>
 
     <script>
-        // Data Utama
         let database = [];     
         let dataStore = [];    
         let processedData = []; 
         let pendingExcelFile = null; 
         
-        // Hash Map
         let dbMapByOrin = {}; 
         let dbMapByBsoft = {}; 
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
         
-        // State Export, Filtering & Pagination
         let currentDetailFileName = "Detail_Toko";
         let currentStoreFileName = "Data_Buku_Toko";
         let currentValidStores = [];
@@ -325,7 +322,6 @@
         let currentPage = 1;
         const rowsPerPage = 50; 
 
-        // Chart Instance
         let chartBukuObj = null;
         let chartTokoObj = null;
 
@@ -557,9 +553,6 @@
             }
         }
 
-        // ==========================================
-        // FITUR BARU: MULTI-SEARCH TOKO
-        // ==========================================
         function searchStoreManual() {
             if (dataStore.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('store-search-input').value;
@@ -759,7 +752,6 @@
             renderPreview();
         }
 
-        // Toggle Select All Checkbox
         function toggleSelectAll(masterCheckbox) {
             const checkboxes = document.querySelectorAll('.row-select-chk');
             checkboxes.forEach(chk => chk.checked = masterCheckbox.checked);
@@ -798,7 +790,6 @@
             const headers = Object.keys(processedData[0]);
             
             let headerRow = '<tr>';
-            // Tambahkan kolom checkbox select di awal
             headerRow += `<th class="py-2 px-2 border-b border-gray-600 text-center w-10"><input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded cursor-pointer" title="Pilih Semua"></th>`;
             
             headers.forEach(header => { 
@@ -814,19 +805,16 @@
                 let actualIndex = startIndex + index;
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 
-                // Checkbox baris untuk Multi-Export
                 let orinVal = rowObj['ID ORIN'] || '';
                 let judulVal = rowObj['JUDUL ITEM'] || '';
                 let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK';
                 
                 if (isBookMatched && orinVal) {
-                    htmlChunks.push(''); // placeholder
-                    // Simpan data untuk diakses saat multi-export
+                    htmlChunks.push('');
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
                 } else {
                     htmlChunks.push('');
-                    htmlHtml = `<td class="py-1.5 px-2 border-b text-center align-middle">-</td>`;
-                    rowHtml += htmlHtml;
+                    rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle">-</td>`;
                 }
 
                 headers.forEach(header => {
@@ -871,15 +859,13 @@
         }
 
         // ==========================================
-        // FITUR BARU: EXPORT MULTI-SHEET EXCEL
+        // EXPORT MULTI-SHEET EXCEL (KOP PERSIS GAMBAR 2)
         // ==========================================
         function exportMultiSheetExcel() {
             const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
             
-            // Jika tidak ada yang dicentang, tawarkan untuk export SEMUA buku yang ditemukan
             let itemsToExport = [];
             if (checkedBoxes.length === 0) {
-                // Cari semua buku yang berstatus MATCHED_BOOK di processedData
                 processedData.forEach(d => {
                     if (d['STATUS SYSTEM'] === '✅ MATCHED_BOOK' && d['ID ORIN']) {
                         itemsToExport.push({ idOrin: d['ID ORIN'], judul: d['JUDUL ITEM'] });
@@ -901,45 +887,59 @@
             }
 
             const workbook = XLSX.utils.book_new();
+            const now = new Date();
+            const dateStrFull = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
 
             itemsToExport.forEach((item, idx) => {
-                const stores = storeRecordsByOrin[cleanStr(item.idOrin)] || [];
+                let orinKey = cleanStr(item.idOrin);
+                let dbRow = dbMapByOrin[orinKey] || {};
+                
+                let kodeBsoft = dbRow['KODE BSOFT'] || '-';
+                let harga = parseNum(dbRow['HARGA']);
+                let stokBsoft = parseNum(dbRow['STOK BSOFT']);
+
+                const stores = storeRecordsByOrin[orinKey] || [];
                 let validStores = [];
+                let sumSold = 0, sumEoh = 0;
+
                 stores.forEach(store => {
                     const namaToko = store[3] || '-';
                     const valSold = parseNum(store[7]);
                     const valEoh = parseNum(store[11]);
                     if (valSold > 0 || valEoh > 0) {
+                        sumSold += valSold;
+                        sumEoh += valEoh;
                         validStores.push({ namaToko, valSold, valEoh });
                     }
                 });
                 validStores.sort((a, b) => b.valSold - a.valSold);
 
-                let sumSold = 0, sumEoh = 0;
+                // KOP PERSIS GAMBAR 2 (Lengkap di atas, tanpa baris total di bawah)
                 let rowsData = [
-                    ["LAPORAN DATA BUKU PER TOKO"],
+                    ["LAPORAN DATA BUKU GRAMEDIA"],
+                    ["Dicetak pada:", dateStrFull],
+                    [],
                     ["ID ORIN:", item.idOrin],
+                    ["KODE BSOFT:", kodeBsoft],
                     ["JUDUL ITEM:", item.judul],
+                    ["HARGA:", harga],
+                    ["STOK BSOFT:", stokBsoft],
+                    ["TOTAL SOLD:", sumSold],
+                    ["TOTAL EOH:", sumEoh],
                     [],
                     ["Nama Toko", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
                 ];
 
                 validStores.forEach(st => {
-                    sumSold += st.valSold;
-                    sumEoh += st.valEoh;
                     rowsData.push([st.namaToko, st.valSold, st.valEoh]);
                 });
-
-                rowsData.push([], ["TOTAL KESELURUHAN", sumSold, sumEoh]);
 
                 const sheet = XLSX.utils.aoa_to_sheet(rowsData);
                 sheet['!cols'] = getColWidths(rowsData, true);
 
-                // Buat nama sheet aman (maksimal 31 karakter, tidak boleh ada karakter khusus terlarang seperti / \ ? * [ ])
                 let safeSheetName = String(item.judul).replace(/[\/\\\?\*\[\]\:]/g, "").substring(0, 28);
                 if (!safeSheetName) safeSheetName = `Buku_${idx + 1}`;
                 
-                // Pastikan nama sheet unik jika ada judul kembar
                 let finalSheetName = safeSheetName;
                 let counter = 1;
                 while (workbook.SheetNames.includes(finalSheetName)) {
@@ -950,9 +950,8 @@
                 XLSX.utils.book_append_sheet(workbook, sheet, finalSheetName);
             });
 
-            const now = new Date();
-            const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
-            XLSX.writeFile(workbook, `MultiSheet_Laporan_Buku_${dateStr}.xlsx`);
+            const dateFileStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
+            XLSX.writeFile(workbook, `MultiSheet_Laporan_Buku_${dateFileStr}.xlsx`);
         }
 
         function buildChartBuku(validStores) {
@@ -1162,7 +1161,7 @@
             const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
             if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
             const el = document.getElementById('store-pdf-content'); const hdr = document.getElementById('store-pdf-header-title'); const origClass = el.className;
-            hdr.classList.remove('hidden'); el.className = "p-2 bg-white w-full"; 
+            hdr.classList.add('hidden'); el.className = "p-2 bg-white w-full"; 
             const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: currentStoreFileName + ".pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { avoid: 'tr' } };
             html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
