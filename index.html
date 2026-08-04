@@ -164,7 +164,6 @@
             </div>
             
             <div class="table-container shadow-sm rounded-lg border bg-white">
-                <!-- Tabel diperkecil fontnya dan dibolehkan wrap -->
                 <table class="min-w-full bg-white text-center w-full">
                     <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
                     <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
@@ -348,6 +347,22 @@
             return Math.abs(parseInt(s, 10) || 0);
         };
         const escapeAttr = (str) => { return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;'); };
+
+        // ==========================================
+        // FITUR BARU: SMART ALIAS SCANNER 
+        // Mengabaikan spasi, dash, dan besar kecil huruf
+        // ==========================================
+        const isOrinAlias = (str) => {
+            if (!str) return false;
+            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, ''); // Hapus semua spasi & karakter unik
+            return ['idorin', 'orin', 'axcode', 'kodeax', 'itemid', 'itemnumber'].includes(s);
+        };
+
+        const isBsoftAlias = (str) => {
+            if (!str) return false;
+            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            return ['kodebsoft', 'iditem', 'kode'].includes(s);
+        };
 
         // INIT DATA
         window.onload = () => {
@@ -587,7 +602,7 @@
         }
 
         // ==========================================
-        // BULK UPLOAD 
+        // BULK UPLOAD DENGAN SMART ALIAS
         // ==========================================
         const dropZone = document.getElementById('drop-zone'); 
         const fileInput = document.getElementById('file-upload');
@@ -632,10 +647,8 @@
                     const row = dataAsArrays[i]; 
                     if (!row) continue;
                     
-                    let hasHeaderId = row.some(cell => {
-                        let c = cleanStr(cell);
-                        return ['id orin', 'item id', 'kode bsoft', 'iditem', 'item number', 'kode'].includes(c);
-                    });
+                    // Gunakan Smart Scanner
+                    let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
                     
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
@@ -667,20 +680,33 @@
                 };
 
                 processedData = userExcelData.map(row => {
-                    const userOrin = cleanStr(row['ID ORIN']) || cleanStr(row['Item Id']) || cleanStr(row['Item number']) || cleanStr(row['Item Number']);
-                    const userBsoft = cleanStr(row['KODE BSOFT']) || cleanStr(row['iditem']) || cleanStr(row['KODE']) || cleanStr(row['Kode']) || cleanStr(row['kode']);
+                    let rawUserOrin = "", rawUserBsoft = "";
+                    let userOrin = "", userBsoft = "";
+                    
+                    // Mencari nilai dari kolom yang alias-nya cocok (tidak peduli huruf besar/kecil/spasi)
+                    for (let key in row) {
+                        if (isOrinAlias(key) && !rawUserOrin) {
+                            rawUserOrin = String(row[key]);
+                            userOrin = cleanStr(row[key]);
+                        }
+                        if (isBsoftAlias(key) && !rawUserBsoft) {
+                            rawUserBsoft = String(row[key]);
+                            userBsoft = cleanStr(row[key]);
+                        }
+                    }
+
                     let match = userOrin ? dbMapByOrin[userOrin] : (userBsoft ? dbMapByBsoft[userBsoft] : null);
 
                     if (match) {
                         let newRow = { ...row };
-                        const finalId = match['ID ORIN'] || row['ID ORIN'] || row['Item Id'] || row['Item Number'] || '';
+                        const finalId = match['ID ORIN'] || rawUserOrin || '';
                         if (wants.sold || wants.eoh) {
                             const { totalSold, totalEoh } = calcStoreData(finalId);
                             if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = totalSold;
                             if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
                         }
                         if (wants.orin) newRow['ID ORIN'] = finalId;
-                        if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || row['KODE BSOFT'] || '';
+                        if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || rawUserBsoft || '';
                         if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || row['JUDUL ITEM'] || '';
                         if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || '');
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : (row['STOK BSOFT'] || '');
@@ -757,7 +783,7 @@
         }
 
         // ==========================================
-        // RENDER PREVIEW TABEL (DIPERKECIL AGAR FIT)
+        // RENDER PREVIEW TABEL
         // ==========================================
         function renderPreview() {
             if (processedData.length === 0) {
@@ -794,7 +820,6 @@
             let headerRow = '<tr>';
             headers.forEach(header => { 
                 let indicator = sortCol === header ? (sortAsc ? ' 🔼' : ' 🔽') : ' ↕️';
-                // HEADER SEKARANG MENGGUNAKAN text-[10px], whitespace-normal (BOLEH WRAP), DAN padding LEBIH KECIL
                 headerRow += `<th class="py-2 px-2 border-b border-gray-600 cursor-pointer hover:bg-gray-700 select-none whitespace-normal leading-tight text-[10px] md:text-xs min-w-[60px]" onclick="handleSort('${escapeAttr(header)}')">${header} <span class="text-[9px] text-gray-400 block sm:inline-block">${indicator}</span></th>`; 
             });
             headerRow += '</tr>';
@@ -803,7 +828,6 @@
             let htmlChunks = [];
             
             for (let i = 0; i < paginatedData.length; i++) {
-                // ROW DI DALAM TABEL MENGGUNAKAN FONT LEBIH KECIL AGAR FIT
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 headers.forEach(header => {
                     let val = paginatedData[i][header] !== undefined ? paginatedData[i][header] : '';
@@ -830,7 +854,6 @@
                         rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center text-gray-800 bg-gray-50/50">${val}</td>`;
                     }
                     else if (header === 'JUDUL ITEM') {
-                        // Kusus judul item diizinkan turun baris agar kolom lain tidak terdorong (max-width)
                         rowHtml += `<td class="py-1.5 px-2 border-b text-left whitespace-normal max-w-[180px] md:max-w-[250px] leading-tight">${val}</td>`;
                     }
                     else {
