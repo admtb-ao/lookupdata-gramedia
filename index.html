@@ -28,7 +28,8 @@
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
         /* CSS Khusus Anti-Terpotong untuk PDF */
         tr { page-break-inside: avoid !important; }
-        .chart-container { position: relative; height: 250px; width: 100%; }
+        /* TINGGI CONTAINER GRAFIK DITAMBAH UNTUK LABEL */
+        .chart-container { position: relative; height: 350px; width: 100%; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
@@ -763,10 +764,7 @@
             chartBukuObj = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: top5.map(s => {
-                        let name = s.namaToko.replace('GRAMEDIA ', '');
-                        return name.length > 15 ? name.substring(0, 15) + '...' : name;
-                    }),
+                    labels: top5.map(s => s.namaToko.replace('GRAMEDIA ', '')), // Ditampilkan penuh tanpa potong
                     datasets: [
                         { 
                             label: 'SOLD', 
@@ -780,8 +778,18 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: false } }
+                    scales: { 
+                        y: { beginAtZero: true },
+                        x: {
+                            ticks: {
+                                autoSkip: false, // Memastikan label tidak dilewati
+                                maxRotation: 45, // Membuat label miring 45 derajat
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: { legend: { display: false } },
+                    layout: { padding: { bottom: 10 } } // Padding tambahan di bawah
                 }
             });
         }
@@ -797,7 +805,8 @@
             chartTokoObj = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: top5.map(s => s.judulItem.length > 15 ? s.judulItem.substring(0, 15) + '...' : s.judulItem),
+                    // Batas potong diperpanjang menjadi 35 agar lebih jelas
+                    labels: top5.map(s => s.judulItem.length > 35 ? s.judulItem.substring(0, 35) + '...' : s.judulItem),
                     datasets: [
                         { 
                             label: 'SOLD', 
@@ -811,8 +820,18 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: false } }
+                    scales: { 
+                        y: { beginAtZero: true },
+                        x: {
+                            ticks: {
+                                autoSkip: false, // Memastikan label tidak dilewati
+                                maxRotation: 45, // Membuat label miring 45 derajat
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: { legend: { display: false } },
+                    layout: { padding: { bottom: 10 } } // Padding tambahan di bawah
                 }
             });
         }
