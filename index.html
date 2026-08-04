@@ -183,7 +183,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
                         <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Analisis Pergerakan Penjualan & Cetak Ulang</h2>
-                        <p class="text-sm text-gray-600 mt-1">Cari spesifik buku (misal: "garda detak") atau pilih filter bulan spesifik.</p>
+                        <p class="text-sm text-gray-600 mt-1">Cari spesifik buku atau pilih filter bulan agar tabel otomatis fokus pada bulan tersebut.</p>
                     </div>
                     <button onclick="exportAnalyticsExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
                         📥 Export Laporan Analitik
@@ -191,20 +191,20 @@
                 </div>
                 
                 <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
-                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN (Contoh: garda detak)..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
                     
                     <select id="analytic-sort" class="w-full md:w-auto flex-1 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 font-semibold text-gray-700">
-                        <option value="TOTAL">Tampilkan & Urutkan: Total Keseluruhan (Jan - Ags)</option>
-                        <option value="AGS">Fokus & Urutkan: Bulan Agustus Saja</option>
-                        <option value="JUL">Fokus & Urutkan: Bulan Juli Saja</option>
-                        <option value="JUN">Fokus & Urutkan: Bulan Juni Saja</option>
-                        <option value="MEI">Fokus & Urutkan: Bulan Mei Saja</option>
-                        <option value="APR">Fokus & Urutkan: Bulan April Saja</option>
-                        <option value="MAR">Fokus & Urutkan: Bulan Maret Saja</option>
-                        <option value="FEB">Fokus & Urutkan: Bulan Februari Saja</option>
-                        <option value="JAN">Fokus & Urutkan: Bulan Januari Saja</option>
-                        <option value="Q1">Fokus & Urutkan: Kuartal 1 (Jan - Mar)</option>
-                        <option value="Q2">Fokus & Urutkan: Kuartal 2 (Apr - Jun)</option>
+                        <option value="TOTAL">Tampilkan Semua: Total Keseluruhan (Jan - Ags)</option>
+                        <option value="AGS">Fokus Hanya: Bulan Agustus</option>
+                        <option value="JUL">Fokus Hanya: Bulan Juli</option>
+                        <option value="JUN">Fokus Hanya: Bulan Juni</option>
+                        <option value="MEI">Fokus Hanya: Bulan Mei</option>
+                        <option value="APR">Fokus Hanya: Bulan April</option>
+                        <option value="MAR">Fokus Hanya: Bulan Maret</option>
+                        <option value="FEB">Fokus Hanya: Bulan Februari</option>
+                        <option value="JAN">Fokus Hanya: Bulan Januari</option>
+                        <option value="Q1">Fokus Hanya: Kuartal 1 (Jan - Mar)</option>
+                        <option value="Q2">Fokus Hanya: Kuartal 2 (Apr - Jun)</option>
                     </select>
                     
                     <button onclick="generateTop50()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg transition shadow">Terapkan Filter</button>
@@ -215,26 +215,8 @@
             <div id="analytics-table-section" class="hidden">
                 <div class="table-container shadow-sm rounded-lg border bg-white">
                     <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
-                        <thead class="bg-emerald-800 text-white sticky top-0 z-10 text-xs shadow-sm">
-                            <tr>
-                                <th class="py-3 px-3">Rank</th>
-                                <th class="py-3 px-3 text-left">Judul Item</th>
-                                <th class="py-3 px-3 border-l">ID ORIN</th>
-                                <th class="py-3 px-3">KODE BSOFT</th>
-                                <th id="th-val-fokus" class="py-3 px-3 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">Terjual Pilihan</th>
-                                <th class="py-3 px-2 border-l border-emerald-700">Jan</th>
-                                <th class="py-3 px-2 border-emerald-700">Feb</th>
-                                <th class="py-3 px-2 border-emerald-700">Mar</th>
-                                <th class="py-3 px-2 border-emerald-700">Apr</th>
-                                <th class="py-3 px-2 border-emerald-700">Mei</th>
-                                <th class="py-3 px-2 border-emerald-700">Jun</th>
-                                <th class="py-3 px-2 border-emerald-700">Jul</th>
-                                <th class="py-3 px-2 border-emerald-700">Ags</th>
-                                <th class="py-3 px-3 bg-emerald-700 font-bold">TOTAL</th>
-                                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK BSOFT</th>
-                                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK GRAMEDIA</th>
-                                <th class="py-3 px-3 border-l border-emerald-600">Aksi</th>
-                            </tr>
+                        <thead class="bg-emerald-800 text-white sticky top-0 z-10 text-xs shadow-sm" id="analytics-thead">
+                            <!-- Header akan di-generate secara dinamis sesuai pilihan filter -->
                         </thead>
                         <tbody class="text-gray-700 align-middle divide-y text-xs" id="analytics-table-body"></tbody>
                     </table>
@@ -401,6 +383,7 @@
         
         let monthlySalesMap = {}; 
         let currentAnalyticsData = []; 
+        let currentSortMode = 'TOTAL';
 
         let currentDetailFileName = "Detail_Toko";
         let currentStoreFileName = "Data_Buku_Toko";
@@ -968,10 +951,10 @@
         }
 
         // ==========================================
-        // FUNGSI TAB 2 (ANALITIK & FILTER FOKUS BULAN)
+        // FUNGSI TAB 2 (ANALITIK & DINAMIS KOLOM)
         // ==========================================
         function generateTop50() {
-            const sortBy = document.getElementById('analytic-sort').value;
+            currentSortMode = document.getElementById('analytic-sort').value;
             const keyword = cleanStr(document.getElementById('analytics-search-input').value);
             let combinedData = [];
             
@@ -997,16 +980,16 @@
 
                     if (isMatch) {
                         let valFokus = total26;
-                        if (sortBy === 'AGS') valFokus = ags;
-                        else if (sortBy === 'JUL') valFokus = db4.jul;
-                        else if (sortBy === 'JUN') valFokus = db4.jun;
-                        else if (sortBy === 'MEI') valFokus = db4.mei;
-                        else if (sortBy === 'APR') valFokus = db4.apr;
-                        else if (sortBy === 'MAR') valFokus = db4.mar;
-                        else if (sortBy === 'FEB') valFokus = db4.feb;
-                        else if (sortBy === 'JAN') valFokus = db4.jan;
-                        else if (sortBy === 'Q1') valFokus = db4.jan + db4.feb + db4.mar;
-                        else if (sortBy === 'Q2') valFokus = db4.apr + db4.mei + db4.jun;
+                        if (currentSortMode === 'AGS') valFokus = ags;
+                        else if (currentSortMode === 'JUL') valFokus = db4.jul;
+                        else if (currentSortMode === 'JUN') valFokus = db4.jun;
+                        else if (currentSortMode === 'MEI') valFokus = db4.mei;
+                        else if (currentSortMode === 'APR') valFokus = db4.apr;
+                        else if (currentSortMode === 'MAR') valFokus = db4.mar;
+                        else if (currentSortMode === 'FEB') valFokus = db4.feb;
+                        else if (currentSortMode === 'JAN') valFokus = db4.jan;
+                        else if (currentSortMode === 'Q1') valFokus = db4.jan + db4.feb + db4.mar;
+                        else if (currentSortMode === 'Q2') valFokus = db4.apr + db4.mei + db4.jun;
 
                         combinedData.push({
                             orin: db1['ID ORIN'] || orin,
@@ -1022,31 +1005,54 @@
                 }
             });
 
-            // Sorting ketat berdasarkan nilai fokus pilihan bulan tertinggi
+            // Sorting ketat berdasarkan nilai fokus pilihan tertinggi
             combinedData.sort((a, b) => b.valFokus - a.valFokus);
-
             currentAnalyticsData = combinedData.slice(0, 100);
-            renderAnalyticsTable(sortBy);
+            renderAnalyticsTable();
         }
 
-        function renderAnalyticsTable(sortBy) {
+        function renderAnalyticsTable() {
+            const thead = document.getElementById('analytics-thead');
             const tbody = document.getElementById('analytics-table-body');
             document.getElementById('analytics-table-section').classList.remove('hidden');
-            
-            let labelHeader = "Terjual Total";
-            if (sortBy === 'AGS') labelHeader = "Agustus";
-            else if (sortBy === 'JUL') labelHeader = "Juli";
-            else if (sortBy === 'JUN') labelHeader = "Juni";
-            else if (sortBy === 'MEI') labelHeader = "Mei";
-            else if (sortBy === 'APR') labelHeader = "April";
-            else if (sortBy === 'MAR') labelHeader = "Maret";
-            else if (sortBy === 'FEB') labelHeader = "Februari";
-            else if (sortBy === 'JAN') labelHeader = "Januari";
-            else if (sortBy === 'Q1') labelHeader = "Kuartal 1";
-            else if (sortBy === 'Q2') labelHeader = "Kuartal 2";
 
-            document.getElementById('th-val-fokus').innerText = labelHeader;
+            let isSingleMonth = currentSortMode !== 'TOTAL' && currentSortMode !== 'Q1' && currentSortMode !== 'Q2';
+            let isQuarter = currentSortMode === 'Q1' || currentSortMode === 'Q2';
 
+            // 1. Render Header Dinamis
+            let headHtml = `<tr>
+                <th class="py-3 px-3">Rank</th>
+                <th class="py-3 px-3 text-left">Judul Item</th>
+                <th class="py-3 px-3 border-l">ID ORIN</th>
+                <th class="py-3 px-3">KODE BSOFT</th>`;
+
+            if (isSingleMonth) {
+                let monthNames = {JAN:'Januari', FEB:'Februari', MAR:'Maret', APR:'April', MEI:'Mei', JUN:'Juni', JUL:'Juli', AGS:'Agustus'};
+                headHtml += `<th class="py-3 px-4 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">${monthNames[currentSortMode]} (Fokus Utama)</th>`;
+            } else if (isQuarter) {
+                let qName = currentSortMode === 'Q1' ? 'Kuartal 1 (Jan-Mar)' : 'Kuartal 2 (Apr-Jun)';
+                headHtml += `<th class="py-3 px-4 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">${qName}</th>`;
+            } else {
+                headHtml += `
+                    <th class="py-3 px-2 border-l border-emerald-700">Jan</th>
+                    <th class="py-3 px-2 border-emerald-700">Feb</th>
+                    <th class="py-3 px-2 border-emerald-700">Mar</th>
+                    <th class="py-3 px-2 border-emerald-700">Apr</th>
+                    <th class="py-3 px-2 border-emerald-700">Mei</th>
+                    <th class="py-3 px-2 border-emerald-700">Jun</th>
+                    <th class="py-3 px-2 border-emerald-700">Jul</th>
+                    <th class="py-3 px-2 border-emerald-700">Ags</th>
+                    <th class="py-3 px-3 bg-emerald-700 font-bold">TOTAL</th>`;
+            }
+
+            headHtml += `
+                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK BSOFT</th>
+                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK GRAMEDIA</th>
+                <th class="py-3 px-3 border-l border-emerald-600">Aksi</th>
+            </tr>`;
+            thead.innerHTML = headHtml;
+
+            // 2. Render Body Dinamis
             let html = '';
             currentAnalyticsData.forEach((row, i) => {
                 let rnkStr = i < 3 ? ['🥇', '🥈', '🥉'][i] : (i + 1);
@@ -1057,17 +1063,26 @@
                     <td class="py-2 px-3 border-b font-bold text-gray-500">${rnkStr}</td>
                     <td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">${row.judul}</td>
                     <td class="py-2 px-3 border-b border-l font-mono text-gray-500">${row.orin}</td>
-                    <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>
-                    <td class="py-2 px-3 border-b border-l border-r border-emerald-200 bg-emerald-50 font-black text-emerald-900 text-sm">${row.valFokus}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.jan}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.feb}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.mar}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.apr}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.mei}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.jun}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.jul}</td>
-                    <td class="py-2 px-2 border-b border-emerald-100">${row.ags}</td>
-                    <td class="py-2 px-3 border-b font-bold text-gray-800 bg-gray-50">${row.total}</td>
+                    <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>`;
+
+                if (isSingleMonth) {
+                    html += `<td class="py-2 px-4 border-b border-l border-r border-emerald-200 bg-emerald-50 font-black text-emerald-900 text-sm">${row.valFokus}</td>`;
+                } else if (isQuarter) {
+                    html += `<td class="py-2 px-4 border-b border-l border-r border-emerald-200 bg-emerald-50 font-black text-emerald-900 text-sm">${row.valFokus}</td>`;
+                } else {
+                    html += `
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.jan}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.feb}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.mar}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.apr}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.mei}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.jun}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.jul}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.ags}</td>
+                        <td class="py-2 px-3 border-b font-black text-emerald-900 bg-emerald-100/50">${row.total}</td>`;
+                }
+
+                html += `
                     <td class="py-2 px-3 border-b border-l border-emerald-200 font-bold bg-gray-100 text-gray-800">${row.stokBsoft}</td>
                     <td class="py-2 px-3 border-b font-bold bg-gray-50 text-emerald-700">${row.stokGramedia}</td>
                     <td class="py-2 px-3 border-b border-l border-emerald-200">
@@ -1076,7 +1091,7 @@
                 </tr>`;
             });
             
-            if (currentAnalyticsData.length === 0) html = `<tr><td colspan="17" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data ditemukan untuk pencarian ini.</td></tr>`;
+            if (currentAnalyticsData.length === 0) html = `<tr><td colspan="15" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data ditemukan untuk pencarian ini.</td></tr>`;
             tbody.innerHTML = html;
         }
 
@@ -1121,7 +1136,7 @@
                 ["LAPORAN ANALISIS PENJUALAN BUKU BERDASARKAN FILTER"],
                 ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
                 [],
-                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Terjual Pilihan", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK GRAMEDIA"]
+                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Nilai Fokus/Terjual", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK GRAMEDIA"]
             ];
 
             currentAnalyticsData.forEach((r, i) => {
