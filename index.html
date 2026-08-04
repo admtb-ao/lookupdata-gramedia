@@ -15,12 +15,7 @@
     <!-- Chart.js untuk Visualisasi Grafik -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .drag-active {
-            border-color: #3b82f6 !important;
-            background-color: #eff6ff !important;
-            transform: scale(1.02);
-            transition: all 0.2s ease;
-        }
+        .drag-active { border-color: #3b82f6 !important; background-color: #eff6ff !important; transform: scale(1.02); transition: all 0.2s ease; }
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -52,7 +47,6 @@
                 </button>
             </div>
             
-            <!-- Dashboard Summary 4 Database -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white">
                 <div class="border border-gray-200 rounded-lg p-3 text-center bg-blue-50">
                     <div class="text-xs text-gray-500 font-semibold mb-1">SKU MASTER</div>
@@ -71,19 +65,12 @@
                     <div id="summary-cabang" class="text-xl md:text-2xl font-black text-amber-700">-</div>
                 </div>
             </div>
-
-            <div class="bg-amber-50 p-3 md:p-4 text-amber-800 text-xs md:text-sm flex gap-3 items-start border-t border-amber-100">
-                <span class="text-lg leading-none mt-0.5">⚠️</span>
-                <p class="leading-relaxed text-justify md:text-left">
-                    <b>Catatan Penting:</b> Angka <b>SOLD</b> dan <b>EOH</b> bukan bersifat <i>real-time</i> dari sistem, melainkan mengikuti siklus pembaruan terakhir dari database <i>Report Stock Status Gramedia</i> di Google Sheets.
-                </p>
-            </div>
         </div>
 
         <!-- TABS NAVIGATION -->
         <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
             <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup</button>
-            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik & Best Seller</button>
+            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan</button>
         </div>
 
         <!-- ============================================== -->
@@ -95,14 +82,10 @@
                 <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
                 <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, harry potter, matematika..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, judul buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Buku
                     </button>
-                </div>
-                <div id="book-history-container" class="mt-3 hidden">
-                    <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
-                    <div id="book-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
                 </div>
             </div>
 
@@ -111,14 +94,10 @@
                 <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
                 <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada, surabaya, bintaro..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                     <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Toko
                     </button>
-                </div>
-                <div id="store-history-container" class="mt-3 hidden">
-                    <span class="text-xs font-semibold text-gray-500">Pencarian Terakhir:</span>
-                    <div id="store-history-tags" class="flex flex-wrap gap-2 mt-1.5"></div>
                 </div>
             </div>
 
@@ -143,8 +122,7 @@
                 <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 md:p-8 text-center bg-white hover:bg-gray-50 transition cursor-pointer relative">
                     <div class="text-gray-500 pointer-events-none">
                         <span class="text-3xl md:text-4xl block mb-2">📥</span>
-                        <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel Anda ke sini</p>
-                        <p class="text-xs md:text-sm mt-1">atau klik untuk memilih file (.xlsx, .xls)</p>
+                        <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel</p>
                     </div>
                     <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
                 </div>
@@ -157,34 +135,24 @@
                 </div>
             </div>
 
-            <!-- Tombol Aksi Export (Fitur 1-3) -->
-            <div class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-end gap-3">
-                <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
-                    📑 Export Multi-Sheet (Pilihan / Semua)
+            <!-- Tombol Aksi Export -->
+            <div class="mb-6 flex flex-col sm:flex-row justify-end gap-3">
+                <button id="export-multi-btn" onclick="exportMultiSheetExcel()" class="hidden w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
+                    📑 Export Multi-Sheet
                 </button>
-                <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
-                    📥 Download Excel Utama
+                <button id="export-btn" onclick="exportToExcel()" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex justify-center items-center gap-2 text-sm">
+                    📥 Download Excel
                 </button>
             </div>
 
-            <!-- Tabel Preview & Filter & Pagination -->
+            <!-- Tabel Preview Operasional -->
             <div id="preview-section" class="hidden">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-3 gap-3">
-                    <h2 class="text-base md:text-lg font-bold text-gray-800">Preview Hasil Lookup Data</h2>
-                    <div class="flex gap-2 text-xs md:text-sm">
-                        <button onclick="setFilter('ALL')" id="filter-ALL" class="filter-btn bg-gray-800 text-white px-3 py-1.5 rounded shadow">Semua</button>
-                        <button onclick="setFilter('MATCHED')" id="filter-MATCHED" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">✅ Terisi</button>
-                        <button onclick="setFilter('NOT_FOUND')" id="filter-NOT_FOUND" class="filter-btn bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 px-3 py-1.5 rounded shadow-sm">❌ Kosong</button>
-                    </div>
-                </div>
-                
                 <div class="table-container shadow-sm rounded-lg border bg-white">
                     <table class="min-w-full bg-white text-center w-full">
                         <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
                         <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
                     </table>
                 </div>
-
                 <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
                     <div id="page-info">Menampilkan - data</div>
                     <div class="flex gap-2">
@@ -203,23 +171,32 @@
             <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 p-5 md:p-6 rounded-xl border border-green-200 shadow-sm">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
-                        <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Fitur 4: Top 50 Best Seller & Analisis Cetak Ulang</h2>
-                        <p class="text-sm text-gray-600 mt-1">Menggabungkan data Histori 2026 (Jan-Jul) + Status Stok Berjalan (Ags) + Data BSOFT.</p>
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Analisis Pergerakan Penjualan & Cetak Ulang</h2>
+                        <p class="text-sm text-gray-600 mt-1">Cari spesifik buku atau tampilkan rangking penjualan Nasional.</p>
                     </div>
                     <button onclick="exportAnalyticsExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
                         📥 Export Laporan Analitik
                     </button>
                 </div>
                 
-                <div class="flex flex-col sm:flex-row gap-3 items-center bg-white p-3 rounded-lg border shadow-inner">
-                    <label class="font-semibold text-sm text-gray-700 whitespace-nowrap">Urutkan Berdasarkan:</label>
-                    <select id="analytic-sort" class="w-full sm:w-auto border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <option value="TOTAL">Total Penjualan Keseluruhan (Jan - Ags)</option>
-                        <option value="AGS">Penjualan Bulan Ini (Agustus - Data Stok)</option>
-                        <option value="JUL">Penjualan Bulan Lalu (Juli - Data Histori)</option>
-                        <option value="JUN">Penjualan Juni</option>
+                <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
+                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN (Boleh Kosong)..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                    
+                    <select id="analytic-sort" class="w-full md:w-auto flex-1 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 font-semibold text-gray-700">
+                        <option value="TOTAL">Urutkan: Total Keseluruhan (Jan - Ags)</option>
+                        <option value="AGS">Urutkan: Bulan Agustus (Berjalan)</option>
+                        <option value="JUL">Urutkan: Bulan Juli</option>
+                        <option value="JUN">Urutkan: Bulan Juni</option>
+                        <option value="MEI">Urutkan: Bulan Mei</option>
+                        <option value="APR">Urutkan: Bulan April</option>
+                        <option value="MAR">Urutkan: Bulan Maret</option>
+                        <option value="FEB">Urutkan: Bulan Februari</option>
+                        <option value="JAN">Urutkan: Bulan Januari</option>
+                        <option value="Q1">Urutkan: Kuartal 1 (Jan-Mar)</option>
+                        <option value="Q2">Urutkan: Kuartal 2 (Apr-Jun)</option>
                     </select>
-                    <button onclick="generateTop50()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg transition shadow">Terapkan & Tampilkan Data</button>
+                    
+                    <button onclick="generateTop50()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg transition shadow">Terapkan & Cari Data</button>
                 </div>
             </div>
 
@@ -410,7 +387,6 @@
         let storeRecordsByToko = {};   
         let storeBranchMap = {}; // Mapping Cabang Referensi
         
-        // NEW: Database Analitik (Jan-Jul)
         let monthlySalesMap = {}; 
         let currentAnalyticsData = []; 
 
@@ -429,7 +405,7 @@
         let chartTokoObj = null;
         let chartTrendObj = null;
 
-        // URL DATABASE (1, 2, 3, dan 4)
+        // URL DATABASE
         const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNkfOExIiFvmh8K-hNkM';
         const csvUrlMain = `https://docs.google.com/spreadsheets/d/${sheetIdMain}/export?format=csv`;
 
@@ -467,8 +443,6 @@
         window.onload = () => {
             initCheckboxPrefs(); 
             loadData();
-            renderHistory('book');
-            renderHistory('store');
         };
 
         function switchTab(tabId) {
@@ -482,51 +456,12 @@
         function initCheckboxPrefs() {
             chkIds.forEach(id => {
                 const el = document.getElementById(id);
-                const saved = localStorage.getItem(id);
-                if (saved !== null) el.checked = (saved === 'true');
-                el.addEventListener('change', () => localStorage.setItem(id, el.checked));
+                if(el){
+                    const saved = localStorage.getItem(id);
+                    if (saved !== null) el.checked = (saved === 'true');
+                    el.addEventListener('change', () => localStorage.setItem(id, el.checked));
+                }
             });
-        }
-
-        let bookHistory = JSON.parse(localStorage.getItem('bookHistory')) || [];
-        let storeHistory = JSON.parse(localStorage.getItem('storeHistory')) || [];
-
-        function saveHistory(type, term) {
-            if(!term) return;
-            let hist = type === 'book' ? bookHistory : storeHistory;
-            hist = hist.filter(t => t !== term); 
-            hist.unshift(term); 
-            if(hist.length > 5) hist.pop(); 
-            
-            if(type === 'book') { 
-                bookHistory = hist; 
-                localStorage.setItem('bookHistory', JSON.stringify(hist)); 
-                renderHistory('book'); 
-            } else { 
-                storeHistory = hist; 
-                localStorage.setItem('storeHistory', JSON.stringify(hist)); 
-                renderHistory('store'); 
-            }
-        }
-
-        function renderHistory(type) {
-            const hist = type === 'book' ? bookHistory : storeHistory;
-            const container = document.getElementById(type + '-history-container');
-            const tags = document.getElementById(type + '-history-tags');
-            if(hist.length > 0) {
-                container.classList.remove('hidden');
-                tags.innerHTML = hist.map(t => `<button onclick="useHistory('${type}', '${escapeAttr(t)}')" class="text-[11px] bg-gray-200 hover:bg-gray-300 text-gray-700 py-1 px-3 rounded-full transition shadow-sm border border-gray-300">${t}</button>`).join('');
-            }
-        }
-
-        function useHistory(type, term) {
-            if(type === 'book') { 
-                document.getElementById('manual-search-input').value = term; 
-                searchManual(); 
-            } else { 
-                document.getElementById('store-search-input').value = term; 
-                searchStoreManual(); 
-            }
         }
 
         async function loadData(forceRefresh = false) {
@@ -534,7 +469,7 @@
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; 
             statusEl.className = "text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-xs";
             const btns = ['manual-search-input','store-search-input','file-upload','search-btn','search-store-btn', 'refresh-btn'];
-            btns.forEach(id => document.getElementById(id).disabled = true);
+            btns.forEach(id => { if(document.getElementById(id)) document.getElementById(id).disabled = true; });
 
             try {
                 database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; 
@@ -603,6 +538,7 @@
                             
                             if(!id) return;
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
+                            // BUG FIXED HERE: Menggunakan property totalSold dan totalEoh
                             storeSummaryMap[id].totalSold += parseNum(st[7]); 
                             storeSummaryMap[id].totalEoh += parseNum(st[11]);
                             
@@ -643,8 +579,10 @@
 
                 btns.forEach(id => {
                     const el = document.getElementById(id); 
-                    el.disabled = false;
-                    if(el.tagName === 'BUTTON') el.classList.remove('opacity-50', 'cursor-not-allowed');
+                    if(el){
+                        el.disabled = false;
+                        if(el.tagName === 'BUTTON') el.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                 });
             } catch(e) {
                 statusEl.innerHTML = `❌ Gagal memuat data.`; 
@@ -669,13 +607,16 @@
             return { totalSold: 0, totalEoh: 0 };
         }
 
+        // ==========================================
+        // FUNGSI TAB 1 (OPERASIONAL)
+        // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
+        document.getElementById('analytics-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') generateTop50(); });
 
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('manual-search-input').value;
-            saveHistory('book', rawVal.trim());
             
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
@@ -726,7 +667,6 @@
             if (dataStore.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('store-search-input').value;
             if(!rawVal.trim()) return alert("Ketik nama toko.");
-            saveHistory('store', rawVal.trim());
 
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
             let uniqueStores = Object.keys(storeRecordsByToko);
@@ -756,20 +696,21 @@
 
         const dropZone = document.getElementById('drop-zone'); 
         const fileInput = document.getElementById('file-upload');
-        
-        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
-        dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('drag-active'); });
-        dropZone.addEventListener('drop', e => {
-            e.preventDefault(); 
-            dropZone.classList.remove('drag-active');
-            if (!fileInput.disabled && e.dataTransfer.files.length) { 
-                fileInput.files = e.dataTransfer.files; 
-                handleFileSelection(e.dataTransfer.files[0]); 
-            }
-        });
-        fileInput.addEventListener('change', e => { 
-            if (e.target.files.length) { handleFileSelection(e.target.files[0]); }
-        });
+        if(dropZone){
+            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
+            dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('drag-active'); });
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault(); 
+                dropZone.classList.remove('drag-active');
+                if (!fileInput.disabled && e.dataTransfer.files.length) { 
+                    fileInput.files = e.dataTransfer.files; 
+                    handleFileSelection(e.dataTransfer.files[0]); 
+                }
+            });
+            fileInput.addEventListener('change', e => { 
+                if (e.target.files.length) { handleFileSelection(e.target.files[0]); }
+            });
+        }
 
         function handleFileSelection(file) {
             pendingExcelFile = file;
@@ -1024,45 +965,73 @@
             tbody.innerHTML = htmlChunks.join('');
         }
 
+
         // ==========================================
-        // FUNGSI FITUR 4: ANALITIK & BEST SELLER
+        // FUNGSI FITUR 4: ANALITIK & BEST SELLER 
         // ==========================================
         function generateTop50() {
             const sortBy = document.getElementById('analytic-sort').value;
+            const keyword = cleanStr(document.getElementById('analytics-search-input').value);
             let combinedData = [];
             
             let allOrins = new Set([...Object.keys(dbMapByOrin), ...Object.keys(storeSummaryMap), ...Object.keys(monthlySalesMap)]);
 
             allOrins.forEach(orin => {
                 let db1 = dbMapByOrin[orin] || {}; 
-                let db2 = calcStoreData(orin);     
+                let db2 = calcStoreData(orin); // Berisi totalSold & totalEoh
                 let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
                 
-                let ags = db2.sold; 
+                // MENGGUNAKAN NAMA PROPERTY YANG BENAR (totalSold dan totalEoh) -> FIXED undefined/NaN
+                let ags = db2.totalSold || 0; 
+                let eoh = db2.totalEoh || 0;
                 let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
 
-                if (total26 > 0 || parseNum(db1['STOK BSOFT']) > 0 || db2.eoh > 0) {
-                    combinedData.push({
-                        orin: db1['ID ORIN'] || orin,
-                        judul: db1['JUDUL ITEM'] || '(Judul Tidak Ditemukan)',
-                        kodeBsoft: db1['KODE BSOFT'] || '-',
-                        stokBsoft: parseNum(db1['STOK BSOFT']),
-                        stokGramedia: db2.eoh,
-                        jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
-                        total: total26
-                    });
+                let judul = db1['JUDUL ITEM'] || '(Judul Tidak Ditemukan)';
+                let kodeBsoft = db1['KODE BSOFT'] || '-';
+
+                // Tampilkan hanya jika ada histori laku / stok
+                if (total26 > 0 || parseNum(db1['STOK BSOFT']) > 0 || eoh > 0) {
+                    
+                    let isMatch = true;
+                    if (keyword) {
+                        isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword);
+                    }
+
+                    if (isMatch) {
+                        combinedData.push({
+                            orin: db1['ID ORIN'] || orin,
+                            judul: judul,
+                            kodeBsoft: kodeBsoft,
+                            stokBsoft: parseNum(db1['STOK BSOFT']),
+                            stokGramedia: eoh,
+                            jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
+                            total: total26
+                        });
+                    }
                 }
             });
 
+            // Sorting Dinamis berdasarkan Filter Terlengkap
             combinedData.sort((a, b) => {
-                if (sortBy === 'TOTAL') return b.total - a.total;
-                if (sortBy === 'AGS') return b.ags - a.ags;
-                if (sortBy === 'JUL') return b.jul - a.jul;
-                if (sortBy === 'JUN') return b.jun - a.jun;
-                return b.total - a.total;
+                let valA = 0, valB = 0;
+                
+                if (sortBy === 'TOTAL') { valA = a.total; valB = b.total; }
+                else if (sortBy === 'AGS') { valA = a.ags; valB = b.ags; }
+                else if (sortBy === 'JUL') { valA = a.jul; valB = b.jul; }
+                else if (sortBy === 'JUN') { valA = a.jun; valB = b.jun; }
+                else if (sortBy === 'MEI') { valA = a.mei; valB = b.mei; }
+                else if (sortBy === 'APR') { valA = a.apr; valB = b.apr; }
+                else if (sortBy === 'MAR') { valA = a.mar; valB = b.mar; }
+                else if (sortBy === 'FEB') { valA = a.feb; valB = b.feb; }
+                else if (sortBy === 'JAN') { valA = a.jan; valB = b.jan; }
+                else if (sortBy === 'Q1') { valA = a.jan + a.feb + a.mar; valB = b.jan + b.feb + b.mar; }
+                else if (sortBy === 'Q2') { valA = a.apr + a.mei + a.jun; valB = b.apr + b.mei + b.jun; }
+                
+                return valB - valA; // Diurutkan tertinggi ke terendah
             });
 
-            currentAnalyticsData = combinedData.slice(0, 50);
+            // Memotong array jadi Top 100 agar UI browser tidak berat, namun tetap mengakomodasi pencarian
+            currentAnalyticsData = combinedData.slice(0, 100);
             renderAnalyticsTable();
         }
 
@@ -1098,7 +1067,7 @@
                 </tr>`;
             });
             
-            if (currentAnalyticsData.length === 0) html = `<tr><td colspan="16" class="py-8 text-center text-gray-500">Silakan klik "Terapkan" untuk memuat data.</td></tr>`;
+            if (currentAnalyticsData.length === 0) html = `<tr><td colspan="16" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data ditemukan untuk pencarian ini.</td></tr>`;
             tbody.innerHTML = html;
         }
 
@@ -1137,10 +1106,10 @@
         function closeTrendModal() { document.getElementById('trendModal').classList.add('hidden'); }
 
         function exportAnalyticsExcel() {
-            if(currentAnalyticsData.length === 0) return alert('Tampilkan data Top 50 terlebih dahulu sebelum export.');
+            if(currentAnalyticsData.length === 0) return alert('Tampilkan data terlebih dahulu sebelum export.');
             
             let aoa = [
-                ["LAPORAN ANALISIS TOP 50 BEST SELLER BUKU & KEBUTUHAN CETAK ULANG"],
+                ["LAPORAN ANALISIS TOP BEST SELLER BUKU & KEBUTUHAN CETAK ULANG"],
                 ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
                 [],
                 ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags (Berjalan)", "TOTAL KESELURUHAN (2026)", "STOK BSOFT (Pusat)", "STOK GRAMEDIA (EOH)"]
@@ -1155,12 +1124,12 @@
             sheet['!cols'] = cols;
 
             const workbook = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_Top50"); 
-            XLSX.writeFile(workbook, "Laporan_Analitik_Top50_Buku.xlsx");
+            XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_TopLaku"); 
+            XLSX.writeFile(workbook, "Laporan_Analitik_Penjualan_Buku.xlsx");
         }
 
         // ==========================================
-        // EXPORT MULTI-SHEET EXCEL (DENGAN STRING/TEKS UNTUK KOP)
+        // EXPORT EXCEL FUNGSI OPERASIONAL (DENGAN STRING/TEKS UNTUK KOP)
         // ==========================================
         function exportMultiSheetExcel() {
             const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
@@ -1205,7 +1174,7 @@
 
                 stores.forEach(store => {
                     const namaToko = store[3] || '-';
-                    const cabangRef = getBranchRef(namaToko);
+                    const cabangRef = getBranchRef(namaToko); 
                     const valSold = parseNum(store[7]);
                     const valEoh = parseNum(store[11]);
                     if (valSold > 0 || valEoh > 0) {
@@ -1216,7 +1185,6 @@
                 });
                 validStores.sort((a, b) => b.valSold - a.valSold);
 
-                // MEMASTIKAN VALUE KOP MENGGUNAKAN STRING () AGAR MENJADI TEKS DI EXCEL RATA KIRI
                 let rowsData = [
                     ["LAPORAN DATA BUKU GRAMEDIA"],
                     ["Dicetak pada:", dateStrFull],
@@ -1421,7 +1389,6 @@
             XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
 
-        // MEMASTIKAN KOP MENGGUNAKAN STRING () AGAR RATA KIRI
         function exportDetailToExcel() {
             const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr');
             if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
@@ -1450,7 +1417,6 @@
             html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
 
-        // MEMASTIKAN KOP MENGGUNAKAN STRING () AGAR RATA KIRI
         function exportStoreDetailToExcel() {
             const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
             if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
