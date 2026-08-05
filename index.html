@@ -15,7 +15,7 @@
     <!-- Chart.js untuk Visualisasi Grafik -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .drag-active { border-color: #10b981 !important; background-color: #ecfdf5 !important; transform: scale(1.02); transition: all 0.2s ease; }
+        .drag-active { border-color: #3b82f6 !important; background-color: #eff6ff !important; transform: scale(1.02); transition: all 0.2s ease; }
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -23,7 +23,7 @@
         tr { page-break-inside: avoid !important; }
         .chart-container { position: relative; height: 350px; width: 100%; }
         .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; }
-        .tab-btn.active { border-bottom-width: 2px; border-color: #059669; color: #047857; font-weight: bold; background-color: #ecfdf5; }
+        .tab-btn.active { border-bottom-width: 2px; border-color: #2563eb; color: #1d4ed8; font-weight: bold; background-color: #eff6ff; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
@@ -70,7 +70,7 @@
         <!-- TABS NAVIGATION -->
         <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
             <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup (Fitur 1-3)</button>
-            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan & Custom Upload (Fitur 4)</button>
+            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan (Fitur 4)</button>
         </div>
 
         <!-- ============================================== -->
@@ -87,6 +87,11 @@
                         Cari Buku
                     </button>
                 </div>
+                <!-- Histori Fitur 1 -->
+                <div id="history-buku-container" class="mt-3 flex items-center gap-2 flex-wrap hidden">
+                    <span class="text-xs text-gray-500 font-semibold">Histori:</span>
+                    <div id="history-buku-list" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
 
             <!-- FITUR 2: Pencarian Manual TOKO -->
@@ -98,6 +103,11 @@
                     <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Toko
                     </button>
+                </div>
+                <!-- Histori Fitur 2 -->
+                <div id="history-toko-container" class="mt-3 flex items-center gap-2 flex-wrap hidden">
+                    <span class="text-xs text-gray-500 font-semibold">Histori:</span>
+                    <div id="history-toko-list" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
 
@@ -176,40 +186,24 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- TAB 2: ANALITIK & CUSTOM EXCEL UPLOAD (FITUR 4) -->
+        <!-- TAB 2: ANALITIK & BEST SELLER (FITUR 4) -->
         <!-- ============================================== -->
         <div id="tab-analytics" class="tab-content hidden">
-            <div class="mb-6 bg-gradient-to-r from-emerald-50 to-teal-50 p-5 md:p-6 rounded-xl border border-emerald-200 shadow-sm">
+            <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 p-5 md:p-6 rounded-xl border border-green-200 shadow-sm">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
-                        <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Analisis Penjualan & Custom Excel Upload</h2>
-                        <p class="text-sm text-gray-600 mt-1">Cari otomatis dari database pusat atau drag & drop file Excel katalog Anda (seperti ItemID & BSOFTH) untuk dilengkapi data penjualannya!</p>
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Analisis Pergerakan Penjualan</h2>
+                        <p class="text-sm text-gray-600 mt-1">Cari spesifik buku atau pilih filter bulan. Baris merah menandakan penjualan tinggi tapi Stok Bsoft &lt; 100 (Buku obral &amp; judul kosong diblokir total).</p>
                     </div>
                     <button onclick="exportAnalyticsExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
                         📥 Export Laporan Analitik
                     </button>
                 </div>
                 
-                <!-- DROP ZONE KUSTOM EXCEL UNTUK FITUR 4 -->
-                <div id="analytics-drop-zone" class="border-2 border-dashed border-emerald-300 rounded-lg p-5 text-center bg-white hover:bg-emerald-50/50 transition cursor-pointer relative mb-4">
-                    <div class="text-gray-600 pointer-events-none flex flex-col sm:flex-row items-center justify-center gap-3">
-                        <span class="text-2xl">📂</span>
-                        <div class="text-left">
-                            <p class="text-sm font-bold text-emerald-800">Upload / Drag & Drop Excel Katalog Anda di sini</p>
-                            <p class="text-xs text-gray-500">Sistem otomatis mendeteksi kolom ItemID/ORIN dan BSOFTH/Bsoft untuk ditarik data penjualannya.</p>
-                        </div>
-                    </div>
-                    <input type="file" id="analytics-file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                </div>
-                <div id="analytics-file-status" class="hidden mb-4 bg-emerald-100 text-emerald-800 p-3 rounded-lg text-xs font-bold flex justify-between items-center">
-                    <span id="analytics-file-name">File terpilih</span>
-                    <button onclick="clearCustomAnalyticsFile()" class="text-red-600 hover:underline">Reset / Pakai Database Default</button>
-                </div>
-
                 <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
-                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
                     
-                    <select id="analytic-sort" class="w-full md:w-auto flex-1 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-gray-700">
+                    <select id="analytic-sort" class="w-full md:w-auto flex-1 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 font-semibold text-gray-700">
                         <option value="TOTAL">Semua Bulan (Total Keseluruhan)</option>
                         <option value="AGS">Agustus</option>
                         <option value="JUL">Juli</option>
@@ -389,7 +383,6 @@
         let dataStore = [];    
         let processedData = []; 
         let pendingExcelFile = null; 
-        let customAnalyticsExcelRows = null; 
         
         let dbMapByOrin = {}; 
         let dbMapByBsoft = {}; 
@@ -412,6 +405,7 @@
         let currentFilter = 'ALL'; 
         let currentPage = 1;
         const rowsPerPage = 50; 
+        const MAX_HISTORY = 5; // Batas histori yang disimpan
 
         let chartBukuObj = null;
         let chartTokoObj = null;
@@ -432,7 +426,7 @@
 
         const cleanStr = (str) => { return str ? String(str).trim().toLowerCase() : ""; };
         const parseNum = (val) => {
-            if (!val) return 0;
+            if (val === undefined || val === null || val === '') return 0;
             let s = String(val).trim();
             if (s.startsWith('(') && s.endsWith(')')) s = '-' + s.slice(1, -1);
             s = s.replace(/[,.]00$/, '').replace(/[,.]/g, '');
@@ -449,13 +443,13 @@
         const isBsoftAlias = (str) => {
             if (!str) return false;
             let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
-            return ['kodebsoft', 'iditem', 'kode', 'bsofth'].includes(s);
+            return ['kodebsoft', 'iditem', 'kode'].includes(s);
         };
 
         window.onload = () => {
             initCheckboxPrefs(); 
+            loadHistory();
             loadData();
-            setupAnalyticsDropZone();
         };
 
         function switchTab(tabId) {
@@ -477,6 +471,56 @@
             });
         }
 
+        // ==========================================
+        // FITUR HISTORI PENCARIAN LOKAL
+        // ==========================================
+        function loadHistory() {
+            renderHistory('buku');
+            renderHistory('toko');
+        }
+
+        function saveHistory(type, term) {
+            if (!term.trim()) return;
+            const key = type === 'buku' ? 'history_buku' : 'history_toko';
+            let history = JSON.parse(localStorage.getItem(key) || '[]');
+            // Hapus duplikat agar kata kunci terbaru naik ke atas
+            history = history.filter(item => item.toLowerCase() !== term.toLowerCase());
+            history.unshift(term);
+            if (history.length > MAX_HISTORY) history.pop();
+            localStorage.setItem(key, JSON.stringify(history));
+            renderHistory(type);
+        }
+
+        function renderHistory(type) {
+            const key = type === 'buku' ? 'history_buku' : 'history_toko';
+            const history = JSON.parse(localStorage.getItem(key) || '[]');
+            const container = document.getElementById(`history-${type}-container`);
+            const list = document.getElementById(`history-${type}-list`);
+            
+            if (history.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            list.innerHTML = history.map(term => 
+                `<button onclick="useHistory('${type}', '${escapeAttr(term)}')" class="text-xs bg-gray-200 hover:bg-blue-200 text-gray-700 py-1 px-3 rounded-full cursor-pointer transition font-medium border border-gray-300 shadow-sm">${term}</button>`
+            ).join('');
+        }
+
+        function useHistory(type, term) {
+            if (type === 'buku') {
+                document.getElementById('manual-search-input').value = term;
+                searchManual();
+            } else {
+                document.getElementById('store-search-input').value = term;
+                searchStoreManual();
+            }
+        }
+
+        // ==========================================
+        // PROSES LOAD DATA (ANTI-GESEH)
+        // ==========================================
         async function loadData(forceRefresh = false) {
             const statusEl = document.getElementById('db-status');
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; 
@@ -517,7 +561,13 @@
                         database = [];
                         results.data.forEach(row => {
                             let cleanRow = {}; 
-                            for (let key in row) { cleanRow[key.trim()] = row[key]; }
+                            for (let key in row) {
+                                // TRIM HEADER & VALUE UNTUK CEGAH GESEH
+                                let cleanKey = key ? key.trim() : "";
+                                if (cleanKey) {
+                                    cleanRow[cleanKey] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                                }
+                            }
                             let judulItem = cleanRow['JUDUL ITEM'] ? String(cleanRow['JUDUL ITEM']) : "";
                             
                             if (cleanStr(judulItem).includes('obral')) return;
@@ -538,7 +588,10 @@
                     complete: function(results) {
                         results.data.forEach(row => {
                             let cleanRow = {};
-                            for (let key in row) { cleanRow[key.trim().toLowerCase()] = row[key]; }
+                            for (let key in row) {
+                                let cleanKey = key ? key.trim().toLowerCase() : "";
+                                if(cleanKey) cleanRow[cleanKey] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                            }
                             let idToko = cleanStr(cleanRow['id toko']);
                             let cabangRef = cleanRow['cabang referensi'] ? String(cleanRow['cabang referensi']).trim() : "-";
                             if (idToko) { storeBranchMap[idToko] = cabangRef; }
@@ -546,92 +599,29 @@
                     }
                 });
 
-                // 3. Parsing Data Stock Toko (Super Robust with Structural Mapping)
+                // 3. Parsing Data Stock Toko (Agustus Berjalan)
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
-                        let rawRows = results.data;
-                        let colOrin = -1, colToko = -1, colSold = -1, colEoh = -1;
-                        let startDataIdx = 9; 
-                        
-                        // 1. Coba deteksi header otomatis dari teks
-                        for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
-                            let rowStr = rawRows[i].join(' ').toLowerCase();
-                            if ((rowStr.includes('orin') || rowStr.includes('item id') || rowStr.includes('item_id')) && 
-                                (rowStr.includes('toko') || rowStr.includes('store') || rowStr.includes('cabang'))) {
-                                
-                                rawRows[i].forEach((cell, idx) => {
-                                    let c = String(cell).toLowerCase().trim();
-                                    if (c === 'orin' || c === 'id orin' || c === 'item id' || c === 'item_id') colOrin = idx;
-                                    else if (c === 'nama toko' || c === 'toko' || c === 'store' || c === 'cabang' || c === 'lokasi') colToko = idx;
-                                    else if (c === 'sold' || c === 'terjual' || c === 'qty sold' || c === 'sales' || c === 'terjual (qty)') colSold = idx;
-                                    else if (c === 'eoh' || c === 'stok akhir' || c === 'stock' || c === 'qty eoh') colEoh = idx;
-                                });
-                                
-                                startDataIdx = i + 1;
-                                break;
-                            }
-                        }
-
-                        // 2. Deteksi Pola Data (Heuristic/Brute-force) jika kolom ORIN gagal ditemukan
-                        if (colOrin === -1) {
-                            for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
-                                let row = rawRows[i];
-                                let orinIdx = row.findIndex(c => /^208\d{6,8}$/.test(String(c).trim()) || /^\d{8,10}$/.test(String(c).trim()));
-                                if (orinIdx !== -1 && row.length > orinIdx + 5) {
-                                    colOrin = orinIdx;
-                                    colToko = orinIdx + 2; 
-                                    colSold = orinIdx + 6;
-                                    colEoh = orinIdx + 10;
-                                    startDataIdx = i; 
-                                    break;
-                                }
-                            }
-                        }
-
-                        // 3. Fallback mutlak ke indeks lama jika format benar-benar aneh
-                        if (colOrin === -1) { colOrin = 1; colToko = 3; colSold = 7; colEoh = 11; startDataIdx = 9; }
-                        if (colSold === -1) colSold = colOrin + 6;
-                        if (colEoh === -1) colEoh = colOrin + 10;
-                        
-                        let colJudul = colOrin !== -1 ? colOrin + 1 : 2;
-
-                        dataStore = rawRows.slice(startDataIdx);
+                        dataStore = results.data.slice(9);
                         dataStore.forEach(st => {
-                            if (!st || st.length <= colOrin) return;
-                            
-                            let rawId = String(st[colOrin] || '').trim();
-                            let id = cleanStr(rawId);
-                            let rawToko = String(st[colToko] || '');
-                            let namaToko = cleanStr(rawToko);
-                            let judul = String(st[colJudul] || '');
-                            
-                            // Pastikan baris ini adalah data valid
-                            if (!id || id.length < 5 || id.includes('orin') || id.includes('item')) return; 
+                            // VALIDASI PANJANG ARRAY UNTUK MENCEGAH GESEH (Missing Columns)
+                            if (!st || st.length < 12) return; 
 
-                            let soldVal = parseNum(st[colSold]);
-                            let eohVal = parseNum(st[colEoh]);
-
+                            let id = cleanStr(st[1]); 
+                            let namaToko = cleanStr(st[3]);
+                            
+                            if(!id) return;
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
-                            storeSummaryMap[id].totalSold += soldVal; 
-                            storeSummaryMap[id].totalEoh += eohVal;
+                            storeSummaryMap[id].totalSold += parseNum(st[7]); 
+                            storeSummaryMap[id].totalEoh += parseNum(st[11]);
                             
-                            let record = { 
-                                rawOrin: rawId, 
-                                orin: id, 
-                                rawToko: rawToko, 
-                                namaToko: namaToko, 
-                                sold: soldVal, 
-                                eoh: eohVal,
-                                judulItem: judul
-                            };
-
                             if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = []; 
-                            storeRecordsByOrin[id].push(record);
+                            storeRecordsByOrin[id].push(st);
                             
                             if(namaToko) { 
                                 if(!storeRecordsByToko[namaToko]) storeRecordsByToko[namaToko] = []; 
-                                storeRecordsByToko[namaToko].push(record); 
+                                storeRecordsByToko[namaToko].push(st); 
                             }
                         });
                     }
@@ -642,7 +632,7 @@
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
                         results.data.forEach(row => {
-                            let orin = cleanStr(row['Item Id']);
+                            let orin = row['Item Id'] ? cleanStr(row['Item Id']) : "";
                             if (orin) {
                                 monthlySalesMap[orin] = {
                                     jan: parseNum(row['JANUARI']), feb: parseNum(row['FEBRUARI']),
@@ -701,20 +691,21 @@
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('manual-search-input').value;
+            if (!rawVal.trim()) return alert("Ketik kata kunci untuk mencari.");
+            
+            // Simpan ke Histori
+            saveHistory('buku', rawVal.trim());
+
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
             let matches = [];
-            if (searchTerms.length === 0) {
-                matches = database;
-            } else {
-                matches = database.filter(dbRow => {
-                    return searchTerms.some(term => 
-                        cleanStr(dbRow['ID ORIN']).includes(term) || 
-                        cleanStr(dbRow['KODE BSOFT']).includes(term) || 
-                        cleanStr(dbRow['JUDUL ITEM']).includes(term)
-                    );
-                });
-            }
+            matches = database.filter(dbRow => {
+                return searchTerms.some(term => 
+                    cleanStr(dbRow['ID ORIN']).includes(term) || 
+                    cleanStr(dbRow['KODE BSOFT']).includes(term) || 
+                    cleanStr(dbRow['JUDUL ITEM']).includes(term)
+                );
+            });
 
             if (matches.length > 0) {
                 processedData = matches.map(match => {
@@ -747,9 +738,12 @@
         }
 
         function searchStoreManual() {
-            if (Object.keys(storeRecordsByToko).length === 0) return alert("Database Toko belum siap atau kosong.");
+            if (dataStore.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('store-search-input').value;
             if(!rawVal.trim()) return alert("Ketik nama toko.");
+            
+            // Simpan ke Histori
+            saveHistory('toko', rawVal.trim());
 
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
             let uniqueStores = Object.keys(storeRecordsByToko);
@@ -760,7 +754,7 @@
 
             if (matchedStoreNames.length > 0) {
                 processedData = matchedStoreNames.map(storeName => ({ 
-                    'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0].rawToko || storeName, 
+                    'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3], 
                     'STATUS SYSTEM': '✅ MATCHED_STORE' 
                 }));
                 resetFilterAndPage();
@@ -823,7 +817,7 @@
                     let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
-                        actualHeaders = row.map(h => String(h).trim()); 
+                        actualHeaders = row.map(h => h ? String(h).trim() : ""); 
                         break; 
                     }
                 }
@@ -835,7 +829,9 @@
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
                     let rowObj = {}; 
                     for (let j = 0; j < actualHeaders.length; j++) {
-                        rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j]; 
+                        let hName = actualHeaders[j] || `KOLOM_KOSONG_${j+1}`;
+                        let cellVal = dataAsArrays[i][j];
+                        rowObj[hName] = typeof cellVal === 'string' ? cellVal.trim() : cellVal; 
                     }
                     userExcelData.push(rowObj);
                 }
@@ -989,9 +985,9 @@
             paginatedData.forEach((rowObj, index) => {
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 
-                let orinVal = rowObj['ID ORIN'] || rowObj['ItemID'] || '';
-                let judulVal = rowObj['JUDUL ITEM'] || rowObj['JUDUL'] || '';
-                let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK' || rowObj['STATUS SYSTEM'] === '✅ CUSTOM_MATCHED';
+                let orinVal = rowObj['ID ORIN'] || '';
+                let judulVal = rowObj['JUDUL ITEM'] || '';
+                let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK';
                 
                 if (isBookMatched && orinVal) {
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
@@ -1002,9 +998,12 @@
                 headers.forEach(header => {
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
-                        if (val === '✅ MATCHED_BOOK' || val === '✅ CUSTOM_MATCHED') {
-                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Ter-lookup</span></td>`;
-                        }
+                        if (val === '✅ MATCHED_BOOK') {
+                            let id = escapeAttr(rowObj['ID ORIN'] || '-'); let kd = escapeAttr(rowObj['KODE BSOFT'] || '-'); 
+                            let jd = escapeAttr(rowObj['JUDUL ITEM'] || '-'); let hr = escapeAttr(rowObj['HARGA'] || '-'); 
+                            let st = escapeAttr(rowObj['STOK BSOFT'] || '-');
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Ditemukan</span><br><button onclick="lihatDetail('${id}','${kd}','${jd}','${hr}','${st}')" class="mt-1.5 text-[9px] md:text-[10px] bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button></td>`;
+                        } 
                         else if (val === '✅ MATCHED_STORE') {
                             let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-purple-100 text-purple-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-1.5 text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button></td>`;
@@ -1016,10 +1015,10 @@
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-red-100 text-red-800 py-0.5 px-2 rounded-full text-[10px] whitespace-nowrap">${val}</span></td>`;
                         }
                     }
-                    else if (header.includes('SOLD') || header.includes('EOH') || header.includes('TOTAL') || header.includes('Ags')) {
+                    else if (header.includes('SOLD') || header.includes('EOH')) {
                         rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center text-gray-800 bg-gray-50/50">${val}</td>`;
                     }
-                    else if (header === 'JUDUL' || header === 'JUDUL ITEM') {
+                    else if (header === 'JUDUL ITEM') {
                         rowHtml += `<td class="py-1.5 px-2 border-b text-left whitespace-normal max-w-[180px] md:max-w-[250px] leading-tight">${val}</td>`;
                     }
                     else {
@@ -1038,103 +1037,33 @@
         }
 
         // ==========================================
-        // FUNGSI TAB 2 & CUSTOM ANALYTICS UPLOAD
+        // FUNGSI TAB 2 (ANALITIK & STRICT BLACKLIST)
         // ==========================================
-        function setupAnalyticsDropZone() {
-            const dropZone = document.getElementById('analytics-drop-zone');
-            const fileInput = document.getElementById('analytics-file-upload');
-            
-            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
-            dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('drag-active'); });
-            dropZone.addEventListener('drop', e => {
-                e.preventDefault();
-                dropZone.classList.remove('drag-active');
-                if (e.dataTransfer.files.length) {
-                    handleCustomAnalyticsFile(e.dataTransfer.files[0]);
-                }
-            });
-            fileInput.addEventListener('change', e => {
-                if (e.target.files.length) {
-                    handleCustomAnalyticsFile(e.target.files[0]);
-                }
-            });
-        }
-
-        function handleCustomAnalyticsFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                const dataAsArrays = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, defval: ""});
-                if (dataAsArrays.length === 0) return alert('File kosong!');
-
-                let headerRowIndex = -1, actualHeaders = [];
-                for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
-                    const row = dataAsArrays[i]; 
-                    if (!row) continue;
-                    let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
-                    if (hasHeaderId) { 
-                        headerRowIndex = i; 
-                        actualHeaders = row.map(h => String(h).trim()); 
-                        break; 
-                    }
-                }
-                
-                if (headerRowIndex === -1) return alert("Header ItemID / BSOFTH tidak ditemukan pada file Anda.");
-
-                customAnalyticsExcelRows = [];
-                for (let i = headerRowIndex + 1; i < dataAsArrays.length; i++) {
-                    if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
-                    let rowObj = {}; 
-                    for (let j = 0; j < actualHeaders.length; j++) {
-                        rowObj[actualHeaders[j] || `KOLOM_${j+1}`] = dataAsArrays[i][j]; 
-                    }
-                    customAnalyticsExcelRows.push(rowObj);
-                }
-
-                document.getElementById('analytics-file-name').innerText = `📄 File kustom aktif: ${file.name} (${customAnalyticsExcelRows.length} baris)`;
-                document.getElementById('analytics-file-status').classList.remove('hidden');
-                generateTop50();
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function clearCustomAnalyticsFile() {
-            customAnalyticsExcelRows = null;
-            document.getElementById('analytics-file-status').classList.add('hidden');
-            document.getElementById('analytics-file-upload').value = '';
-            generateTop50();
-        }
-
         function generateTop50() {
             currentSortMode = document.getElementById('analytic-sort').value;
             const keyword = cleanStr(document.getElementById('analytics-search-input').value);
             let combinedData = [];
+            
+            let allOrins = new Set([...Object.keys(dbMapByOrin), ...Object.keys(storeSummaryMap), ...Object.keys(monthlySalesMap)]);
 
-            if (customAnalyticsExcelRows && customAnalyticsExcelRows.length > 0) {
-                customAnalyticsExcelRows.forEach(row => {
-                    let rawOrin = "", rawBsoft = "", rawJudul = "";
-                    for (let key in row) {
-                        let k = key.toLowerCase();
-                        if (isOrinAlias(key) && !rawOrin) rawOrin = String(row[key]);
-                        if (isBsoftAlias(key) && !rawBsoft) rawBsoft = String(row[key]);
-                        if ((k.includes('judul') || k.includes('title')) && !rawJudul) rawJudul = String(row[key]);
-                    }
+            allOrins.forEach(orin => {
+                let db1 = dbMapByOrin[orin]; 
+                if (!db1) return;
 
-                    let match = (rawOrin ? dbMapByOrin[cleanStr(rawOrin)] : null) || (rawBsoft ? dbMapByBsoft[cleanStr(rawBsoft)] : null);
-                    let orin = match ? (match['ID ORIN'] || rawOrin) : rawOrin;
-                    let judul = match ? (match['JUDUL ITEM'] || rawJudul) : (rawJudul || 'Tanpa Judul');
-                    
-                    if (!judul.trim() || cleanStr(judul).includes('obral')) return;
+                let judul = db1['JUDUL ITEM'] ? String(db1['JUDUL ITEM']) : "";
+                if (!judul.trim() || cleanStr(judul).includes('obral')) return;
 
-                    let kodeBsoft = match ? (match['KODE BSOFT'] || rawBsoft) : rawBsoft;
-                    let stokBsoftVal = match ? parseNum(match['STOK BSOFT']) : 0;
+                let db2 = calcStoreData(orin);     
+                let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
+                
+                let ags = db2.totalSold || 0; 
+                let eoh = db2.totalEoh || 0;
+                let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
 
-                    let db2 = calcStoreData(orin);     
-                    let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
-                    let ags = db2.totalSold || 0; 
-                    let eoh = db2.totalEoh || 0;
-                    let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
+                let kodeBsoft = db1['KODE BSOFT'] || '-';
+                let stokBsoftVal = parseNum(db1['STOK BSOFT']);
 
+                if (total26 > 0 || stokBsoftVal > 0 || eoh > 0) {
                     let isMatch = true;
                     if (keyword) {
                         isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword);
@@ -1155,81 +1084,23 @@
 
                         let isCritical = valFokus >= 20 && stokBsoftVal < 100;
 
-                        let mergedObj = { ...row };
-                        mergedObj.orin = orin;
-                        mergedObj.judul = judul;
-                        mergedObj.kodeBsoft = kodeBsoft;
-                        mergedObj.stokBsoft = stokBsoftVal;
-                        mergedObj.stokGramedia = eoh;
-                        mergedObj.jan = db4.jan; mergedObj.feb = db4.feb; mergedObj.mar = db4.mar;
-                        mergedObj.apr = db4.apr; mergedObj.mei = db4.mei; mergedObj.jun = db4.jun;
-                        mergedObj.jul = db4.jul; mergedObj.ags = ags;
-                        mergedObj.total = total26;
-                        mergedObj.valFokus = valFokus;
-                        mergedObj.isCritical = isCritical;
-
-                        combinedData.push(mergedObj);
+                        combinedData.push({
+                            orin: db1['ID ORIN'] || orin,
+                            judul: judul,
+                            kodeBsoft: kodeBsoft,
+                            stokBsoft: stokBsoftVal,
+                            stokGramedia: eoh,
+                            jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
+                            total: total26,
+                            valFokus: valFokus,
+                            isCritical: isCritical
+                        });
                     }
-                });
-            } else {
-                let allOrins = new Set([...Object.keys(dbMapByOrin), ...Object.keys(storeSummaryMap), ...Object.keys(monthlySalesMap)]);
-
-                allOrins.forEach(orin => {
-                    let db1 = dbMapByOrin[orin]; 
-                    if (!db1) return;
-
-                    let judul = db1['JUDUL ITEM'] ? String(db1['JUDUL ITEM']) : "";
-                    if (!judul.trim() || cleanStr(judul).includes('obral')) return;
-
-                    let db2 = calcStoreData(orin);     
-                    let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
-                    
-                    let ags = db2.totalSold || 0; 
-                    let eoh = db2.totalEoh || 0;
-                    let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
-
-                    let kodeBsoft = db1['KODE BSOFT'] || '-';
-                    let stokBsoftVal = parseNum(db1['STOK BSOFT']);
-
-                    if (total26 > 0 || stokBsoftVal > 0 || eoh > 0) {
-                        let isMatch = true;
-                        if (keyword) {
-                            isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword);
-                        }
-
-                        if (isMatch) {
-                            let valFokus = total26;
-                            if (currentSortMode === 'AGS') valFokus = ags;
-                            else if (currentSortMode === 'JUL') valFokus = db4.jul;
-                            else if (currentSortMode === 'JUN') valFokus = db4.jun;
-                            else if (currentSortMode === 'MEI') valFokus = db4.mei;
-                            else if (currentSortMode === 'APR') valFokus = db4.apr;
-                            else if (currentSortMode === 'MAR') valFokus = db4.mar;
-                            else if (currentSortMode === 'FEB') valFokus = db4.feb;
-                            else if (currentSortMode === 'JAN') valFokus = db4.jan;
-                            else if (currentSortMode === 'Q1') valFokus = db4.jan + db4.feb + db4.mar;
-                            else if (currentSortMode === 'Q2') valFokus = db4.apr + db4.mei + db4.jun;
-
-                            let isCritical = valFokus >= 20 && stokBsoftVal < 100;
-
-                            combinedData.push({
-                                orin: db1['ID ORIN'] || orin,
-                                judul: judul,
-                                kodeBsoft: kodeBsoft,
-                                stokBsoft: stokBsoftVal,
-                                stokGramedia: eoh,
-                                jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
-                                total: total26,
-                                valFokus: valFokus,
-                                isCritical: isCritical
-                            });
-                        }
-                    }
-                });
-            }
+                }
+            });
 
             combinedData.sort((a, b) => b.valFokus - a.valFokus);
-            currentAnalyticsData = combinedData.slice(0, 150);
+            currentAnalyticsData = combinedData.slice(0, 100);
             renderAnalyticsTable();
         }
 
@@ -1269,7 +1140,6 @@
             headHtml += `
                 <th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK BSOFT</th>
                 <th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK AKHIR GRAMEDIA</th>
-                <th class="py-3 px-3 border-l border-emerald-600 bg-emerald-900">STATUS STOK</th>
             </tr>`;
             thead.innerHTML = headHtml;
 
@@ -1280,12 +1150,12 @@
                 let arrSales = `[${row.jan},${row.feb},${row.mar},${row.apr},${row.mei},${row.jun},${row.jul},${row.ags}]`;
 
                 let rowBgClass = row.isCritical ? 'bg-red-50 hover:bg-red-100 text-red-900' : 'hover:bg-emerald-50';
-                let statusStokBadge = row.isCritical ? `<span class="bg-red-200 text-red-800 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ STOK KRITIS</span>` : `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold text-[10px]">✅ Aman</span>`;
+                let warningBadge = row.isCritical ? `<span class="inline-block bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded ml-1" title="Penjualan tinggi tapi Stok Bsoft di bawah 100!">⚠️ STOK KRITIS</span>` : '';
 
                 html += `<tr class="${rowBgClass} transition-colors">
                     <td class="py-2 px-3 border-b font-bold text-gray-500">${rnkStr}</td>
                     <td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">
-                        ${row.judul}
+                        ${row.judul} ${warningBadge}
                         <div class="mt-1.5">
                             <button onclick="openTrendModal('${judulEsc}', '${orinEsc}', '${bsEsc}', ${arrSales})" class="text-[9px] md:text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-0.5 px-2 rounded font-bold shadow-sm transition inline-flex items-center gap-1">📈 Lihat Tren</button>
                         </div>
@@ -1313,7 +1183,6 @@
                 html += `
                     <td class="py-2 px-3 border-b border-l border-emerald-200 font-bold ${row.isCritical ? 'text-red-700 bg-red-100' : 'bg-gray-100 text-gray-800'}">${row.stokBsoft}</td>
                     <td class="py-2 px-3 border-b font-bold bg-gray-50 text-emerald-700">${row.stokGramedia}</td>
-                    <td class="py-2 px-3 border-b border-l font-bold">${statusStokBadge}</td>
                 </tr>`;
             });
             
@@ -1374,6 +1243,7 @@
             let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
             sheet['!cols'] = cols;
 
+            // --- PENGATURAN WARNA/STYLING BARU UNTUK EXCEL --- //
             if (sheet["A1"]) sheet["A1"].s = { font: { bold: true, sz: 14 } };
             if (sheet["A2"]) sheet["A2"].s = { font: { italic: true } };
 
@@ -1411,16 +1281,17 @@
             XLSX.writeFile(workbook, `Laporan_Analitik_Penjualan_per_${dateStrFile}.xlsx`);
         }
 
+        // ==========================================
+        // EXPORT EXCEL FUNGSI OPERASIONAL
+        // ==========================================
         function exportMultiSheetExcel() {
             const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
             
             let itemsToExport = [];
             if (checkedBoxes.length === 0) {
                 processedData.forEach(d => {
-                    let orin = d['ID ORIN'] || d['ItemID'];
-                    let judul = d['JUDUL ITEM'] || d['JUDUL'];
-                    if (orin) {
-                        itemsToExport.push({ idOrin: orin, judul: judul });
+                    if (d['STATUS SYSTEM'] === '✅ MATCHED_BOOK' && d['ID ORIN']) {
+                        itemsToExport.push({ idOrin: d['ID ORIN'], judul: d['JUDUL ITEM'] });
                     }
                 });
                 if (itemsToExport.length === 0) {
@@ -1455,10 +1326,10 @@
                 let sumSold = 0, sumEoh = 0;
 
                 stores.forEach(store => {
-                    const namaToko = store.rawToko || store.namaToko || '-';
+                    const namaToko = store[3] || '-';
                     const cabangRef = getBranchRef(namaToko); 
-                    const valSold = store.sold || 0;
-                    const valEoh = store.eoh || 0;
+                    const valSold = parseNum(store[7]);
+                    const valEoh = parseNum(store[11]);
                     if (valSold > 0 || valEoh > 0) {
                         sumSold += valSold;
                         sumEoh += valEoh;
@@ -1591,10 +1462,10 @@
 
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || []; let validStores = [];
             stores.forEach(store => {
-                const namaToko = store.rawToko || store.namaToko || '-'; 
+                const namaToko = store[3] || '-'; 
                 const cabangRef = getBranchRef(namaToko);
-                const valSold = store.sold || 0; 
-                const valEoh = store.eoh || 0; 
+                const valSold = parseNum(store[7]); 
+                const valEoh = parseNum(store[11]); 
                 if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, cabangRef, valSold, valEoh });
             });
 
@@ -1624,10 +1495,10 @@
 
             const records = storeRecordsByToko[cleanStr(namaToko)] || []; let validRecords = [];
             records.forEach(st => {
-                const idOrin = st.rawOrin || ''; const valSold = st.sold || 0; const valEoh = st.eoh || 0;
+                const idOrin = st[1] ? String(st[1]).trim() : ''; const valSold = parseNum(st[7]); const valEoh = parseNum(st[11]);
                 if (valSold > 0 || valEoh > 0) {
                     let dbMatch = dbMapByOrin[cleanStr(idOrin)];
-                    let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st.judulItem || '-');
+                    let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st[2] || '-');
                     let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
                     let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
                     let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
