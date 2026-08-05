@@ -1151,16 +1151,16 @@
                 ["LAPORAN ANALISIS PENJUALAN BUKU & WARNING STOK KRITIS"],
                 ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
                 [],
-                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
+                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Nilai Terjual", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
             ];
 
             currentAnalyticsData.forEach((r, i) => {
-                let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "✅ Aman";
-                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
+                let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "Normal";
+                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.valFokus, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
+            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:15}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
             sheet['!cols'] = cols;
 
             // --- PENGATURAN WARNA/STYLING BARU UNTUK EXCEL --- //
@@ -1183,7 +1183,7 @@
             };
 
             // Menerapkan Style Header
-            for(let C = 0; C <= 15; C++) {
+            for(let C = 0; C <= 16; C++) {
                 let cellRef = XLSX.utils.encode_cell({c: C, r: 3});
                 if(sheet[cellRef]) sheet[cellRef].s = headerStyle;
             }
@@ -1192,7 +1192,7 @@
             currentAnalyticsData.forEach((r, i) => {
                 let rowIndex = 4 + i; // Baris data dimulai dari index ke-4
                 if(r.isCritical) {
-                    for(let C = 0; C <= 15; C++) {
+                    for(let C = 0; C <= 16; C++) {
                         let cellRef = XLSX.utils.encode_cell({c: C, r: rowIndex});
                         if(sheet[cellRef]) sheet[cellRef].s = criticalStyle;
                     }
@@ -1201,11 +1201,7 @@
 
             const workbook = XLSX.utils.book_new(); 
             XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_StokKritis"); 
-            
-            // Nama file dinamis
-            const now = new Date();
-            const dateStrFile = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth()+1).padStart(2, '0')}-${now.getFullYear()}`;
-            XLSX.writeFile(workbook, `Laporan_Analitik_Penjualan_per_${dateStrFile}.xlsx`);
+            XLSX.writeFile(workbook, "Laporan_Analitik_StokKritis.xlsx");
         }
 
         // ==========================================
