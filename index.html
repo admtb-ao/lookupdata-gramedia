@@ -6,8 +6,8 @@
     <title>Auto-Lookup & Analytics Gramedia</title>
     <!-- Tailwind CSS untuk Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS untuk membaca dan membuat file Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- xlsx-js-style: Pengganti SheetJS standar agar fitur WARNA & STYLING Excel berfungsi -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <!-- PapaParse untuk mengambil data dari Google Sheet -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- html2pdf untuk convert HTML ke PDF -->
@@ -1162,6 +1162,42 @@
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
             let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:15}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
             sheet['!cols'] = cols;
+
+            // --- PENGATURAN WARNA/STYLING BARU UNTUK EXCEL --- //
+            
+            // Bikin judul tebal
+            if (sheet["A1"]) sheet["A1"].s = { font: { bold: true, sz: 14 } };
+            if (sheet["A2"]) sheet["A2"].s = { font: { italic: true } };
+
+            // Styling Header Kolom (Baris ke-4, index 3) -> Warna Hijau Gelap
+            const headerStyle = {
+                fill: { fgColor: { rgb: "065F46" } }, 
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                alignment: { vertical: "center", horizontal: "center" }
+            };
+
+            // Styling Baris Stok Kritis -> Warna Merah Muda
+            const criticalStyle = {
+                fill: { fgColor: { rgb: "FEE2E2" } },
+                font: { bold: true, color: { rgb: "991B1B" } } 
+            };
+
+            // Menerapkan Style Header
+            for(let C = 0; C <= 16; C++) {
+                let cellRef = XLSX.utils.encode_cell({c: C, r: 3});
+                if(sheet[cellRef]) sheet[cellRef].s = headerStyle;
+            }
+
+            // Menerapkan Style Warna Merah di baris yang berstatus Kritis
+            currentAnalyticsData.forEach((r, i) => {
+                let rowIndex = 4 + i; // Baris data dimulai dari index ke-4
+                if(r.isCritical) {
+                    for(let C = 0; C <= 16; C++) {
+                        let cellRef = XLSX.utils.encode_cell({c: C, r: rowIndex});
+                        if(sheet[cellRef]) sheet[cellRef].s = criticalStyle;
+                    }
+                }
+            });
 
             const workbook = XLSX.utils.book_new(); 
             XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_StokKritis"); 
