@@ -80,12 +80,19 @@
             <!-- FITUR 1: Pencarian Manual BUKU -->
             <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, Judul, atau <b>Kategori</b>. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, judul buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, Buku Anak..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Buku
                     </button>
+                </div>
+                <!-- Filter Cepat Berdasarkan Kategori -->
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-gray-700">Filter Cepat Kategori:</span>
+                    <select id="quick-category-select" onchange="filterByCategoryQuick(this.value)" class="border border-gray-300 text-xs p-2 rounded-lg bg-white font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                        <option value="">-- Pilih Kategori --</option>
+                    </select>
                 </div>
             </div>
 
@@ -114,6 +121,7 @@
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded" checked> JUDUL ITEM</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-kategori" class="w-4 h-4 text-blue-600 rounded" checked> KATEGORI</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-sold" class="w-4 h-4 text-blue-600 rounded" checked> SOLD</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-eoh" class="w-4 h-4 text-blue-600 rounded" checked> EOH</label>
                     </div>
@@ -183,7 +191,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
                         <h2 class="text-lg md:text-xl font-bold text-gray-800">🏆 Analisis Penjualan & Custom Excel Upload</h2>
-                        <p class="text-sm text-gray-600 mt-1">Cari otomatis dari database pusat atau drag & drop file Excel katalog Anda (seperti ItemID & BSOFTH) untuk dilengkapi data penjualannya!</p>
+                        <p class="text-sm text-gray-600 mt-1">Cari otomatis dari database pusat atau drag & drop file Excel katalog Anda untuk dilengkapi data penjualannya!</p>
                     </div>
                     <button onclick="exportAnalyticsExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
                         📥 Export Laporan Analitik
@@ -207,7 +215,7 @@
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
-                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN / Kategori..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     
                     <select id="analytic-sort" class="w-full md:w-auto flex-1 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-gray-700">
                         <option value="TOTAL">Semua Bulan (Total Keseluruhan)</option>
@@ -294,6 +302,7 @@
                         <div class="sm:col-span-2"><span class="font-semibold text-gray-600">JUDUL ITEM:</span> <span id="mdl-judul" class="font-bold text-gray-800 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">HARGA:</span> <span id="mdl-harga" class="font-bold text-gray-800 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">STOK BSOFT:</span> <span id="mdl-stokbsoft" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div class="sm:col-span-2"><span class="font-semibold text-gray-600">KATEGORI:</span> <span id="mdl-kategori" class="font-bold text-purple-700 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">TOTAL SOLD:</span> <span id="mdl-totalsold" class="font-bold text-blue-700 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
@@ -369,6 +378,7 @@
                                 <th class="py-2 md:py-3 px-3 text-left w-1/3">Judul Item</th>
                                 <th class="py-2 md:py-3 px-2 border-l">Harga</th>
                                 <th class="py-2 md:py-3 px-2 border-l">Stok BSOFT</th>
+                                <th class="py-2 md:py-3 px-2 border-l">Kategori</th>
                                 <th class="py-2 md:py-3 px-2 border-l">SOLD (TERJUAL BULAN INI)</th>
                                 <th class="py-2 md:py-3 px-2 border-l">EOH (STOK AKHIR GRAMEDIA)</th>
                             </tr>
@@ -397,6 +407,7 @@
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
         let storeBranchMap = {}; 
+        let availableCategories = new Set();
         
         let monthlySalesMap = {}; 
         let currentAnalyticsData = []; 
@@ -452,6 +463,12 @@
             return ['kodebsoft', 'iditem', 'kode', 'bsofth'].includes(s);
         };
 
+        const isKategoriAlias = (str) => {
+            if (!str) return false;
+            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            return ['kategori', 'category', 'kategoribuku'].includes(s);
+        };
+
         window.onload = () => {
             initCheckboxPrefs(); 
             loadData(true);
@@ -465,7 +482,7 @@
             document.getElementById('btn-' + tabId).classList.add('active', 'border-b-2');
         }
 
-        const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-harga', 'chk-stokbsoft', 'chk-sold', 'chk-eoh'];
+        const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-harga', 'chk-stokbsoft', 'chk-kategori', 'chk-sold', 'chk-eoh'];
         function initCheckboxPrefs() {
             chkIds.forEach(id => {
                 const el = document.getElementById(id);
@@ -481,12 +498,13 @@
             const statusEl = document.getElementById('db-status');
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; 
             statusEl.className = "text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-xs";
-            const btns = ['manual-search-input','store-search-input','file-upload','search-btn','search-store-btn', 'refresh-btn'];
+            const btns = ['manual-search-input','store-search-input','file-upload','search-btn','search-store-btn', 'refresh-btn', 'quick-category-select'];
             btns.forEach(id => { if(document.getElementById(id)) document.getElementById(id).disabled = true; });
 
             try {
                 database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; 
                 storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {}; storeBranchMap = {}; monthlySalesMap = {};
+                availableCategories.clear();
                 
                 let csvMainText, csvStoreText, csvBranchText, csvSalesText;
                 
@@ -531,13 +549,19 @@
 
                             let orin = cleanRow['ID ORIN'] ? cleanStr(cleanRow['ID ORIN']) : "";
                             let bsoft = cleanRow['KODE BSOFT'] ? cleanStr(cleanRow['KODE BSOFT']) : "";
+                            let kategori = cleanRow['KATEGORI'] ? String(cleanRow['KATEGORI']).trim() : "";
+                            
                             if(orin) dbMapByOrin[orin] = cleanRow; 
                             if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
+                            if(kategori) availableCategories.add(kategori);
                             
                             database.push(cleanRow);
                         });
                     }
                 });
+
+                // Populate Dropdown Filter Cepat Kategori
+                populateCategoryDropdown();
 
                 // 2. Parsing Mapping Cabang Toko
                 Papa.parse(csvBranchText, {
@@ -667,6 +691,24 @@
             }
         }
 
+        function populateCategoryDropdown() {
+            const select = document.getElementById('quick-category-select');
+            if(!select) return;
+            select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+            Array.from(availableCategories).sort().forEach(cat => {
+                let opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        function filterByCategoryQuick(categoryVal) {
+            if(!categoryVal) return;
+            document.getElementById('manual-search-input').value = categoryVal;
+            searchManual();
+        }
+
         function getBranchRef(storeNameOrString) {
             let s = String(storeNameOrString).trim();
             let parts = s.split('-');
@@ -700,7 +742,8 @@
                     return searchTerms.some(term => 
                         cleanStr(dbRow['ID ORIN']).includes(term) || 
                         cleanStr(dbRow['KODE BSOFT']).includes(term) || 
-                        cleanStr(dbRow['JUDUL ITEM']).includes(term)
+                        cleanStr(dbRow['JUDUL ITEM']).includes(term) ||
+                        cleanStr(dbRow['KATEGORI']).includes(term)
                     );
                 });
             }
@@ -714,6 +757,7 @@
                         'JUDUL ITEM': match['JUDUL ITEM'] || '', 
                         'HARGA': match['HARGA'] !== undefined ? match['HARGA'] : '', 
                         'STOK BSOFT': match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '', 
+                        'KATEGORI': match['KATEGORI'] || '',
                         'SOLD (TERJUAL BULAN INI)': totalSold, 
                         'EOH (STOK AKHIR GRAMEDIA)': totalEoh, 
                         'STATUS SYSTEM': '✅ MATCHED_BOOK' 
@@ -731,7 +775,7 @@
                 renderPreview(); 
                 document.getElementById('export-btn').classList.add('hidden');
                 document.getElementById('export-multi-btn').classList.add('hidden');
-                alert("Buku tidak ditemukan.");
+                alert("Buku atau kategori tidak ditemukan.");
             }
         }
 
@@ -835,6 +879,7 @@
                     judul: document.getElementById('chk-judul').checked, 
                     harga: document.getElementById('chk-harga').checked, 
                     stokbsoft: document.getElementById('chk-stokbsoft').checked, 
+                    kategori: document.getElementById('chk-kategori').checked,
                     sold: document.getElementById('chk-sold').checked, 
                     eoh: document.getElementById('chk-eoh').checked
                 };
@@ -869,6 +914,7 @@
                         if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || row['JUDUL ITEM'] || '';
                         if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || '');
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : (row['STOK BSOFT'] || '');
+                        if (wants.kategori) newRow['KATEGORI'] = match['KATEGORI'] || row['KATEGORI'] || '';
                         
                         newRow['STATUS SYSTEM'] = '✅ CUSTOM_MATCHED'; 
                         return newRow;
@@ -991,7 +1037,6 @@
                 headers.forEach(header => {
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
-                        // KODE PERBAIKAN: Menambahkan kembali tombol "Lihat Detail" di kolom STATUS SYSTEM
                         if (val === '✅ MATCHED_BOOK' || val === '✅ CUSTOM_MATCHED') {
                             let orinEsc = escapeAttr(rowObj['ID ORIN'] || rowObj['ItemID'] || '');
                             let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || rowObj['BSOFTH'] || '');
@@ -1020,6 +1065,9 @@
                     }
                     else if (header === 'JUDUL' || header === 'JUDUL ITEM') {
                         rowHtml += `<td class="py-1.5 px-2 border-b text-left whitespace-normal max-w-[180px] md:max-w-[250px] leading-tight">${val}</td>`;
+                    }
+                    else if (header === 'KATEGORI') {
+                        rowHtml += `<td class="py-1.5 px-2 border-b font-semibold text-purple-700 text-center whitespace-nowrap">${val}</td>`;
                     }
                     else {
                         rowHtml += `<td class="py-1.5 px-2 border-b whitespace-nowrap text-center">${val}</td>`;
@@ -1111,17 +1159,19 @@
 
             if (customAnalyticsExcelRows && customAnalyticsExcelRows.length > 0) {
                 customAnalyticsExcelRows.forEach(row => {
-                    let rawOrin = "", rawBsoft = "", rawJudul = "";
+                    let rawOrin = "", rawBsoft = "", rawJudul = "", rawKategori = "";
                     for (let key in row) {
                         let k = key.toLowerCase();
                         if (isOrinAlias(key) && !rawOrin) rawOrin = String(row[key]);
                         if (isBsoftAlias(key) && !rawBsoft) rawBsoft = String(row[key]);
                         if ((k.includes('judul') || k.includes('title')) && !rawJudul) rawJudul = String(row[key]);
+                        if (isKategoriAlias(key) && !rawKategori) rawKategori = String(row[key]);
                     }
 
                     let match = (rawOrin ? dbMapByOrin[cleanStr(rawOrin)] : null) || (rawBsoft ? dbMapByBsoft[cleanStr(rawBsoft)] : null);
                     let orin = match ? (match['ID ORIN'] || rawOrin) : rawOrin;
                     let judul = match ? (match['JUDUL ITEM'] || rawJudul) : (rawJudul || 'Tanpa Judul');
+                    let kategori = match ? (match['KATEGORI'] || rawKategori) : (rawKategori || '-');
                     
                     if (!judul.trim() || cleanStr(judul).includes('obral')) return;
 
@@ -1136,7 +1186,7 @@
 
                     let isMatch = true;
                     if (keyword) {
-                        isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword);
+                        isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword);
                     }
 
                     if (isMatch) {
@@ -1158,6 +1208,7 @@
                         mergedObj.orin = orin;
                         mergedObj.judul = judul;
                         mergedObj.kodeBsoft = kodeBsoft;
+                        mergedObj.kategori = kategori;
                         mergedObj.stokBsoft = stokBsoftVal;
                         mergedObj.stokGramedia = eoh;
                         mergedObj.jan = db4.jan; mergedObj.feb = db4.feb; mergedObj.mar = db4.mar;
@@ -1180,6 +1231,8 @@
                     let judul = db1['JUDUL ITEM'] ? String(db1['JUDUL ITEM']) : "";
                     if (!judul.trim() || cleanStr(judul).includes('obral')) return;
 
+                    let kategori = db1['KATEGORI'] ? String(db1['KATEGORI']) : "-";
+
                     let db2 = calcStoreData(orin);     
                     let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
                     
@@ -1193,7 +1246,7 @@
                     if (total26 > 0 || stokBsoftVal > 0 || eoh > 0) {
                         let isMatch = true;
                         if (keyword) {
-                            isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword);
+                            isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword);
                         }
 
                         if (isMatch) {
@@ -1215,6 +1268,7 @@
                                 orin: db1['ID ORIN'] || orin,
                                 judul: judul,
                                 kodeBsoft: kodeBsoft,
+                                kategori: kategori,
                                 stokBsoft: stokBsoftVal,
                                 stokGramedia: eoh,
                                 jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
@@ -1244,7 +1298,8 @@
                 <th class="py-3 px-3">Rank</th>
                 <th class="py-3 px-3 text-left">Judul Item</th>
                 <th class="py-3 px-3 border-l">ID ORIN</th>
-                <th class="py-3 px-3">KODE BSOFT</th>`;
+                <th class="py-3 px-3">KODE BSOFT</th>
+                <th class="py-3 px-3 bg-emerald-900 text-yellow-200">KATEGORI</th>`;
 
             if (isSingleMonth) {
                 let monthNames = {JAN:'Januari', FEB:'Februari', MAR:'Maret', APR:'April', MEI:'Mei', JUN:'Juni', JUL:'Juli', AGS:'Agustus'};
@@ -1290,7 +1345,8 @@
                         </div>
                     </td>
                     <td class="py-2 px-3 border-b border-l font-mono text-gray-500">${row.orin}</td>
-                    <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>`;
+                    <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>
+                    <td class="py-2 px-3 border-b font-semibold text-purple-700 bg-emerald-50">${row.kategori || '-'}</td>`;
 
                 if (isSingleMonth) {
                     html += `<td class="py-2 px-4 border-b border-l border-r border-emerald-200 font-black text-sm">${row.valFokus}</td>`;
@@ -1361,16 +1417,16 @@
                 ["LAPORAN ANALISIS PENJUALAN BUKU & WARNING STOK KRITIS"],
                 ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
                 [],
-                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
+                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Kategori", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
             ];
 
             currentAnalyticsData.forEach((r, i) => {
                 let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "✅ Aman";
-                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
+                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.kategori, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
+            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:18}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
             sheet['!cols'] = cols;
 
             if (sheet["A1"]) sheet["A1"].s = { font: { bold: true, sz: 14 } };
@@ -1387,7 +1443,7 @@
                 font: { bold: true, color: { rgb: "991B1B" } } 
             };
 
-            for(let C = 0; C <= 15; C++) {
+            for(let C = 0; C <= 16; C++) {
                 let cellRef = XLSX.utils.encode_cell({c: C, r: 3});
                 if(sheet[cellRef]) sheet[cellRef].s = headerStyle;
             }
@@ -1395,7 +1451,7 @@
             currentAnalyticsData.forEach((r, i) => {
                 let rowIndex = 4 + i;
                 if(r.isCritical) {
-                    for(let C = 0; C <= 15; C++) {
+                    for(let C = 0; C <= 16; C++) {
                         let cellRef = XLSX.utils.encode_cell({c: C, r: rowIndex});
                         if(sheet[cellRef]) sheet[cellRef].s = criticalStyle;
                     }
@@ -1448,6 +1504,7 @@
                 let kodeBsoft = dbRow['KODE BSOFT'] || '-';
                 let harga = parseNum(dbRow['HARGA']);
                 let stokBsoft = parseNum(dbRow['STOK BSOFT']);
+                let kategori = dbRow['KATEGORI'] || '-';
 
                 const stores = storeRecordsByOrin[orinKey] || [];
                 let validStores = [];
@@ -1475,6 +1532,7 @@
                     ["JUDUL ITEM:", item.judul],
                     ["HARGA:", String(harga)],
                     ["STOK BSOFT:", String(stokBsoft)],
+                    ["KATEGORI:", kategori],
                     ["TOTAL SOLD:", String(sumSold)],
                     ["TOTAL EOH:", String(sumEoh)],
                     [],
@@ -1565,12 +1623,12 @@
         function copyToWA(jenis) {
             let text = "";
             if (jenis === 'buku') {
-                text += `*INFO STOK BUKU*\n📕 Judul: ${document.getElementById('mdl-judul').innerText}\n🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n\n*Top 10 Toko Terlaris:*\n`;
+                text += `*INFO STOK BUKU*\n📕 Judul: ${document.getElementById('mdl-judul').innerText}\n🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n🏷️ Kategori: ${document.getElementById('mdl-kategori').innerText}\n\n*Top 10 Toko Terlaris:*\n`;
                 currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} [${st.cabangRef}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
                 text += `\n*Total Nasional*\nSold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`;
             } else {
                 text += `*INFO STOK TOKO*\n🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}\n\n*Top 10 Buku Terlaris:*\n`;
-                currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} [${st.kategori}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
                 text += `\n*Total Toko*\nSold: ${document.getElementById('store-mdl-totalsold').innerText} | EOH: ${document.getElementById('store-mdl-totaleoh').innerText}`;
             }
             if (!navigator.clipboard) { fallbackCopyTextToClipboard(text); return; }
@@ -1581,6 +1639,10 @@
             document.getElementById('mdl-id').innerText = idOrin; document.getElementById('mdl-kode').innerText = kodeBsoft; 
             document.getElementById('mdl-judul').innerText = judulItem; document.getElementById('mdl-harga').innerText = harga; 
             document.getElementById('mdl-stokbsoft').innerText = stokBsoft;
+            
+            let dbMatch = dbMapByOrin[cleanStr(idOrin)];
+            let kategoriVal = dbMatch ? (dbMatch['KATEGORI'] || '-') : '-';
+            document.getElementById('mdl-kategori').innerText = kategoriVal;
             
             const tbody = document.getElementById('detailBody'); const now = new Date();
             const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
@@ -1630,7 +1692,8 @@
                     let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
                     let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
                     let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
-                    validRecords.push({ idOrin, judulItem, harga, stokBsoft, valSold, valEoh, kodeBsoft, namaToko });
+                    let kategori = dbMatch ? (dbMatch['KATEGORI'] || '-') : '-';
+                    validRecords.push({ idOrin, judulItem, harga, stokBsoft, kategori, valSold, valEoh, kodeBsoft, namaToko });
                 }
             });
 
@@ -1639,11 +1702,11 @@
             
             validRecords.forEach(item => {
                 sumStoreSold += item.valSold; sumStoreEoh += item.valEoh;
-                htmlChunks.push(`<tr class="hover:bg-purple-50"><td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td><td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td><td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td><td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td><td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td></tr>`);
+                htmlChunks.push(`<tr class="hover:bg-purple-50"><td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td><td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td><td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-semibold text-purple-700">${item.kategori}</td><td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td><td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td></tr>`);
             });
             
             document.getElementById('store-mdl-totalsold').innerText = sumStoreSold; document.getElementById('store-mdl-totaleoh').innerText = sumStoreEoh;
-            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok.</td></tr>`;
+            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok.</td></tr>`;
             else tbody.innerHTML = htmlChunks.join('');
             
             document.getElementById('storeModal').classList.remove('hidden');
@@ -1680,6 +1743,7 @@
                 ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText], 
                 ["HARGA:", String(document.getElementById('mdl-harga').innerText)], 
                 ["STOK BSOFT:", String(document.getElementById('mdl-stokbsoft').innerText)], 
+                ["KATEGORI:", document.getElementById('mdl-kategori').innerText],
                 ["TOTAL SOLD:", String(document.getElementById('mdl-totalsold').innerText)], 
                 ["TOTAL EOH:", String(document.getElementById('mdl-totaleoh').innerText)], [],
                 ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
@@ -1707,9 +1771,9 @@
                 ["LOKASI TOKO:", document.getElementById('mdl-store-name').innerText], 
                 ["TOTAL SOLD:", String(document.getElementById('store-mdl-totalsold').innerText)], 
                 ["TOTAL EOH:", String(document.getElementById('store-mdl-totaleoh').innerText)], [],
-                ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+                ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "Kategori", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
             ];
-            rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 6) aoa.push([ cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText), toNum(cols[4].innerText), toNum(cols[5].innerText) ]); });
+            rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 7) aoa.push([ cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText), cols[4].innerText, toNum(cols[5].innerText), toNum(cols[6].innerText) ]); });
             const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true);
             const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko"); XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
         }
