@@ -389,7 +389,7 @@
         let dataStore = [];    
         let processedData = []; 
         let pendingExcelFile = null; 
-        let customAnalyticsExcelRows = null; // Menyimpan baris file excel kustom untuk analitik
+        let customAnalyticsExcelRows = null; 
         
         let dbMapByOrin = {}; 
         let dbMapByBsoft = {}; 
@@ -438,7 +438,7 @@
             s = s.replace(/[,.]00$/, '').replace(/[,.]/g, '');
             return Math.abs(parseInt(s, 10) || 0);
         };
-        const escapeAttr = (str) => { return String(str).replace(/'/g, "\'").replace(/"/g, '&quot;'); };
+        const escapeAttr = (str) => { return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;'); };
 
         const isOrinAlias = (str) => {
             if (!str) return false;
@@ -546,19 +546,46 @@
                     }
                 });
 
-                // 3. Parsing Data Stock Toko (Agustus Berjalan)
+                // 3. Parsing Data Stock Toko (Otomatis deteksi baris header & kolom nama toko)
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
-                        dataStore = results.data.slice(9);
+                        let rawRows = results.data;
+                        let headerIdx = -1;
+                        let colOrin = 1, colToko = 3, colSold = 7, colEoh = 11;
+
+                        // Cari baris header yang mengandung kata 'orin' atau 'toko'
+                        for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
+                            let rowStr = rawRows[i].join(' ').toLowerCase();
+                            if (rowStr.includes('orin') || rowStr.includes('toko') || rowStr.includes('item')) {
+                                headerIdx = i;
+                                rawRows[i].forEach((cell, idx) => {
+                                    let c = String(cell).toLowerCase();
+                                    if (c.includes('orin') || c.includes('item id')) colOrin = idx;
+                                    if (c.includes('toko') || c.includes('store') || c.includes('lokasi')) colToko = idx;
+                                    if (c.includes('sold') || c.includes('terjual')) colSold = idx;
+                                    if (c.includes('eoh') || c.includes('stok akhir')) colEoh = idx;
+                                });
+                                break;
+                            }
+                        }
+
+                        // Jika header ditemukan, ambil data setelahnya. Jika tidak, default mulai baris ke-9 atau ke-4
+                        let startDataIdx = headerIdx !== -1 ? headerIdx + 1 : 9;
+                        dataStore = rawRows.slice(startDataIdx);
+
                         dataStore.forEach(st => {
-                            let id = cleanStr(st[1]); 
-                            let namaToko = cleanStr(st[3]);
+                            let id = cleanStr(st[colOrin] || st[1]); 
+                            let namaToko = cleanStr(st[colToko] || st[3]);
                             
-                            if(!id) return;
+                            if(!id || !namaToko) return;
+                            
+                            let soldVal = parseNum(st[colSold] || st[7]);
+                            let eohVal = parseNum(st[colEoh] || st[11]);
+
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
-                            storeSummaryMap[id].totalSold += parseNum(st[7]); 
-                            storeSummaryMap[id].totalEoh += parseNum(st[11]);
+                            storeSummaryMap[id].totalSold += soldVal; 
+                            storeSummaryMap[id].totalEoh += eohVal;
                             
                             if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = []; 
                             storeRecordsByOrin[id].push(st);
@@ -1044,7 +1071,6 @@
             const keyword = cleanStr(document.getElementById('analytics-search-input').value);
             let combinedData = [];
 
-            // Jika user mengupload file excel kustom untuk analitik, gunakan baris dari file tersebut!
             if (customAnalyticsExcelRows && customAnalyticsExcelRows.length > 0) {
                 customAnalyticsExcelRows.forEach(row => {
                     let rawOrin = "", rawBsoft = "", rawJudul = "";
@@ -1090,7 +1116,6 @@
 
                         let isCritical = valFokus >= 20 && stokBsoftVal < 100;
 
-                        // Gabungkan kolom asli dari excel user dengan data analitik hasil lookup
                         let mergedObj = { ...row };
                         mergedObj.orin = orin;
                         mergedObj.judul = judul;
@@ -1108,7 +1133,6 @@
                     }
                 });
             } else {
-                // Default database analytics seperti sebelumnya
                 let allOrins = new Set([...Object.keys(dbMapByOrin), ...Object.keys(storeSummaryMap), ...Object.keys(monthlySalesMap)]);
 
                 allOrins.forEach(orin => {
@@ -1217,7 +1241,6 @@
                 let arrSales = `[${row.jan},${row.feb},${row.mar},${row.apr},${row.mei},${row.jun},${row.jul},${row.ags}]`;
 
                 let rowBgClass = row.isCritical ? 'bg-red-50 hover:bg-red-100 text-red-900' : 'hover:bg-emerald-50';
-                let statusStokText = row.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "✅ Aman";
                 let statusStokBadge = row.isCritical ? `<span class="bg-red-200 text-red-800 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ STOK KRITIS</span>` : `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold text-[10px]">✅ Aman</span>`;
 
                 html += `<tr class="${rowBgClass} transition-colors">
@@ -1312,7 +1335,6 @@
             let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
             sheet['!cols'] = cols;
 
-            // --- PENGATURAN WARNA/STYLING EXCEL --- //
             if (sheet["A1"]) sheet["A1"].s = { font: { bold: true, sz: 14 } };
             if (sheet["A2"]) sheet["A2"].s = { font: { italic: true } };
 
@@ -1350,9 +1372,6 @@
             XLSX.writeFile(workbook, `Laporan_Analitik_Penjualan_per_${dateStrFile}.xlsx`);
         }
 
-        // ==========================================
-        // EXPORT EXCEL FUNGSI OPERASIONAL
-        // ==========================================
         function exportMultiSheetExcel() {
             const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
             
@@ -1431,7 +1450,7 @@
                 const sheet = XLSX.utils.aoa_to_sheet(rowsData);
                 sheet['!cols'] = getColWidths(rowsData, true);
 
-                let safeSheetName = String(item.judul).replace(/[\/\\?\*\[\]\:]/g, "").substring(0, 28);
+                let safeSheetName = String(item.judul).replace(/[\/\\\?\*\[\]\:]/g, "").substring(0, 28);
                 if (!safeSheetName) safeSheetName = `Buku_${idx + 1}`;
                 
                 let finalSheetName = safeSheetName;
@@ -1508,28 +1527,13 @@
         function copyToWA(jenis) {
             let text = "";
             if (jenis === 'buku') {
-                text += `*INFO STOK BUKU*
-📕 Judul: ${document.getElementById('mdl-judul').innerText}
-🔢 ORIN: ${document.getElementById('mdl-id').innerText}
-
-*Top 10 Toko Terlaris:*
-`;
-                currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} [${st.cabangRef}] (Sold: ${st.valSold}, EOH: ${st.valEoh})
-`; });
-                text += `
-*Total Nasional*
-Sold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`;
+                text += `*INFO STOK BUKU*\n📕 Judul: ${document.getElementById('mdl-judul').innerText}\n🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n\n*Top 10 Toko Terlaris:*\n`;
+                currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} [${st.cabangRef}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                text += `\n*Total Nasional*\nSold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`;
             } else {
-                text += `*INFO STOK TOKO*
-🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}
-
-*Top 10 Buku Terlaris:*
-`;
-                currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} (Sold: ${st.valSold}, EOH: ${st.valEoh})
-`; });
-                text += `
-*Total Toko*
-Sold: ${document.getElementById('store-mdl-totalsold').innerText} | EOH: ${document.getElementById('store-mdl-totaleoh').innerText}`;
+                text += `*INFO STOK TOKO*\n🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}\n\n*Top 10 Buku Terlaris:*\n`;
+                currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                text += `\n*Total Toko*\nSold: ${document.getElementById('store-mdl-totalsold').innerText} | EOH: ${document.getElementById('store-mdl-totaleoh').innerText}`;
             }
             if (!navigator.clipboard) { fallbackCopyTextToClipboard(text); return; }
             navigator.clipboard.writeText(text).then(function() { alert("Data berhasil disalin! Silakan Paste (Ctrl+V) di WA atau Excel."); }, function(err) { fallbackCopyTextToClipboard(text); });
