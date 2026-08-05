@@ -546,53 +546,92 @@
                     }
                 });
 
-                // 3. Parsing Data Stock Toko (Otomatis deteksi baris header & kolom nama toko)
+                // 3. Parsing Data Stock Toko (Super Robust with Structural Mapping)
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
                         let rawRows = results.data;
-                        let headerIdx = -1;
-                        let colOrin = 1, colToko = 3, colSold = 7, colEoh = 11;
-
-                        // Cari baris header yang mengandung kata 'orin' atau 'toko'
-                        for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
+                        let colOrin = -1, colToko = -1, colSold = -1, colEoh = -1;
+                        let startDataIdx = 9; 
+                        
+                        // 1. Coba deteksi header otomatis dari teks
+                        for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
                             let rowStr = rawRows[i].join(' ').toLowerCase();
-                            if (rowStr.includes('orin') || rowStr.includes('toko') || rowStr.includes('item')) {
-                                headerIdx = i;
+                            if ((rowStr.includes('orin') || rowStr.includes('item id') || rowStr.includes('item_id')) && 
+                                (rowStr.includes('toko') || rowStr.includes('store') || rowStr.includes('cabang'))) {
+                                
                                 rawRows[i].forEach((cell, idx) => {
-                                    let c = String(cell).toLowerCase();
-                                    if (c.includes('orin') || c.includes('item id')) colOrin = idx;
-                                    if (c.includes('toko') || c.includes('store') || c.includes('lokasi')) colToko = idx;
-                                    if (c.includes('sold') || c.includes('terjual')) colSold = idx;
-                                    if (c.includes('eoh') || c.includes('stok akhir')) colEoh = idx;
+                                    let c = String(cell).toLowerCase().trim();
+                                    if (c === 'orin' || c === 'id orin' || c === 'item id' || c === 'item_id') colOrin = idx;
+                                    else if (c === 'nama toko' || c === 'toko' || c === 'store' || c === 'cabang' || c === 'lokasi') colToko = idx;
+                                    else if (c === 'sold' || c === 'terjual' || c === 'qty sold' || c === 'sales' || c === 'terjual (qty)') colSold = idx;
+                                    else if (c === 'eoh' || c === 'stok akhir' || c === 'stock' || c === 'qty eoh') colEoh = idx;
                                 });
+                                
+                                startDataIdx = i + 1;
                                 break;
                             }
                         }
 
-                        // Jika header ditemukan, ambil data setelahnya. Jika tidak, default mulai baris ke-9 atau ke-4
-                        let startDataIdx = headerIdx !== -1 ? headerIdx + 1 : 9;
-                        dataStore = rawRows.slice(startDataIdx);
+                        // 2. Deteksi Pola Data (Heuristic/Brute-force) jika kolom ORIN gagal ditemukan
+                        if (colOrin === -1) {
+                            for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
+                                let row = rawRows[i];
+                                let orinIdx = row.findIndex(c => /^208\d{6,8}$/.test(String(c).trim()) || /^\d{8,10}$/.test(String(c).trim()));
+                                if (orinIdx !== -1 && row.length > orinIdx + 5) {
+                                    colOrin = orinIdx;
+                                    colToko = orinIdx + 2; 
+                                    colSold = orinIdx + 6;
+                                    colEoh = orinIdx + 10;
+                                    startDataIdx = i; 
+                                    break;
+                                }
+                            }
+                        }
 
+                        // 3. Fallback mutlak ke indeks lama jika format benar-benar aneh
+                        if (colOrin === -1) { colOrin = 1; colToko = 3; colSold = 7; colEoh = 11; startDataIdx = 9; }
+                        if (colSold === -1) colSold = colOrin + 6;
+                        if (colEoh === -1) colEoh = colOrin + 10;
+                        
+                        let colJudul = colOrin !== -1 ? colOrin + 1 : 2;
+
+                        dataStore = rawRows.slice(startDataIdx);
                         dataStore.forEach(st => {
-                            let id = cleanStr(st[colOrin] || st[1]); 
-                            let namaToko = cleanStr(st[colToko] || st[3]);
+                            if (!st || st.length <= colOrin) return;
                             
-                            if(!id || !namaToko) return;
+                            let rawId = String(st[colOrin] || '').trim();
+                            let id = cleanStr(rawId);
+                            let rawToko = String(st[colToko] || '');
+                            let namaToko = cleanStr(rawToko);
+                            let judul = String(st[colJudul] || '');
                             
-                            let soldVal = parseNum(st[colSold] || st[7]);
-                            let eohVal = parseNum(st[colEoh] || st[11]);
+                            // Pastikan baris ini adalah data valid
+                            if (!id || id.length < 5 || id.includes('orin') || id.includes('item')) return; 
+
+                            let soldVal = parseNum(st[colSold]);
+                            let eohVal = parseNum(st[colEoh]);
 
                             if(!storeSummaryMap[id]) storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
                             storeSummaryMap[id].totalSold += soldVal; 
                             storeSummaryMap[id].totalEoh += eohVal;
                             
+                            let record = { 
+                                rawOrin: rawId, 
+                                orin: id, 
+                                rawToko: rawToko, 
+                                namaToko: namaToko, 
+                                sold: soldVal, 
+                                eoh: eohVal,
+                                judulItem: judul
+                            };
+
                             if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = []; 
-                            storeRecordsByOrin[id].push(st);
+                            storeRecordsByOrin[id].push(record);
                             
                             if(namaToko) { 
                                 if(!storeRecordsByToko[namaToko]) storeRecordsByToko[namaToko] = []; 
-                                storeRecordsByToko[namaToko].push(st); 
+                                storeRecordsByToko[namaToko].push(record); 
                             }
                         });
                     }
@@ -708,7 +747,7 @@
         }
 
         function searchStoreManual() {
-            if (dataStore.length === 0) return alert("Database belum siap.");
+            if (Object.keys(storeRecordsByToko).length === 0) return alert("Database Toko belum siap atau kosong.");
             const rawVal = document.getElementById('store-search-input').value;
             if(!rawVal.trim()) return alert("Ketik nama toko.");
 
@@ -721,7 +760,7 @@
 
             if (matchedStoreNames.length > 0) {
                 processedData = matchedStoreNames.map(storeName => ({ 
-                    'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0][3], 
+                    'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0].rawToko || storeName, 
                     'STATUS SYSTEM': '✅ MATCHED_STORE' 
                 }));
                 resetFilterAndPage();
@@ -1416,10 +1455,10 @@
                 let sumSold = 0, sumEoh = 0;
 
                 stores.forEach(store => {
-                    const namaToko = store[3] || '-';
+                    const namaToko = store.rawToko || store.namaToko || '-';
                     const cabangRef = getBranchRef(namaToko); 
-                    const valSold = parseNum(store[7]);
-                    const valEoh = parseNum(store[11]);
+                    const valSold = store.sold || 0;
+                    const valEoh = store.eoh || 0;
                     if (valSold > 0 || valEoh > 0) {
                         sumSold += valSold;
                         sumEoh += valEoh;
@@ -1552,10 +1591,10 @@
 
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || []; let validStores = [];
             stores.forEach(store => {
-                const namaToko = store[3] || '-'; 
+                const namaToko = store.rawToko || store.namaToko || '-'; 
                 const cabangRef = getBranchRef(namaToko);
-                const valSold = parseNum(store[7]); 
-                const valEoh = parseNum(store[11]); 
+                const valSold = store.sold || 0; 
+                const valEoh = store.eoh || 0; 
                 if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, cabangRef, valSold, valEoh });
             });
 
@@ -1585,10 +1624,10 @@
 
             const records = storeRecordsByToko[cleanStr(namaToko)] || []; let validRecords = [];
             records.forEach(st => {
-                const idOrin = st[1] ? String(st[1]).trim() : ''; const valSold = parseNum(st[7]); const valEoh = parseNum(st[11]);
+                const idOrin = st.rawOrin || ''; const valSold = st.sold || 0; const valEoh = st.eoh || 0;
                 if (valSold > 0 || valEoh > 0) {
                     let dbMatch = dbMapByOrin[cleanStr(idOrin)];
-                    let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st[2] || '-');
+                    let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st.judulItem || '-');
                     let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
                     let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
                     let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
