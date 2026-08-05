@@ -87,6 +87,11 @@
                         Cari Buku
                     </button>
                 </div>
+                <!-- Histori Fitur 1 -->
+                <div id="history-buku-container" class="mt-3 flex items-center gap-2 flex-wrap hidden">
+                    <span class="text-xs text-gray-500 font-semibold">Histori:</span>
+                    <div id="history-buku-list" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
 
             <!-- FITUR 2: Pencarian Manual TOKO -->
@@ -98,6 +103,11 @@
                     <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Toko
                     </button>
+                </div>
+                <!-- Histori Fitur 2 -->
+                <div id="history-toko-container" class="mt-3 flex items-center gap-2 flex-wrap hidden">
+                    <span class="text-xs text-gray-500 font-semibold">Histori:</span>
+                    <div id="history-toko-list" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
 
@@ -395,6 +405,7 @@
         let currentFilter = 'ALL'; 
         let currentPage = 1;
         const rowsPerPage = 50; 
+        const MAX_HISTORY = 5; // Batas histori yang disimpan
 
         let chartBukuObj = null;
         let chartTokoObj = null;
@@ -415,7 +426,7 @@
 
         const cleanStr = (str) => { return str ? String(str).trim().toLowerCase() : ""; };
         const parseNum = (val) => {
-            if (!val) return 0;
+            if (val === undefined || val === null || val === '') return 0;
             let s = String(val).trim();
             if (s.startsWith('(') && s.endsWith(')')) s = '-' + s.slice(1, -1);
             s = s.replace(/[,.]00$/, '').replace(/[,.]/g, '');
@@ -437,6 +448,7 @@
 
         window.onload = () => {
             initCheckboxPrefs(); 
+            loadHistory();
             loadData();
         };
 
@@ -459,6 +471,56 @@
             });
         }
 
+        // ==========================================
+        // FITUR HISTORI PENCARIAN LOKAL
+        // ==========================================
+        function loadHistory() {
+            renderHistory('buku');
+            renderHistory('toko');
+        }
+
+        function saveHistory(type, term) {
+            if (!term.trim()) return;
+            const key = type === 'buku' ? 'history_buku' : 'history_toko';
+            let history = JSON.parse(localStorage.getItem(key) || '[]');
+            // Hapus duplikat agar kata kunci terbaru naik ke atas
+            history = history.filter(item => item.toLowerCase() !== term.toLowerCase());
+            history.unshift(term);
+            if (history.length > MAX_HISTORY) history.pop();
+            localStorage.setItem(key, JSON.stringify(history));
+            renderHistory(type);
+        }
+
+        function renderHistory(type) {
+            const key = type === 'buku' ? 'history_buku' : 'history_toko';
+            const history = JSON.parse(localStorage.getItem(key) || '[]');
+            const container = document.getElementById(`history-${type}-container`);
+            const list = document.getElementById(`history-${type}-list`);
+            
+            if (history.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            list.innerHTML = history.map(term => 
+                `<button onclick="useHistory('${type}', '${escapeAttr(term)}')" class="text-xs bg-gray-200 hover:bg-blue-200 text-gray-700 py-1 px-3 rounded-full cursor-pointer transition font-medium border border-gray-300 shadow-sm">${term}</button>`
+            ).join('');
+        }
+
+        function useHistory(type, term) {
+            if (type === 'buku') {
+                document.getElementById('manual-search-input').value = term;
+                searchManual();
+            } else {
+                document.getElementById('store-search-input').value = term;
+                searchStoreManual();
+            }
+        }
+
+        // ==========================================
+        // PROSES LOAD DATA (ANTI-GESEH)
+        // ==========================================
         async function loadData(forceRefresh = false) {
             const statusEl = document.getElementById('db-status');
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; 
@@ -499,7 +561,13 @@
                         database = [];
                         results.data.forEach(row => {
                             let cleanRow = {}; 
-                            for (let key in row) { cleanRow[key.trim()] = row[key]; }
+                            for (let key in row) {
+                                // TRIM HEADER & VALUE UNTUK CEGAH GESEH
+                                let cleanKey = key ? key.trim() : "";
+                                if (cleanKey) {
+                                    cleanRow[cleanKey] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                                }
+                            }
                             let judulItem = cleanRow['JUDUL ITEM'] ? String(cleanRow['JUDUL ITEM']) : "";
                             
                             if (cleanStr(judulItem).includes('obral')) return;
@@ -520,7 +588,10 @@
                     complete: function(results) {
                         results.data.forEach(row => {
                             let cleanRow = {};
-                            for (let key in row) { cleanRow[key.trim().toLowerCase()] = row[key]; }
+                            for (let key in row) {
+                                let cleanKey = key ? key.trim().toLowerCase() : "";
+                                if(cleanKey) cleanRow[cleanKey] = typeof row[key] === 'string' ? row[key].trim() : row[key];
+                            }
                             let idToko = cleanStr(cleanRow['id toko']);
                             let cabangRef = cleanRow['cabang referensi'] ? String(cleanRow['cabang referensi']).trim() : "-";
                             if (idToko) { storeBranchMap[idToko] = cabangRef; }
@@ -534,6 +605,9 @@
                     complete: function(results) {
                         dataStore = results.data.slice(9);
                         dataStore.forEach(st => {
+                            // VALIDASI PANJANG ARRAY UNTUK MENCEGAH GESEH (Missing Columns)
+                            if (!st || st.length < 12) return; 
+
                             let id = cleanStr(st[1]); 
                             let namaToko = cleanStr(st[3]);
                             
@@ -558,7 +632,7 @@
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
                         results.data.forEach(row => {
-                            let orin = cleanStr(row['Item Id']);
+                            let orin = row['Item Id'] ? cleanStr(row['Item Id']) : "";
                             if (orin) {
                                 monthlySalesMap[orin] = {
                                     jan: parseNum(row['JANUARI']), feb: parseNum(row['FEBRUARI']),
@@ -617,20 +691,21 @@
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('manual-search-input').value;
+            if (!rawVal.trim()) return alert("Ketik kata kunci untuk mencari.");
+            
+            // Simpan ke Histori
+            saveHistory('buku', rawVal.trim());
+
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
 
             let matches = [];
-            if (searchTerms.length === 0) {
-                matches = database;
-            } else {
-                matches = database.filter(dbRow => {
-                    return searchTerms.some(term => 
-                        cleanStr(dbRow['ID ORIN']).includes(term) || 
-                        cleanStr(dbRow['KODE BSOFT']).includes(term) || 
-                        cleanStr(dbRow['JUDUL ITEM']).includes(term)
-                    );
-                });
-            }
+            matches = database.filter(dbRow => {
+                return searchTerms.some(term => 
+                    cleanStr(dbRow['ID ORIN']).includes(term) || 
+                    cleanStr(dbRow['KODE BSOFT']).includes(term) || 
+                    cleanStr(dbRow['JUDUL ITEM']).includes(term)
+                );
+            });
 
             if (matches.length > 0) {
                 processedData = matches.map(match => {
@@ -666,6 +741,9 @@
             if (dataStore.length === 0) return alert("Database belum siap.");
             const rawVal = document.getElementById('store-search-input').value;
             if(!rawVal.trim()) return alert("Ketik nama toko.");
+            
+            // Simpan ke Histori
+            saveHistory('toko', rawVal.trim());
 
             const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
             let uniqueStores = Object.keys(storeRecordsByToko);
@@ -739,7 +817,7 @@
                     let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
-                        actualHeaders = row.map(h => String(h).trim()); 
+                        actualHeaders = row.map(h => h ? String(h).trim() : ""); 
                         break; 
                     }
                 }
@@ -751,7 +829,9 @@
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
                     let rowObj = {}; 
                     for (let j = 0; j < actualHeaders.length; j++) {
-                        rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j]; 
+                        let hName = actualHeaders[j] || `KOLOM_KOSONG_${j+1}`;
+                        let cellVal = dataAsArrays[i][j];
+                        rowObj[hName] = typeof cellVal === 'string' ? cellVal.trim() : cellVal; 
                     }
                     userExcelData.push(rowObj);
                 }
@@ -1151,48 +1231,42 @@
                 ["LAPORAN ANALISIS PENJUALAN BUKU & WARNING STOK KRITIS"],
                 ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
                 [],
-                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Nilai Terjual", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
+                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
             ];
 
             currentAnalyticsData.forEach((r, i) => {
-                let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "Normal";
-                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.valFokus, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
+                let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "✅ Aman";
+                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
             });
 
             const sheet = XLSX.utils.aoa_to_sheet(aoa);
-            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:15}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
+            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
             sheet['!cols'] = cols;
 
             // --- PENGATURAN WARNA/STYLING BARU UNTUK EXCEL --- //
-            
-            // Bikin judul tebal
             if (sheet["A1"]) sheet["A1"].s = { font: { bold: true, sz: 14 } };
             if (sheet["A2"]) sheet["A2"].s = { font: { italic: true } };
 
-            // Styling Header Kolom (Baris ke-4, index 3) -> Warna Hijau Gelap
             const headerStyle = {
                 fill: { fgColor: { rgb: "065F46" } }, 
                 font: { bold: true, color: { rgb: "FFFFFF" } },
                 alignment: { vertical: "center", horizontal: "center" }
             };
 
-            // Styling Baris Stok Kritis -> Warna Merah Muda
             const criticalStyle = {
                 fill: { fgColor: { rgb: "FEE2E2" } },
                 font: { bold: true, color: { rgb: "991B1B" } } 
             };
 
-            // Menerapkan Style Header
-            for(let C = 0; C <= 16; C++) {
+            for(let C = 0; C <= 15; C++) {
                 let cellRef = XLSX.utils.encode_cell({c: C, r: 3});
                 if(sheet[cellRef]) sheet[cellRef].s = headerStyle;
             }
 
-            // Menerapkan Style Warna Merah di baris yang berstatus Kritis
             currentAnalyticsData.forEach((r, i) => {
-                let rowIndex = 4 + i; // Baris data dimulai dari index ke-4
+                let rowIndex = 4 + i;
                 if(r.isCritical) {
-                    for(let C = 0; C <= 16; C++) {
+                    for(let C = 0; C <= 15; C++) {
                         let cellRef = XLSX.utils.encode_cell({c: C, r: rowIndex});
                         if(sheet[cellRef]) sheet[cellRef].s = criticalStyle;
                     }
@@ -1201,7 +1275,10 @@
 
             const workbook = XLSX.utils.book_new(); 
             XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_StokKritis"); 
-            XLSX.writeFile(workbook, "Laporan_Analitik_StokKritis.xlsx");
+            
+            const now = new Date();
+            const dateStrFile = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth()+1).padStart(2, '0')}-${now.getFullYear()}`;
+            XLSX.writeFile(workbook, `Laporan_Analitik_Penjualan_per_${dateStrFile}.xlsx`);
         }
 
         // ==========================================
