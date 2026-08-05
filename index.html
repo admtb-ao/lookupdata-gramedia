@@ -968,13 +968,9 @@
 
             allOrins.forEach(orin => {
                 let db1 = dbMapByOrin[orin]; 
-                
-                // Jika ORIN tidak ada di Master Buku (judul tidak ditemukan), abaikan sepenuhnya!
                 if (!db1) return;
 
                 let judul = db1['JUDUL ITEM'] ? String(db1['JUDUL ITEM']) : "";
-                
-                // Blacklist total jika judul kosong atau mengandung kata "obral"
                 if (!judul.trim() || cleanStr(judul).includes('obral')) return;
 
                 let db2 = calcStoreData(orin);     
@@ -1006,7 +1002,6 @@
                         else if (currentSortMode === 'Q1') valFokus = db4.jan + db4.feb + db4.mar;
                         else if (currentSortMode === 'Q2') valFokus = db4.apr + db4.mei + db4.jun;
 
-                        // Kriteria Warning Stok Kritis: Penjualan >= 20 tapi Stok Bsoft < 100
                         let isCritical = valFokus >= 20 && stokBsoftVal < 100;
 
                         combinedData.push({
@@ -1024,7 +1019,6 @@
                 }
             });
 
-            // Sorting ketat berdasarkan nilai fokus pilihan tertinggi
             combinedData.sort((a, b) => b.valFokus - a.valFokus);
             currentAnalyticsData = combinedData.slice(0, 100);
             renderAnalyticsTable();
@@ -1066,7 +1060,6 @@
             headHtml += `
                 <th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK BSOFT</th>
                 <th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK AKHIR GRAMEDIA</th>
-                <th class="py-3 px-3 border-l border-emerald-600">Aksi</th>
             </tr>`;
             thead.innerHTML = headHtml;
 
@@ -1081,7 +1074,12 @@
 
                 html += `<tr class="${rowBgClass} transition-colors">
                     <td class="py-2 px-3 border-b font-bold text-gray-500">${rnkStr}</td>
-                    <td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">${row.judul} ${warningBadge}</td>
+                    <td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">
+                        ${row.judul} ${warningBadge}
+                        <div class="mt-1.5">
+                            <button onclick="openTrendModal('${judulEsc}', '${orinEsc}', '${bsEsc}', ${arrSales})" class="text-[9px] md:text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-0.5 px-2 rounded font-bold shadow-sm transition inline-flex items-center gap-1">📈 Lihat Tren</button>
+                        </div>
+                    </td>
                     <td class="py-2 px-3 border-b border-l font-mono text-gray-500">${row.orin}</td>
                     <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>`;
 
@@ -1105,9 +1103,6 @@
                 html += `
                     <td class="py-2 px-3 border-b border-l border-emerald-200 font-bold ${row.isCritical ? 'text-red-700 bg-red-100' : 'bg-gray-100 text-gray-800'}">${row.stokBsoft}</td>
                     <td class="py-2 px-3 border-b font-bold bg-gray-50 text-emerald-700">${row.stokGramedia}</td>
-                    <td class="py-2 px-3 border-b border-l border-emerald-200">
-                        <button onclick="openTrendModal('${judulEsc}', '${orinEsc}', '${bsEsc}', ${arrSales})" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">📈 Trend</button>
-                    </td>
                 </tr>`;
             });
             
