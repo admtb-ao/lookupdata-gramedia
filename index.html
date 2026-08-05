@@ -77,22 +77,32 @@
         <!-- TAB 1: OPERASIONAL & LOOKUP (FITUR 1-3) -->
         <!-- ============================================== -->
         <div id="tab-operasional" class="tab-content block">
-            <!-- FITUR 1: Pencarian Manual BUKU -->
+            <!-- FITUR 1: Pencarian Manual BUKU & Multi-Kategori -->
             <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, Judul, atau <b>Kategori</b>. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, Buku Anak..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
+                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, judul buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Buku
                     </button>
                 </div>
-                <!-- Filter Cepat Berdasarkan Kategori -->
-                <div class="mt-3 flex flex-wrap items-center gap-2">
-                    <span class="text-xs font-bold text-gray-700">Filter Cepat Kategori:</span>
-                    <select id="quick-category-select" onchange="filterByCategoryQuick(this.value)" class="border border-gray-300 text-xs p-2 rounded-lg bg-white font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
-                        <option value="">-- Pilih Kategori --</option>
-                    </select>
+
+                <!-- Multi-Kategori Checklist Filter -->
+                <div class="bg-white border border-blue-200 p-4 rounded-lg shadow-inner">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+                        <label class="block text-xs md:text-sm font-bold text-blue-900">🏷️ Filter Multi-Kategori (Pilih satu atau banyak):</label>
+                        <div class="flex gap-2">
+                            <button onclick="toggleAllCategories(true)" class="text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold px-2 py-1 rounded">Pilih Semua</button>
+                            <button onclick="toggleAllCategories(false)" class="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-2 py-1 rounded">Reset / Kosongkan</button>
+                        </div>
+                    </div>
+                    <div id="category-checkbox-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-40 overflow-y-auto p-2 border rounded bg-gray-50 text-xs font-medium text-gray-700">
+                        <span class="text-gray-400 italic">Memuat kategori...</span>
+                    </div>
+                    <button onclick="searchBySelectedCategories()" class="mt-3 w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow transition text-xs flex items-center justify-center gap-2">
+                        ✨ Tampilkan Berdasarkan Multi-Kategori yang Dipilih
+                    </button>
                 </div>
             </div>
 
@@ -498,7 +508,7 @@
             const statusEl = document.getElementById('db-status');
             statusEl.innerHTML = `Sedang Mengunduh Data... ⏳`; 
             statusEl.className = "text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-xs";
-            const btns = ['manual-search-input','store-search-input','file-upload','search-btn','search-store-btn', 'refresh-btn', 'quick-category-select'];
+            const btns = ['manual-search-input','store-search-input','file-upload','search-btn','search-store-btn', 'refresh-btn'];
             btns.forEach(id => { if(document.getElementById(id)) document.getElementById(id).disabled = true; });
 
             try {
@@ -560,8 +570,8 @@
                     }
                 });
 
-                // Populate Dropdown Filter Cepat Kategori
-                populateCategoryDropdown();
+                // Populate Multi-Category Checkboxes
+                populateCategoryCheckboxes();
 
                 // 2. Parsing Mapping Cabang Toko
                 Papa.parse(csvBranchText, {
@@ -691,22 +701,65 @@
             }
         }
 
-        function populateCategoryDropdown() {
-            const select = document.getElementById('quick-category-select');
-            if(!select) return;
-            select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
-            Array.from(availableCategories).sort().forEach(cat => {
-                let opt = document.createElement('option');
-                opt.value = cat;
-                opt.innerText = cat;
-                select.appendChild(opt);
+        function populateCategoryCheckboxes() {
+            const container = document.getElementById('category-checkbox-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            Array.from(availableCategories).sort().forEach((cat, index) => {
+                let label = document.createElement('label');
+                label.className = "flex items-center gap-2 cursor-pointer hover:text-blue-600 truncate";
+                label.innerHTML = `<input type="checkbox" name="cat-filter" value="${escapeAttr(cat)}" class="w-4 h-4 text-emerald-600 rounded"> <span title="${escapeAttr(cat)}">${cat}</span>`;
+                container.appendChild(label);
             });
         }
 
-        function filterByCategoryQuick(categoryVal) {
-            if(!categoryVal) return;
-            document.getElementById('manual-search-input').value = categoryVal;
-            searchManual();
+        function toggleAllCategories(status) {
+            const checkboxes = document.querySelectorAll('input[name="cat-filter"]');
+            checkboxes.forEach(chk => chk.checked = status);
+        }
+
+        function searchBySelectedCategories() {
+            if (database.length === 0) return alert("Database belum siap.");
+            const checkboxes = document.querySelectorAll('input[name="cat-filter"]:checked');
+            if (checkboxes.length === 0) return alert("Pilih minimal satu kategori terlebih dahulu.");
+
+            let selectedCats = Array.from(checkboxes).map(chk => cleanStr(chk.value));
+
+            let matches = database.filter(dbRow => {
+                let cat = cleanStr(dbRow['KATEGORI']);
+                return selectedCats.includes(cat);
+            });
+
+            if (matches.length > 0) {
+                processedData = matches.map(match => {
+                    const { totalSold, totalEoh } = calcStoreData(match['ID ORIN']);
+                    return { 
+                        'ID ORIN': match['ID ORIN'] || '', 
+                        'KODE BSOFT': match['KODE BSOFT'] || '', 
+                        'JUDUL ITEM': match['JUDUL ITEM'] || '', 
+                        'HARGA': match['HARGA'] !== undefined ? match['HARGA'] : '', 
+                        'STOK BSOFT': match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '', 
+                        'KATEGORI': match['KATEGORI'] || '',
+                        'SOLD (TERJUAL BULAN INI)': totalSold, 
+                        'EOH (STOK AKHIR GRAMEDIA)': totalEoh, 
+                        'STATUS SYSTEM': '✅ MATCHED_BOOK' 
+                    };
+                });
+                sortCol = 'SOLD (TERJUAL BULAN INI)'; 
+                sortAsc = false; 
+                resetFilterAndPage();
+                doSortData();
+                document.getElementById('export-btn').classList.remove('hidden');
+                document.getElementById('export-multi-btn').classList.remove('hidden');
+            } else {
+                processedData = [{'STATUS SYSTEM': '❌ NOT FOUND'}]; 
+                resetFilterAndPage();
+                renderPreview(); 
+                document.getElementById('export-btn').classList.add('hidden');
+                document.getElementById('export-multi-btn').classList.add('hidden');
+                alert("Tidak ada buku yang ditemukan untuk kategori yang dipilih.");
+            }
         }
 
         function getBranchRef(storeNameOrString) {
