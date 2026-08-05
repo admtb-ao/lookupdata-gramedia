@@ -121,7 +121,7 @@
             <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
             <div class="mb-6 bg-gray-50 p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda. Sistem otomatis memindai dan mensinkronisasi datanya.</p>
+                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda (Bisa hanya Judul & Harga saja, sistem otomatis mencocokkan kodenya).</p>
                 
                 <div class="mb-4 bg-white border border-gray-300 p-4 rounded-lg shadow-inner">
                     <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik (Auto-Saved):</label>
@@ -413,6 +413,7 @@
         
         let dbMapByOrin = {}; 
         let dbMapByBsoft = {}; 
+        let dbMapByTitlePrice = {}; // Peta pencarian berdasarkan Judul + Harga
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
@@ -479,6 +480,18 @@
             return ['kategori', 'category', 'kategoribuku'].includes(s);
         };
 
+        const isTitleAlias = (str) => {
+            if (!str) return false;
+            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            return ['judulitem', 'judul', 'title', 'namabuku', 'itemname'].includes(s);
+        };
+
+        const isPriceAlias = (str) => {
+            if (!str) return false;
+            let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            return ['harga', 'price', 'retailprice', 'hargajual'].includes(s);
+        };
+
         window.onload = () => {
             initCheckboxPrefs(); 
             loadData(true);
@@ -512,7 +525,7 @@
             btns.forEach(id => { if(document.getElementById(id)) document.getElementById(id).disabled = true; });
 
             try {
-                database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; 
+                database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; dbMapByTitlePrice = {};
                 storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {}; storeBranchMap = {}; monthlySalesMap = {};
                 availableCategories.clear();
                 
@@ -560,17 +573,23 @@
                             let orin = cleanRow['ID ORIN'] ? cleanStr(cleanRow['ID ORIN']) : "";
                             let bsoft = cleanRow['KODE BSOFT'] ? cleanStr(cleanRow['KODE BSOFT']) : "";
                             let kategori = cleanRow['KATEGORI'] ? String(cleanRow['KATEGORI']).trim() : "";
+                            let hargaVal = parseNum(cleanRow['HARGA']);
                             
                             if(orin) dbMapByOrin[orin] = cleanRow; 
                             if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
                             if(kategori) availableCategories.add(kategori);
+
+                            // Pemetaan kombo Judul + Harga untuk pencocokan pintar
+                            if(judulItem) {
+                                let keyTP = `${cleanStr(judulItem)}_${hargaVal}`;
+                                dbMapByTitlePrice[keyTP] = cleanRow;
+                            }
                             
                             database.push(cleanRow);
                         });
                     }
                 });
 
-                // Populate Multi-Category Checkboxes
                 populateCategoryCheckboxes();
 
                 // 2. Parsing Mapping Cabang Toko
@@ -884,7 +903,7 @@
         function handleFileSelection(file) {
             pendingExcelFile = file;
             document.getElementById('file-ready-container').classList.remove('hidden');
-            document.getElementById('file-name-display').innerHTML = `📄 File terpilih: <span class="text-blue-600 font-bold">${file.name}</span>`;
+            document.getElementById('file-name-display',).innerHTML = `📄 File terpilih: <span class="text-blue-600 font-bold">${file.name}</span>`;
             document.getElementById('process-btn-ui').innerHTML = '🚀 Proses Data Sekarang';
         }
 
@@ -906,7 +925,8 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i]; 
                     if (!row) continue;
-                    let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
+                    // Cek apakah ada header ID, atau minimal ada header Judul / Harga
+                    let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell) || isTitleAlias(cell));
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
                         actualHeaders = row.map(h => String(h).trim()); 
@@ -914,7 +934,13 @@
                     }
                 }
                 
-                if (headerRowIndex === -1) return alert("Header ID tidak ditemukan.");
+                // Jika tidak ketemu baris header standar, ambil baris pertama sebagai fallback otomatis
+                if (headerRowIndex === -1 && dataAsArrays.length > 0) {
+                    headerRowIndex = 0;
+                    actualHeaders = dataAsArrays[0].map((h, idx) => String(h).trim() || `KOLOM_${idx+1}`);
+                }
+
+                if (headerRowIndex === -1) return alert("Header file tidak dapat dibaca.");
 
                 let userExcelData = [];
                 for (let i = headerRowIndex + 1; i < dataAsArrays.length; i++) {
@@ -924,6 +950,17 @@
                         rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j]; 
                     }
                     userExcelData.push(rowObj);
+                }
+
+                // Jika header ternyata berupa baris data (karena tidak ada baris header teks di atasnya)
+                if (userExcelData.length === 0 && dataAsArrays.length > 0) {
+                    let fallbackHeaders = dataAsArrays[0].map((_, idx) => idx === 0 ? "JUDUL ITEM" : (idx === 1 ? "HARGA" : `KOLOM_${idx+1}`));
+                    for (let i = 0; i < dataAsArrays.length; i++) {
+                        let rowObj = {};
+                        dataAsArrays[i].forEach((val, j) => { rowObj[fallbackHeaders[j] || `KOLOM_${j+1}`] = val; });
+                        userExcelData.push(rowObj);
+                    }
+                    actualHeaders = fallbackHeaders;
                 }
 
                 const wants = {
@@ -938,21 +975,49 @@
                 };
 
                 processedData = userExcelData.map(row => {
-                    let rawUserOrin = "", rawUserBsoft = "";
+                    let rawUserOrin = "", rawUserBsoft = "", rawUserTitle = "", rawUserPrice = "";
                     let userOrin = "", userBsoft = "";
                     
                     for (let key in row) {
-                        if (isOrinAlias(key) && !rawUserOrin) {
-                            rawUserOrin = String(row[key]);
-                            userOrin = cleanStr(row[key]);
-                        }
-                        if (isBsoftAlias(key) && !rawUserBsoft) {
-                            rawUserBsoft = String(row[key]);
-                            userBsoft = cleanStr(row[key]);
-                        }
+                        let valStr = String(row[key] || '');
+                        if (isOrinAlias(key) && !rawUserOrin) { rawUserOrin = valStr; userOrin = cleanStr(valStr); }
+                        if (isBsoftAlias(key) && !rawUserBsoft) { rawUserBsoft = valStr; userBsoft = cleanStr(valStr); }
+                        if (isTitleAlias(key) && !rawUserTitle) rawUserTitle = valStr;
+                        if (isPriceAlias(key) && !rawUserPrice) rawUserPrice = valStr;
                     }
 
-                    let match = userOrin ? dbMapByOrin[userOrin] : (userBsoft ? dbMapByBsoft[userBsoft] : null);
+                    // Fallback jika nama kolom tidak terdeteksi otomatis tapi ada isinya
+                    if (!rawUserTitle && Object.keys(row).length > 0) {
+                        let firstKey = Object.keys(row)[0];
+                        rawUserTitle = String(row[firstKey] || '');
+                    }
+                    if (!rawUserPrice && Object.keys(row).length > 1) {
+                        let secondKey = Object.keys(row)[1];
+                        rawUserPrice = String(row[secondKey] || '');
+                    }
+
+                    let match = null;
+                    if (userOrin) match = dbMapByOrin[userOrin];
+                    else if (userBsoft) match = dbMapByBsoft[userBsoft];
+                    else if (rawUserTitle) {
+                        // Pencocokan cerdas berdasarkan Judul + Harga
+                        let cleanTitle = cleanStr(rawUserTitle);
+                        let priceVal = parseNum(rawUserPrice);
+                        let comboKey = `${cleanTitle}_${priceVal}`;
+
+                        if (dbMapByTitlePrice[comboKey]) {
+                            match = dbMapByTitlePrice[comboKey];
+                        } else {
+                            // Cari berdasarkan kemiripan judul jika harga kosong atau berbeda tipis
+                            let foundKey = Object.keys(dbMapByTitlePrice).find(k => k.startsWith(cleanTitle + '_'));
+                            if (foundKey) match = dbMapByTitlePrice[foundKey];
+                            else {
+                                // Cari di database master utama berdasarkan teks judul saja
+                                let foundDb = database.find(d => cleanStr(d['JUDUL ITEM']) === cleanTitle);
+                                if (foundDb) match = foundDb;
+                            }
+                        }
+                    }
 
                     if (match) {
                         let newRow = { ...row };
@@ -964,15 +1029,17 @@
                         }
                         if (wants.orin) newRow['ID ORIN'] = finalId;
                         if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || rawUserBsoft || '';
-                        if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || row['JUDUL ITEM'] || '';
-                        if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || '');
-                        if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : (row['STOK BSOFT'] || '');
-                        if (wants.kategori) newRow['KATEGORI'] = match['KATEGORI'] || row['KATEGORI'] || '';
+                        if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || rawUserTitle || '';
+                        if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (rawUserPrice || '');
+                        if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '';
+                        if (wants.kategori) newRow['KATEGORI'] = match['KATEGORI'] || '';
                         
                         newRow['STATUS SYSTEM'] = '✅ CUSTOM_MATCHED'; 
                         return newRow;
                     } else {
-                        return { ...row, 'STATUS SYSTEM': '❌ NOT FOUND' };
+                        let failRow = { ...row };
+                        failRow['STATUS SYSTEM'] = '❌ NOT FOUND';
+                        return failRow;
                     }
                 });
 
@@ -1171,7 +1238,7 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i]; 
                     if (!row) continue;
-                    let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell));
+                    let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell) || isTitleAlias(cell));
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
                         actualHeaders = row.map(h => String(h).trim()); 
@@ -1179,7 +1246,10 @@
                     }
                 }
                 
-                if (headerRowIndex === -1) return alert("Header ItemID / BSOFTH tidak ditemukan pada file Anda.");
+                if (headerRowIndex === -1 && dataAsArrays.length > 0) {
+                    headerRowIndex = 0;
+                    actualHeaders = dataAsArrays[0].map((h, idx) => String(h).trim() || `KOLOM_${idx+1}`);
+                }
 
                 customAnalyticsExcelRows = [];
                 for (let i = headerRowIndex + 1; i < dataAsArrays.length; i++) {
@@ -1217,11 +1287,12 @@
                         let k = key.toLowerCase();
                         if (isOrinAlias(key) && !rawOrin) rawOrin = String(row[key]);
                         if (isBsoftAlias(key) && !rawBsoft) rawBsoft = String(row[key]);
-                        if ((k.includes('judul') || k.includes('title')) && !rawJudul) rawJudul = String(row[key]);
+                        if (isTitleAlias(key) && !rawJudul) rawJudul = String(row[key]);
                         if (isKategoriAlias(key) && !rawKategori) rawKategori = String(row[key]);
                     }
+                    if(!rawJudul && Object.keys(row).length > 0) rawJudul = String(row[Object.keys(row)[0]] || '');
 
-                    let match = (rawOrin ? dbMapByOrin[cleanStr(rawOrin)] : null) || (rawBsoft ? dbMapByBsoft[cleanStr(rawBsoft)] : null);
+                    let match = (rawOrin ? dbMapByOrin[cleanStr(rawOrin)] : null) || (rawBsoft ? dbMapByBsoft[cleanStr(rawBsoft)] : null) || (rawJudul ? dbMapByTitlePrice[cleanStr(rawJudul) + '_0'] : null);
                     let orin = match ? (match['ID ORIN'] || rawOrin) : rawOrin;
                     let judul = match ? (match['JUDUL ITEM'] || rawJudul) : (rawJudul || 'Tanpa Judul');
                     let kategori = match ? (match['KATEGORI'] || rawKategori) : (rawKategori || '-');
