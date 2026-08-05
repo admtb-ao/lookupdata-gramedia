@@ -454,7 +454,9 @@
 
         window.onload = () => {
             initCheckboxPrefs(); 
-            loadData();
+            // Memaksa parameter "true" agar selalu mengambil data segar, 
+            // mengabaikan fallback localStorage setiap kali di-refresh.
+            loadData(true);
             setupAnalyticsDropZone();
         };
 
@@ -496,7 +498,16 @@
                     csvBranchText = localStorage.getItem('cacheCsvBranch');
                     csvSalesText = localStorage.getItem('cacheCsvSales');
                 } else {
-                    const [resMain, resStore, resBranch, resSales] = await Promise.all([ fetch(csvUrlMain), fetch(csvUrlStore), fetch(csvUrlBranch), fetch(csvUrlSales) ]);
+                    // Menambahkan parameter timestamp (&t=...) untuk mem-bypass HTTP Cache Browser
+                    const cacheBuster = new Date().getTime();
+                    
+                    const [resMain, resStore, resBranch, resSales] = await Promise.all([ 
+                        fetch(`${csvUrlMain}&t=${cacheBuster}`), 
+                        fetch(`${csvUrlStore}&t=${cacheBuster}`), 
+                        fetch(`${csvUrlBranch}&t=${cacheBuster}`), 
+                        fetch(`${csvUrlSales}&t=${cacheBuster}`) 
+                    ]);
+                    
                     csvMainText = await resMain.text(); 
                     csvStoreText = await resStore.text();
                     csvBranchText = await resBranch.text();
@@ -606,7 +617,6 @@
                             let namaToko = cleanStr(rawToko);
                             let judul = String(st[colJudul] || '');
                             
-                            // Pastikan baris ini adalah data valid
                             if (!id || id.length < 5 || id.includes('orin') || id.includes('item')) return; 
 
                             let soldVal = parseNum(st[colSold]);
