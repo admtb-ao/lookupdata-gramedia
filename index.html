@@ -454,8 +454,6 @@
 
         window.onload = () => {
             initCheckboxPrefs(); 
-            // Memaksa parameter "true" agar selalu mengambil data segar, 
-            // mengabaikan fallback localStorage setiap kali di-refresh.
             loadData(true);
             setupAnalyticsDropZone();
         };
@@ -498,9 +496,7 @@
                     csvBranchText = localStorage.getItem('cacheCsvBranch');
                     csvSalesText = localStorage.getItem('cacheCsvSales');
                 } else {
-                    // Menambahkan parameter timestamp (&t=...) untuk mem-bypass HTTP Cache Browser
                     const cacheBuster = new Date().getTime();
-                    
                     const [resMain, resStore, resBranch, resSales] = await Promise.all([ 
                         fetch(`${csvUrlMain}&t=${cacheBuster}`), 
                         fetch(`${csvUrlStore}&t=${cacheBuster}`), 
@@ -557,7 +553,7 @@
                     }
                 });
 
-                // 3. Parsing Data Stock Toko (Super Robust with Structural Mapping)
+                // 3. Parsing Data Stock Toko
                 Papa.parse(csvStoreText, {
                     header: false, skipEmptyLines: true,
                     complete: function(results) {
@@ -565,7 +561,6 @@
                         let colOrin = -1, colToko = -1, colSold = -1, colEoh = -1;
                         let startDataIdx = 9; 
                         
-                        // 1. Coba deteksi header otomatis dari teks
                         for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
                             let rowStr = rawRows[i].join(' ').toLowerCase();
                             if ((rowStr.includes('orin') || rowStr.includes('item id') || rowStr.includes('item_id')) && 
@@ -584,23 +579,16 @@
                             }
                         }
 
-                        // 2. Deteksi Pola Data (Heuristic/Brute-force) jika kolom ORIN gagal ditemukan
                         if (colOrin === -1) {
                             for (let i = 0; i < Math.min(rawRows.length, 25); i++) {
                                 let row = rawRows[i];
                                 let orinIdx = row.findIndex(c => /^208\d{6,8}$/.test(String(c).trim()) || /^\d{8,10}$/.test(String(c).trim()));
                                 if (orinIdx !== -1 && row.length > orinIdx + 5) {
-                                    colOrin = orinIdx;
-                                    colToko = orinIdx + 2; 
-                                    colSold = orinIdx + 6;
-                                    colEoh = orinIdx + 10;
-                                    startDataIdx = i; 
-                                    break;
+                                    colOrin = orinIdx; colToko = orinIdx + 2; colSold = orinIdx + 6; colEoh = orinIdx + 10; startDataIdx = i; break;
                                 }
                             }
                         }
 
-                        // 3. Fallback mutlak ke indeks lama jika format benar-benar aneh
                         if (colOrin === -1) { colOrin = 1; colToko = 3; colSold = 7; colEoh = 11; startDataIdx = 9; }
                         if (colSold === -1) colSold = colOrin + 6;
                         if (colEoh === -1) colEoh = colOrin + 10;
@@ -627,13 +615,7 @@
                             storeSummaryMap[id].totalEoh += eohVal;
                             
                             let record = { 
-                                rawOrin: rawId, 
-                                orin: id, 
-                                rawToko: rawToko, 
-                                namaToko: namaToko, 
-                                sold: soldVal, 
-                                eoh: eohVal,
-                                judulItem: judul
+                                rawOrin: rawId, orin: id, rawToko: rawToko, namaToko: namaToko, sold: soldVal, eoh: eohVal, judulItem: judul
                             };
 
                             if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = []; 
@@ -701,9 +683,6 @@
             return { totalSold: 0, totalEoh: 0 };
         }
 
-        // ==========================================
-        // FUNGSI TAB 1 (OPERASIONAL & PREVIEW)
-        // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
         document.getElementById('analytics-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') generateTop50(); });
@@ -891,7 +870,7 @@
                         if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || '');
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : (row['STOK BSOFT'] || '');
                         
-                        newRow['STATUS SYSTEM'] = '✅ MATCHED'; 
+                        newRow['STATUS SYSTEM'] = '✅ CUSTOM_MATCHED'; 
                         return newRow;
                     } else {
                         return { ...row, 'STATUS SYSTEM': '❌ NOT FOUND' };
@@ -1012,8 +991,18 @@
                 headers.forEach(header => {
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
+                        // KODE PERBAIKAN: Menambahkan kembali tombol "Lihat Detail" di kolom STATUS SYSTEM
                         if (val === '✅ MATCHED_BOOK' || val === '✅ CUSTOM_MATCHED') {
-                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Ter-lookup</span></td>`;
+                            let orinEsc = escapeAttr(rowObj['ID ORIN'] || rowObj['ItemID'] || '');
+                            let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || rowObj['BSOFTH'] || '');
+                            let judulEsc = escapeAttr(rowObj['JUDUL ITEM'] || rowObj['JUDUL'] || '');
+                            let hargaEsc = escapeAttr(rowObj['HARGA'] || '');
+                            let stokEsc = escapeAttr(rowObj['STOK BSOFT'] || '');
+                            
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle">
+                                <span class="bg-green-100 text-green-800 py-0.5 px-1.5 rounded-full text-[10px] block mb-1.5">✅ Ter-lookup</span>
+                                <button onclick="lihatDetail('${orinEsc}', '${bsoftEsc}', '${judulEsc}', '${hargaEsc}', '${stokEsc}')" class="text-[9px] md:text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button>
+                            </td>`;
                         }
                         else if (val === '✅ MATCHED_STORE') {
                             let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
