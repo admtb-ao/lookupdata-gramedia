@@ -61,7 +61,7 @@
                     <div id="summary-histori" class="text-xl md:text-2xl font-black text-green-700">-</div>
                 </div>
                 <div class="border border-gray-200 rounded-lg p-3 text-center bg-amber-50">
-                    <div class="text-xs text-gray-500 font-semibold mb-1">CABANG REF</div>
+                    <div class="text-xs text-gray-500 font-semibold mb-1">CABANG REF UNIK</div>
                     <div id="summary-cabang" class="text-xl md:text-2xl font-black text-amber-700">-</div>
                 </div>
             </div>
@@ -704,7 +704,10 @@
                 document.getElementById('summary-sku').innerText = database.length.toLocaleString('id-ID');
                 document.getElementById('summary-toko').innerText = Object.keys(storeRecordsByToko).length.toLocaleString('id-ID');
                 document.getElementById('summary-histori').innerText = Object.keys(monthlySalesMap).length.toLocaleString('id-ID');
-                document.getElementById('summary-cabang').innerText = Object.keys(storeBranchMap).length.toLocaleString('id-ID');
+                
+                // FIXED LOGIC: Menghitung jumlah cabang referensi yang unik saja
+                let uniqueCabang = new Set(Object.values(storeBranchMap).filter(c => c !== "-" && c !== ""));
+                document.getElementById('summary-cabang').innerText = uniqueCabang.size.toLocaleString('id-ID');
 
                 btns.forEach(id => {
                     const el = document.getElementById(id); 
