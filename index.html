@@ -49,7 +49,7 @@
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white">
                 <div class="border border-gray-200 rounded-lg p-3 text-center bg-blue-50">
-                    <div class="text-xs text-gray-500 font-semibold mb-1">SKU MASTER (Bersih)</div>
+                    <div class="text-xs text-gray-500 font-semibold mb-1">SKU MASTER</div>
                     <div id="summary-sku" class="text-xl md:text-2xl font-black text-blue-700">-</div>
                 </div>
                 <div class="border border-gray-200 rounded-lg p-3 text-center bg-purple-50">
@@ -61,7 +61,7 @@
                     <div id="summary-histori" class="text-xl md:text-2xl font-black text-green-700">-</div>
                 </div>
                 <div class="border border-gray-200 rounded-lg p-3 text-center bg-amber-50">
-                    <div class="text-xs text-gray-500 font-semibold mb-1">CABANG REF UNIK</div>
+                    <div class="text-xs text-gray-500 font-semibold mb-1">CABANG REF</div>
                     <div id="summary-cabang" class="text-xl md:text-2xl font-black text-amber-700">-</div>
                 </div>
             </div>
@@ -699,7 +699,7 @@
                     }
                 });
 
-                statusEl.innerHTML = `✅ Terhubung (4 Database - Bersih)`; 
+                statusEl.innerHTML = `✅ Terhubung (4 Database)`; 
                 statusEl.className = "text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full text-xs shadow-sm";
                 document.getElementById('summary-sku').innerText = database.length.toLocaleString('id-ID');
                 document.getElementById('summary-toko').innerText = Object.keys(storeRecordsByToko).length.toLocaleString('id-ID');
