@@ -705,7 +705,6 @@
                 document.getElementById('summary-toko').innerText = Object.keys(storeRecordsByToko).length.toLocaleString('id-ID');
                 document.getElementById('summary-histori').innerText = Object.keys(monthlySalesMap).length.toLocaleString('id-ID');
                 
-                // FIXED LOGIC: Menghitung jumlah cabang referensi yang unik saja
                 let uniqueCabang = new Set(Object.values(storeBranchMap).filter(c => c !== "-" && c !== ""));
                 document.getElementById('summary-cabang').innerText = uniqueCabang.size.toLocaleString('id-ID');
 
@@ -854,9 +853,6 @@
             }
         }
 
-        // ==========================================
-        // FITUR 2: REVISI - MENAMPILKAN SEMUA TOKO JIKA KOSONG
-        // ==========================================
         function searchStoreManual() {
             if (Object.keys(storeRecordsByToko).length === 0) return alert("Database Toko belum siap atau kosong.");
             const rawVal = document.getElementById('store-search-input').value;
@@ -865,10 +861,8 @@
             let matchedStoreNames = [];
 
             if (!rawVal.trim()) {
-                // Tarik semua toko jika inputan kosong
                 matchedStoreNames = uniqueStores;
             } else {
-                // Tarik berdasarkan keyword jika inputan terisi
                 const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
                 matchedStoreNames = uniqueStores.filter(storeName => {
                     return searchTerms.some(term => storeName.includes(term));
@@ -937,7 +931,6 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i]; 
                     if (!row) continue;
-                    // Cek apakah ada header ID, atau minimal ada header Judul / Harga
                     let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell) || isTitleAlias(cell));
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
@@ -946,7 +939,6 @@
                     }
                 }
                 
-                // Jika tidak ketemu baris header standar, ambil baris pertama sebagai fallback otomatis
                 if (headerRowIndex === -1 && dataAsArrays.length > 0) {
                     headerRowIndex = 0;
                     actualHeaders = dataAsArrays[0].map((h, idx) => String(h).trim() || `KOLOM_${idx+1}`);
@@ -964,7 +956,6 @@
                     userExcelData.push(rowObj);
                 }
 
-                // Jika header ternyata berupa baris data (karena tidak ada baris header teks di atasnya)
                 if (userExcelData.length === 0 && dataAsArrays.length > 0) {
                     let fallbackHeaders = dataAsArrays[0].map((_, idx) => idx === 0 ? "JUDUL ITEM" : (idx === 1 ? "HARGA" : `KOLOM_${idx+1}`));
                     for (let i = 0; i < dataAsArrays.length; i++) {
@@ -987,7 +978,7 @@
                 };
 
                 processedData = userExcelData.map(row => {
-                    let rawUserOrin = "", rawUserBsoft = "", rawUserTitle = "", rawUserPrice = "";
+                    let rawUserOrin = "", rawUserBsoft = "", rawUserTitle = "", rawUserPrice = "", rawUserKategori = "";
                     let userOrin = "", userBsoft = "";
                     
                     for (let key in row) {
@@ -996,23 +987,26 @@
                         if (isBsoftAlias(key) && !rawUserBsoft) { rawUserBsoft = valStr; userBsoft = cleanStr(valStr); }
                         if (isTitleAlias(key) && !rawUserTitle) rawUserTitle = valStr;
                         if (isPriceAlias(key) && !rawUserPrice) rawUserPrice = valStr;
+                        if (isKategoriAlias(key) && !rawUserKategori) rawUserKategori = valStr;
                     }
 
-                    // Fallback jika nama kolom tidak terdeteksi otomatis tapi ada isinya
                     if (!rawUserTitle && Object.keys(row).length > 0) {
                         let firstKey = Object.keys(row)[0];
-                        rawUserTitle = String(row[firstKey] || '');
+                        if(!isOrinAlias(firstKey) && !isBsoftAlias(firstKey) && !isPriceAlias(firstKey)) {
+                            rawUserTitle = String(row[firstKey] || '');
+                        }
                     }
                     if (!rawUserPrice && Object.keys(row).length > 1) {
                         let secondKey = Object.keys(row)[1];
-                        rawUserPrice = String(row[secondKey] || '');
+                        if(!isOrinAlias(secondKey) && !isBsoftAlias(secondKey) && !isTitleAlias(secondKey)) {
+                            rawUserPrice = String(row[secondKey] || '');
+                        }
                     }
 
                     let match = null;
                     if (userOrin) match = dbMapByOrin[userOrin];
                     else if (userBsoft) match = dbMapByBsoft[userBsoft];
                     else if (rawUserTitle) {
-                        // Pencocokan cerdas berdasarkan Judul + Harga
                         let cleanTitle = cleanStr(rawUserTitle);
                         let priceVal = parseNum(rawUserPrice);
                         let comboKey = `${cleanTitle}_${priceVal}`;
@@ -1020,25 +1014,28 @@
                         if (dbMapByTitlePrice[comboKey]) {
                             match = dbMapByTitlePrice[comboKey];
                         } else {
-                            // Cari berdasarkan kemiripan judul jika harga kosong atau berbeda tipis
                             let foundKey = Object.keys(dbMapByTitlePrice).find(k => k.startsWith(cleanTitle + '_'));
                             if (foundKey) match = dbMapByTitlePrice[foundKey];
                             else {
-                                // Cari di database master utama berdasarkan teks judul saja
                                 let foundDb = database.find(d => cleanStr(d['JUDUL ITEM']) === cleanTitle);
                                 if (foundDb) match = foundDb;
                             }
                         }
                     }
 
-                    if (match) {
-                        let newRow = { ...row };
-                        const finalId = match['ID ORIN'] || rawUserOrin || '';
-                        if (wants.sold || wants.eoh) {
-                            const { totalSold, totalEoh } = calcStoreData(finalId);
-                            if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = totalSold;
-                            if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
+                    let newRow = {};
+                    
+                    // Filter kolom asli: Buang kolom yang terdeteksi sebagai alias master (ORIN, JUDUL, dll)
+                    for (let key in row) {
+                        if (!isOrinAlias(key) && !isBsoftAlias(key) && !isTitleAlias(key) && !isPriceAlias(key) && !isKategoriAlias(key)) {
+                            // Kolom custom buatan user (contoh: NO, TAHUN TERBIT) tetap dipertahankan
+                            newRow[key] = row[key];
                         }
+                    }
+
+                    if (match) {
+                        const finalId = match['ID ORIN'] || rawUserOrin || '';
+                        
                         if (wants.orin) newRow['ID ORIN'] = finalId;
                         if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || rawUserBsoft || '';
                         if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || rawUserTitle || '';
@@ -1046,12 +1043,33 @@
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '';
                         if (wants.kategori) newRow['KATEGORI'] = match['KATEGORI'] || '';
                         
+                        if (wants.sold || wants.eoh) {
+                            const { totalSold, totalEoh } = calcStoreData(finalId);
+                            if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = totalSold;
+                            if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
+                        }
+                        
+                        // Kolom tersembunyi untuk fitur Select Checkbox & Export Multi-Sheet
+                        newRow['__hidden_orin'] = finalId;
+                        newRow['__hidden_judul'] = match['JUDUL ITEM'] || rawUserTitle || '';
+                        
                         newRow['STATUS SYSTEM'] = '✅ CUSTOM_MATCHED'; 
                         return newRow;
                     } else {
-                        let failRow = { ...row };
-                        failRow['STATUS SYSTEM'] = '❌ NOT FOUND';
-                        return failRow;
+                        if (wants.orin) newRow['ID ORIN'] = rawUserOrin || '';
+                        if (wants.bsoft) newRow['KODE BSOFT'] = rawUserBsoft || '';
+                        if (wants.judul) newRow['JUDUL ITEM'] = rawUserTitle || '';
+                        if (wants.harga) newRow['HARGA'] = rawUserPrice || '';
+                        if (wants.stokbsoft) newRow['STOK BSOFT'] = '';
+                        if (wants.kategori) newRow['KATEGORI'] = rawUserKategori || '';
+                        if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = '';
+                        if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = '';
+                        
+                        newRow['__hidden_orin'] = rawUserOrin || '';
+                        newRow['__hidden_judul'] = rawUserTitle || '';
+                        
+                        newRow['STATUS SYSTEM'] = '❌ NOT FOUND';
+                        return newRow;
                     }
                 });
 
@@ -1139,7 +1157,9 @@
 
             const thead = document.getElementById('table-head');
             const tbody = document.getElementById('table-body');
-            const headers = Object.keys(processedData[0]);
+            
+            // Menyaring header agar kolom tersembunyi (__hidden_) tidak dimunculkan di tabel
+            const headers = Object.keys(processedData[0]).filter(k => !k.startsWith('__hidden_'));
             
             let headerRow = '<tr>';
             headerRow += `<th class="py-2 px-2 border-b border-gray-600 text-center w-10"><input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded cursor-pointer" title="Pilih Semua"></th>`;
@@ -1156,8 +1176,9 @@
             paginatedData.forEach((rowObj, index) => {
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 
-                let orinVal = rowObj['ID ORIN'] || rowObj['ItemID'] || '';
-                let judulVal = rowObj['JUDUL ITEM'] || rowObj['JUDUL'] || '';
+                // Ambil ID tersembunyi yang pasti ada sekalipun kolom ORIN tidak dicentang
+                let orinVal = rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '';
+                let judulVal = rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '';
                 let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK' || rowObj['STATUS SYSTEM'] === '✅ CUSTOM_MATCHED';
                 
                 if (isBookMatched && orinVal) {
@@ -1170,9 +1191,9 @@
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
                         if (val === '✅ MATCHED_BOOK' || val === '✅ CUSTOM_MATCHED') {
-                            let orinEsc = escapeAttr(rowObj['ID ORIN'] || rowObj['ItemID'] || '');
+                            let orinEsc = escapeAttr(rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '');
                             let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || rowObj['BSOFTH'] || '');
-                            let judulEsc = escapeAttr(rowObj['JUDUL ITEM'] || rowObj['JUDUL'] || '');
+                            let judulEsc = escapeAttr(rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '');
                             let hargaEsc = escapeAttr(rowObj['HARGA'] || '');
                             let stokEsc = escapeAttr(rowObj['STOK BSOFT'] || '');
                             
@@ -1608,8 +1629,8 @@
             let itemsToExport = [];
             if (checkedBoxes.length === 0) {
                 processedData.forEach(d => {
-                    let orin = d['ID ORIN'] || d['ItemID'];
-                    let judul = d['JUDUL ITEM'] || d['JUDUL'];
+                    let orin = d['__hidden_orin'] || d['ID ORIN'] || d['ItemID'];
+                    let judul = d['__hidden_judul'] || d['JUDUL ITEM'] || d['JUDUL'];
                     if (orin) {
                         itemsToExport.push({ idOrin: orin, judul: judul });
                     }
@@ -1856,15 +1877,35 @@
                 dataArray.forEach(row => { row.forEach((cell, i) => { let len = cell ? String(cell).length + 2 : 5; if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); });
             } else {
                 if(dataArray.length === 0) return cols;
-                let headers = Object.keys(dataArray[0]); headers.forEach((h, i) => cols[i] = { wch: h.length + 2 });
-                dataArray.forEach(row => { headers.forEach((h, i) => { let len = row[h] ? String(row[h]).length + 2 : 5; if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); });
+                
+                const headers = Object.keys(dataArray[0]).filter(k => !k.startsWith('__hidden_'));
+                headers.forEach((h, i) => cols[i] = { wch: h.length + 2 });
+                
+                dataArray.forEach(row => { 
+                    headers.forEach((h, i) => { 
+                        let len = row[h] ? String(row[h]).length + 2 : 5; 
+                        if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; 
+                    }); 
+                });
             } 
             return cols;
         }
 
         function exportToExcel() {
             if (!processedData || processedData.length === 0) return;
-            const sheet = XLSX.utils.json_to_sheet(processedData); sheet['!cols'] = getColWidths(processedData, false);
+            
+            const exportData = processedData.map(row => {
+                let cleanRow = {};
+                for (let key in row) {
+                    if (!key.startsWith('__hidden_')) {
+                        cleanRow[key] = row[key];
+                    }
+                }
+                return cleanRow;
+            });
+            
+            const sheet = XLSX.utils.json_to_sheet(exportData); 
+            sheet['!cols'] = getColWidths(exportData, false);
             const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Hasil_Lookup"); 
             XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
