@@ -121,14 +121,14 @@
             <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
             <div class="mb-6 bg-gray-50 p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda (Bisa hanya Judul & Harga saja, sistem otomatis mencocokkan kodenya).</p>
+                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda. Sistem TIDAK AKAN menghapus kolom asli Excel Anda.</p>
                 
                 <div class="mb-4 bg-white border border-gray-300 p-4 rounded-lg shadow-inner">
-                    <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik (Auto-Saved):</label>
+                    <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom Tambahan yang Ingin Ditarik:</label>
                     <div class="flex flex-wrap gap-4 text-xs md:text-sm font-semibold text-gray-700">
-                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded" checked> ID ORIN</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded"> ID ORIN</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded" checked> KODE BSOFT</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded" checked> JUDUL ITEM</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded"> JUDUL ITEM</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-kategori" class="w-4 h-4 text-blue-600 rounded" checked> KATEGORI</label>
@@ -413,7 +413,7 @@
         
         let dbMapByOrin = {}; 
         let dbMapByBsoft = {}; 
-        let dbMapByTitlePrice = {}; // Peta pencarian berdasarkan Judul + Harga
+        let dbMapByTitlePrice = {};
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
@@ -579,7 +579,6 @@
                             if(bsoft) dbMapByBsoft[bsoft] = cleanRow;
                             if(kategori) availableCategories.add(kategori);
 
-                            // Pemetaan kombo Judul + Harga untuk pencocokan pintar
                             if(judulItem) {
                                 let keyTP = `${cleanStr(judulItem)}_${hargaVal}`;
                                 dbMapByTitlePrice[keyTP] = cleanRow;
@@ -951,7 +950,6 @@
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
                     let rowObj = {}; 
                     for (let j = 0; j < actualHeaders.length; j++) {
-                        // Jangan biarkan kolom KOSONG masuk ke dalam object jika tidak diperlukan
                         let headerName = actualHeaders[j] || `KOLOM_KOSONG_${j+1}`;
                         rowObj[headerName] = dataAsArrays[i][j]; 
                     }
@@ -980,7 +978,7 @@
                 };
 
                 processedData = userExcelData.map(row => {
-                    let rawUserOrin = "", rawUserBsoft = "", rawUserTitle = "", rawUserPrice = "", rawUserKategori = "";
+                    let rawUserOrin = "", rawUserBsoft = "", rawUserTitle = "", rawUserPrice = "";
                     let userOrin = "", userBsoft = "";
                     
                     for (let key in row) {
@@ -989,19 +987,12 @@
                         if (isBsoftAlias(key) && !rawUserBsoft) { rawUserBsoft = valStr; userBsoft = cleanStr(valStr); }
                         if (isTitleAlias(key) && !rawUserTitle) rawUserTitle = valStr;
                         if (isPriceAlias(key) && !rawUserPrice) rawUserPrice = valStr;
-                        if (isKategoriAlias(key) && !rawUserKategori) rawUserKategori = valStr;
                     }
 
                     if (!rawUserTitle && Object.keys(row).length > 0) {
                         let firstKey = Object.keys(row)[0];
                         if(!isOrinAlias(firstKey) && !isBsoftAlias(firstKey) && !isPriceAlias(firstKey)) {
                             rawUserTitle = String(row[firstKey] || '');
-                        }
-                    }
-                    if (!rawUserPrice && Object.keys(row).length > 1) {
-                        let secondKey = Object.keys(row)[1];
-                        if(!isOrinAlias(secondKey) && !isBsoftAlias(secondKey) && !isTitleAlias(secondKey)) {
-                            rawUserPrice = String(row[secondKey] || '');
                         }
                     }
 
@@ -1027,17 +1018,12 @@
 
                     let newRow = {};
                     
-                    // Filter kolom asli: Buang kolom alias dan secara ketat membuang KOLOM_KOSONG_ / KOLOM_ bawaan
                     for (let key in row) {
-                        if (!isOrinAlias(key) && !isBsoftAlias(key) && !isTitleAlias(key) && !isPriceAlias(key) && !isKategoriAlias(key)) {
-                            // Cek dengan ketat: JANGAN masukkan kolom tak bernama yang dibuat sistem
-                            if (!String(key).startsWith('KOLOM_KOSONG_') && !String(key).match(/^KOLOM_\d+$/)) {
-                                newRow[key] = row[key];
-                            }
+                        if (!String(key).startsWith('KOLOM_KOSONG_') && !String(key).match(/^KOLOM_\d+$/)) {
+                            newRow[key] = row[key];
                         }
                     }
 
-                    // HANYA MASUKKAN DATA JIKA CHECKBOX-NYA DICENTANG
                     if (match) {
                         const finalId = match['ID ORIN'] || rawUserOrin || '';
                         
@@ -1054,26 +1040,25 @@
                             if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
                         }
                         
-                        // Kolom tersembunyi untuk fitur Select Checkbox & Export Multi-Sheet
                         newRow['__hidden_orin'] = finalId;
                         newRow['__hidden_judul'] = match['JUDUL ITEM'] || rawUserTitle || '';
                         
-                        newRow['STATUS SYSTEM'] = '✅ CUSTOM_MATCHED'; 
+                        newRow['STATUS SYSTEM'] = '✅ Ter-lookup'; 
                         return newRow;
                     } else {
-                        if (wants.orin) newRow['ID ORIN'] = rawUserOrin || '';
-                        if (wants.bsoft) newRow['KODE BSOFT'] = rawUserBsoft || '';
-                        if (wants.judul) newRow['JUDUL ITEM'] = rawUserTitle || '';
-                        if (wants.harga) newRow['HARGA'] = rawUserPrice || '';
-                        if (wants.stokbsoft) newRow['STOK BSOFT'] = '';
-                        if (wants.kategori) newRow['KATEGORI'] = rawUserKategori || '';
-                        if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = '';
-                        if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = '';
+                        if (wants.orin && !newRow['ID ORIN']) newRow['ID ORIN'] = rawUserOrin || '';
+                        if (wants.bsoft && !newRow['KODE BSOFT']) newRow['KODE BSOFT'] = rawUserBsoft || '';
+                        if (wants.judul && !newRow['JUDUL ITEM']) newRow['JUDUL ITEM'] = rawUserTitle || '';
+                        if (wants.harga && !newRow['HARGA']) newRow['HARGA'] = rawUserPrice || '';
+                        if (wants.stokbsoft && !newRow['STOK BSOFT']) newRow['STOK BSOFT'] = '';
+                        if (wants.kategori && !newRow['KATEGORI']) newRow['KATEGORI'] = '';
+                        if (wants.sold && !newRow['SOLD (TERJUAL BULAN INI)']) newRow['SOLD (TERJUAL BULAN INI)'] = '';
+                        if (wants.eoh && !newRow['EOH (STOK AKHIR GRAMEDIA)']) newRow['EOH (STOK AKHIR GRAMEDIA)'] = '';
                         
                         newRow['__hidden_orin'] = rawUserOrin || '';
                         newRow['__hidden_judul'] = rawUserTitle || '';
                         
-                        newRow['STATUS SYSTEM'] = '❌ NOT FOUND';
+                        newRow['STATUS SYSTEM'] = '❌ Kosong';
                         return newRow;
                     }
                 });
@@ -1163,7 +1148,6 @@
             const thead = document.getElementById('table-head');
             const tbody = document.getElementById('table-body');
             
-            // Menyaring header agar kolom tersembunyi (__hidden_) tidak dimunculkan di tabel
             const headers = Object.keys(processedData[0]).filter(k => !k.startsWith('__hidden_'));
             
             let headerRow = '<tr>';
@@ -1181,10 +1165,9 @@
             paginatedData.forEach((rowObj, index) => {
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 
-                // Ambil ID tersembunyi yang pasti ada sekalipun kolom ORIN tidak dicentang
                 let orinVal = rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '';
                 let judulVal = rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '';
-                let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK' || rowObj['STATUS SYSTEM'] === '✅ CUSTOM_MATCHED';
+                let isBookMatched = String(rowObj['STATUS SYSTEM']).includes('✅ Ter-lookup') || String(rowObj['STATUS SYSTEM']).includes('✅ CUSTOM_MATCHED') || String(rowObj['STATUS SYSTEM']).includes('✅ MATCHED_BOOK');
                 
                 if (isBookMatched && orinVal) {
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
@@ -1195,7 +1178,7 @@
                 headers.forEach(header => {
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
-                        if (val === '✅ MATCHED_BOOK' || val === '✅ CUSTOM_MATCHED') {
+                        if (val.includes('✅ Ter-lookup') || val.includes('✅ MATCHED_BOOK') || val.includes('✅ CUSTOM_MATCHED')) {
                             let orinEsc = escapeAttr(rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '');
                             let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || rowObj['BSOFTH'] || '');
                             let judulEsc = escapeAttr(rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '');
@@ -1207,11 +1190,11 @@
                                 <button onclick="lihatDetail('${orinEsc}', '${bsoftEsc}', '${judulEsc}', '${hargaEsc}', '${stokEsc}')" class="text-[9px] md:text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button>
                             </td>`;
                         }
-                        else if (val === '✅ MATCHED_STORE') {
+                        else if (val.includes('✅ MATCHED_STORE')) {
                             let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-purple-100 text-purple-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-1.5 text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button></td>`;
                         }
-                        else if (val === '✅ MATCHED') {
+                        else if (val.includes('✅ MATCHED')) {
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-2 rounded-full text-[10px]">✅ Terisi</span></td>`;
                         }
                         else if (String(val).includes('❌')) {
@@ -1242,9 +1225,6 @@
             tbody.innerHTML = htmlChunks.join('');
         }
 
-        // ==========================================
-        // FUNGSI TAB 2 & CUSTOM ANALYTICS UPLOAD
-        // ==========================================
         function setupAnalyticsDropZone() {
             const dropZone = document.getElementById('analytics-drop-zone');
             const fileInput = document.getElementById('analytics-file-upload');
