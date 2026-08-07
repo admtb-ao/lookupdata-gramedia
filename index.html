@@ -951,7 +951,9 @@
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
                     let rowObj = {}; 
                     for (let j = 0; j < actualHeaders.length; j++) {
-                        rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j]; 
+                        // Jangan biarkan kolom KOSONG masuk ke dalam object jika tidak diperlukan
+                        let headerName = actualHeaders[j] || `KOLOM_KOSONG_${j+1}`;
+                        rowObj[headerName] = dataAsArrays[i][j]; 
                     }
                     userExcelData.push(rowObj);
                 }
@@ -1025,14 +1027,17 @@
 
                     let newRow = {};
                     
-                    // Filter kolom asli: Buang kolom yang terdeteksi sebagai alias master (ORIN, JUDUL, dll)
+                    // Filter kolom asli: Buang kolom alias dan secara ketat membuang KOLOM_KOSONG_ / KOLOM_ bawaan
                     for (let key in row) {
                         if (!isOrinAlias(key) && !isBsoftAlias(key) && !isTitleAlias(key) && !isPriceAlias(key) && !isKategoriAlias(key)) {
-                            // Kolom custom buatan user (contoh: NO, TAHUN TERBIT) tetap dipertahankan
-                            newRow[key] = row[key];
+                            // Cek dengan ketat: JANGAN masukkan kolom tak bernama yang dibuat sistem
+                            if (!String(key).startsWith('KOLOM_KOSONG_') && !String(key).match(/^KOLOM_\d+$/)) {
+                                newRow[key] = row[key];
+                            }
                         }
                     }
 
+                    // HANYA MASUKKAN DATA JIKA CHECKBOX-NYA DICENTANG
                     if (match) {
                         const finalId = match['ID ORIN'] || rawUserOrin || '';
                         
