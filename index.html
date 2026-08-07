@@ -109,9 +109,9 @@
             <!-- FITUR 2: Pencarian Manual TOKO -->
             <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Kosongkan lalu Cari untuk memuat semua toko. Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada,sudirman..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada,sudirman... (Atau kosongkan untuk lihat semua)" class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                     <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Toko
                     </button>
@@ -854,17 +854,26 @@
             }
         }
 
+        // ==========================================
+        // FITUR 2: REVISI - MENAMPILKAN SEMUA TOKO JIKA KOSONG
+        // ==========================================
         function searchStoreManual() {
             if (Object.keys(storeRecordsByToko).length === 0) return alert("Database Toko belum siap atau kosong.");
             const rawVal = document.getElementById('store-search-input').value;
-            if(!rawVal.trim()) return alert("Ketik nama toko.");
 
-            const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
             let uniqueStores = Object.keys(storeRecordsByToko);
-            
-            let matchedStoreNames = uniqueStores.filter(storeName => {
-                return searchTerms.some(term => storeName.includes(term));
-            });
+            let matchedStoreNames = [];
+
+            if (!rawVal.trim()) {
+                // Tarik semua toko jika inputan kosong
+                matchedStoreNames = uniqueStores;
+            } else {
+                // Tarik berdasarkan keyword jika inputan terisi
+                const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
+                matchedStoreNames = uniqueStores.filter(storeName => {
+                    return searchTerms.some(term => storeName.includes(term));
+                });
+            }
 
             if (matchedStoreNames.length > 0) {
                 processedData = matchedStoreNames.map(storeName => ({ 
