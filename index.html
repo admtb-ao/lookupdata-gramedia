@@ -544,7 +544,7 @@
         const escapeAttr = (str) => { return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;'); };
 
         // Alias Finder Helper untuk RO Analytics
-        const isQtyAlias = (str) => { let s = cleanStr(str); return s.includes('qty') || s.includes('jumlah') || s === 'pesan' || s === 'order'; };
+        const isQtyAlias = (str) => { let s = cleanStr(str); return s.includes('qty') || s.includes('quantity') || s.includes('jumlah') || s === 'pesan' || s === 'order'; };
         const isDateAlias = (str) => { let s = cleanStr(str); return s.includes('tanggal') || s.includes('date') || s === 'tgl'; };
 
         const isOrinAlias = (str) => {
