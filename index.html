@@ -31,7 +31,7 @@
 
     <div class="max-w-7xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
         <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 mb-2">Dashboard System Gramedia</h1>
-        <p class="text-sm md:text-base text-gray-600 mb-6">Pencarian Katalog, Multi-Sheet Export, Cabang Referensi, Analitik Penjualan, & Rekap RO 2026.</p>
+        <p class="text-sm md:text-base text-gray-600 mb-6">Pencarian Katalog, Multi-Sheet Export, Cabang Referensi, Analitik, & Rekap RO 2026.</p>
 
         <!-- Status Database & Info Data -->
         <div class="mb-6 bg-white border rounded-lg shadow-sm overflow-hidden">
@@ -49,23 +49,23 @@
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-5 gap-3 p-4 bg-white">
-                <div class="border border-gray-200 rounded-lg p-2 text-center bg-blue-50">
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-blue-50">
                     <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">SKU MASTER</div>
                     <div id="summary-sku" class="text-lg md:text-xl font-black text-blue-700">-</div>
                 </div>
-                <div class="border border-gray-200 rounded-lg p-2 text-center bg-purple-50">
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-purple-50">
                     <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">TOKO AKTIF</div>
                     <div id="summary-toko" class="text-lg md:text-xl font-black text-purple-700">-</div>
                 </div>
-                <div class="border border-gray-200 rounded-lg p-2 text-center bg-green-50">
-                    <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">HISTORI LAKU</div>
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-green-50">
+                    <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">DATA HISTORI</div>
                     <div id="summary-histori" class="text-lg md:text-xl font-black text-green-700">-</div>
                 </div>
-                <div class="border border-gray-200 rounded-lg p-2 text-center bg-amber-50">
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-amber-50">
                     <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">CABANG REF</div>
                     <div id="summary-cabang" class="text-lg md:text-xl font-black text-amber-700">-</div>
                 </div>
-                <div class="border border-gray-200 rounded-lg p-2 text-center bg-orange-50 sm:col-span-1 col-span-2">
+                <div class="border border-gray-200 rounded-lg p-3 text-center bg-orange-50 sm:col-span-1 col-span-2">
                     <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">DATA RO 2026</div>
                     <div id="summary-ro" class="text-lg md:text-xl font-black text-orange-700">-</div>
                 </div>
@@ -74,9 +74,9 @@
 
         <!-- TABS NAVIGATION -->
         <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
-            <button onclick="switchTab('tab-operasional', this)" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional (Fitur 1-3)</button>
-            <button onclick="switchTab('tab-analytics', this)" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik (Fitur 4)</button>
-            <button onclick="switchTab('tab-rekap-ro', this)" id="btn-tab-rekap-ro" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📦 Rekap RO 2026 (Fitur 5)</button>
+            <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup (Fitur 1-3)</button>
+            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan (Fitur 4)</button>
+            <button onclick="switchTab('tab-rekap-ro')" id="btn-tab-rekap-ro" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📦 Rekap RO 2026 (Fitur 5)</button>
         </div>
 
         <!-- ============================================== -->
@@ -88,7 +88,7 @@
                 <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
                 <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                    <input type="text" id="manual-search-input" placeholder="Contoh: 10101, judul buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    <input type="text" id="manual-search-input" placeholder="Contoh: leika,garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Buku
                     </button>
@@ -115,9 +115,9 @@
             <!-- FITUR 2: Pencarian Manual TOKO -->
             <div class="mb-6 p-4 md:p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Kosongkan lalu Cari untuk memuat semua toko. Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada,sudirman... (Atau kosongkan untuk lihat semua)" class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
                     <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Toko
                     </button>
@@ -127,14 +127,14 @@
             <!-- FITUR 3: Area Drag & Drop Bulk Upload -->
             <div class="mb-6 bg-gray-50 p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">📂 Fitur 3: Upload Excel Mentah (Massal)</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda (Bisa hanya Judul & Harga saja, sistem otomatis mencocokkan kodenya).</p>
+                <p class="text-xs md:text-sm text-gray-600 mb-4">Upload file Excel Anda. Sistem TIDAK AKAN menghapus kolom asli Excel Anda.</p>
                 
                 <div class="mb-4 bg-white border border-gray-300 p-4 rounded-lg shadow-inner">
-                    <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom yang Ingin Ditarik (Auto-Saved):</label>
+                    <label class="block text-gray-800 font-bold mb-2 text-sm md:text-base">⚙️ Pilih Kolom Tambahan yang Ingin Ditarik:</label>
                     <div class="flex flex-wrap gap-4 text-xs md:text-sm font-semibold text-gray-700">
-                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded" checked> ID ORIN</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded"> ID ORIN</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded" checked> KODE BSOFT</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded" checked> JUDUL ITEM</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded"> JUDUL ITEM</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-kategori" class="w-4 h-4 text-blue-600 rounded" checked> KATEGORI</label>
@@ -256,7 +256,7 @@
                 <div class="table-container shadow-sm rounded-lg border bg-white">
                     <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
                         <thead class="bg-emerald-800 text-white sticky top-0 z-10 text-xs shadow-sm" id="analytics-thead">
-                            <!-- Header dinamis -->
+                            <!-- Header akan di-generate secara dinamis sesuai pilihan filter -->
                         </thead>
                         <tbody class="text-gray-700 align-middle divide-y text-xs" id="analytics-table-body"></tbody>
                     </table>
@@ -274,18 +274,18 @@
                         <h2 class="text-lg md:text-xl font-bold text-gray-800">📦 Laporan Rekapitulasi RO 2026</h2>
                         <p class="text-sm text-gray-600 mt-1">Data RO otomatis disandingkan dengan <span class="font-bold">KODE BSOFT</span> dan <span class="font-bold">STOK BSOFT</span> dari Master Database.</p>
                     </div>
-                    <button onclick="exportRoExcel()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2 disabled:opacity-50" id="btn-export-ro">
+                    <button onclick="exportRoExcel()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
                         📥 Export Excel RO
                     </button>
                 </div>
                 
                 <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
-                    <input type="text" id="ro-search-input" placeholder="Cari Judul / ORIN / Bsoft..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    <button onclick="renderRoTable()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-6 rounded-lg transition shadow">Cari Data</button>
+                    <input type="text" id="ro-search-input" placeholder="Cari Judul / ORIN / Bsoft di data RO..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <button onclick="searchRoData()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-6 rounded-lg transition shadow">Cari Data</button>
                 </div>
             </div>
 
-            <!-- Tabel Rekap RO -->
+            <!-- Tabel Rekap RO dengan Filter & Pagination -->
             <div id="ro-table-section">
                 <div class="table-container shadow-sm rounded-lg border bg-white">
                     <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
@@ -297,6 +297,16 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination Kontrol Untuk RO -->
+                <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
+                    <div id="ro-page-info">Menampilkan - data</div>
+                    <div class="flex gap-2">
+                        <button onclick="changeRoPage(-1)" id="ro-btn-prev" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Sebelumnya</button>
+                        <span id="ro-page-number" class="px-4 py-2 font-bold">1 / 1</span>
+                        <button onclick="changeRoPage(1)" id="ro-btn-next" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Selanjutnya</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -304,7 +314,6 @@
 
     <!-- MODAL 3: TREN PENJUALAN BUKU -->
     <div id="trendModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
-        <!-- (Sama seperti sebelumnya) -->
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-emerald-800 text-white">
                 <h5 class="font-bold text-lg">📈 Analisis Tren Penjualan 2026</h5>
@@ -326,14 +335,14 @@
         </div>
     </div>
 
-    <!-- MODAL 1 & 2 (BUKU & TOKO) -->
-    <!-- (Biarkan strukturnya sama persis) -->
+    <!-- MODAL 1: BUKU -> RINCIAN PER TOKO -->
     <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-blue-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku Per Toko</h5>
                 <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
+            
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
                 <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
@@ -342,11 +351,13 @@
                     <button onclick="exportDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
                 </div>
             </div>
+            
             <div id="pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
                     <h2 class="text-2xl font-bold text-gray-800">Laporan Data Buku Gramedia</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="pdf-print-date"></span></p>
                 </div>
+
                 <div class="bg-blue-50 border border-blue-200 p-3 md:p-4 rounded-lg mb-4 text-xs md:text-sm text-left">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                         <div><span class="font-semibold text-gray-600">ID ORIN:</span> <span id="mdl-id" class="font-bold text-gray-800 ml-1"></span></div>
@@ -359,10 +370,12 @@
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
                 </div>
+
                 <div class="mb-4 bg-white border p-3 rounded-lg">
                     <div class="text-center font-bold text-sm text-gray-700 mb-2">📊 Top 5 Penjualan (SOLD) Tertinggi</div>
                     <div class="chart-container"><canvas id="chartBuku"></canvas></div>
                 </div>
+
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
                     <table class="min-w-full bg-white text-xs md:text-sm text-center whitespace-nowrap md:whitespace-normal">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
@@ -377,18 +390,21 @@
                     </table>
                 </div>
             </div>
+
             <div class="p-3 border-t bg-gray-50 flex justify-end">
                 <button onclick="closeModal()" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition text-sm md:text-base">Tutup</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL 2: TOKO -> RINCIAN KATALOG BUKU -->
     <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center transition-opacity p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku di Toko</h5>
                 <button onclick="closeStoreModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
+            
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
                 <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
@@ -397,11 +413,13 @@
                     <button onclick="exportStoreDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
                 </div>
             </div>
+            
             <div id="store-pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="store-pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
                     <h2 class="text-2xl font-bold text-gray-800">Laporan Data & Stok Toko</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="store-pdf-print-date"></span></p>
                 </div>
+
                 <div class="bg-purple-50 border border-purple-200 p-3 md:p-4 rounded-lg mb-4 text-sm md:text-base text-left">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div class="sm:col-span-2"><span class="font-semibold text-gray-600">LOKASI TOKO:</span> <span id="mdl-store-name" class="font-bold text-purple-800 ml-1 text-lg"></span></div>
@@ -409,10 +427,12 @@
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="store-mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
                 </div>
+
                 <div class="mb-4 bg-white border p-3 rounded-lg">
                     <div class="text-center font-bold text-sm text-gray-700 mb-2">📊 Top 5 Buku Terlaris (SOLD)</div>
                     <div class="chart-container"><canvas id="chartToko"></canvas></div>
                 </div>
+
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
                     <table class="min-w-full bg-white text-xs md:text-sm text-center whitespace-nowrap md:whitespace-normal">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
@@ -430,6 +450,7 @@
                     </table>
                 </div>
             </div>
+
             <div class="p-3 border-t bg-gray-50 flex justify-end">
                 <button onclick="closeStoreModal()" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition text-sm md:text-base">Tutup</button>
             </div>
@@ -442,11 +463,10 @@
         let processedData = []; 
         let pendingExcelFile = null; 
         let customAnalyticsExcelRows = null; 
-        let rawDataRo = []; 
         
         let dbMapByOrin = {}; 
         let dbMapByBsoft = {}; 
-        let dbMapByTitlePrice = {}; 
+        let dbMapByTitlePrice = {};
         let storeSummaryMap = {}; 
         let storeRecordsByOrin = {}; 
         let storeRecordsByToko = {};   
@@ -467,6 +487,12 @@
         let currentFilter = 'ALL'; 
         let currentPage = 1;
         const rowsPerPage = 50; 
+        
+        // VARIABEL KHUSUS TAB RO
+        let rawDataRo = [];
+        let filteredRoData = [];
+        let roCurrentPage = 1;
+        const roRowsPerPage = 50;
 
         let chartBukuObj = null;
         let chartTokoObj = null;
@@ -485,6 +511,7 @@
         const sheetIdSales = '1YwpiOAdlZ2jgPtng1EODpiyeTJTbQLw3kXhz-HZKJOo';
         const csvUrlSales = `https://docs.google.com/spreadsheets/d/${sheetIdSales}/export?format=csv`;
 
+        // URL DB RO 2026
         const sheetIdRo = '1Vw6CZKFgtv6Hwci363vGrQE5ZihybodGzqAb5tas3gY';
         const csvUrlRo = `https://docs.google.com/spreadsheets/d/${sheetIdRo}/export?format=csv`;
 
@@ -534,14 +561,16 @@
             setupAnalyticsDropZone();
         };
 
-        function switchTab(tabId, btnElement) {
+        function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active', 'active-ro', 'border-b-2'));
             document.getElementById(tabId).classList.remove('hidden');
+            
+            const btn = document.getElementById('btn-' + tabId);
             if(tabId === 'tab-rekap-ro') {
-                btnElement.classList.add('active-ro', 'border-b-2');
+                btn.classList.add('active-ro', 'border-b-2');
             } else {
-                btnElement.classList.add('active', 'border-b-2');
+                btn.classList.add('active', 'border-b-2');
             }
         }
 
@@ -567,7 +596,7 @@
             try {
                 database = []; dataStore = []; dbMapByOrin = {}; dbMapByBsoft = {}; dbMapByTitlePrice = {};
                 storeSummaryMap = {}; storeRecordsByOrin = {}; storeRecordsByToko = {}; storeBranchMap = {}; monthlySalesMap = {};
-                rawDataRo = [];
+                rawDataRo = []; filteredRoData = [];
                 availableCategories.clear();
                 
                 let csvMainText, csvStoreText, csvBranchText, csvSalesText, csvRoText;
@@ -580,12 +609,13 @@
                     csvRoText = localStorage.getItem('cacheCsvRo');
                 } else {
                     const cacheBuster = new Date().getTime();
+                    // Tarik 5 file sekaligus
                     const [resMain, resStore, resBranch, resSales, resRo] = await Promise.all([ 
                         fetch(`${csvUrlMain}&t=${cacheBuster}`), 
                         fetch(`${csvUrlStore}&t=${cacheBuster}`), 
                         fetch(`${csvUrlBranch}&t=${cacheBuster}`), 
                         fetch(`${csvUrlSales}&t=${cacheBuster}`),
-                        fetch(`${csvUrlRo}&t=${cacheBuster}`) 
+                        fetch(`${csvUrlRo}&t=${cacheBuster}`)
                     ]);
                     
                     csvMainText = await resMain.text(); 
@@ -711,7 +741,9 @@
                             storeSummaryMap[id].totalSold += soldVal; 
                             storeSummaryMap[id].totalEoh += eohVal;
                             
-                            let record = { rawOrin: rawId, orin: id, rawToko: rawToko, namaToko: namaToko, sold: soldVal, eoh: eohVal, judulItem: judul };
+                            let record = { 
+                                rawOrin: rawId, orin: id, rawToko: rawToko, namaToko: namaToko, sold: soldVal, eoh: eohVal, judulItem: judul
+                            };
 
                             if(!storeRecordsByOrin[id]) storeRecordsByOrin[id] = []; 
                             storeRecordsByOrin[id].push(record);
@@ -746,42 +778,43 @@
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
                         rawDataRo = [];
-                        let headers = results.meta.fields;
-                        
                         results.data.forEach(row => {
-                            let cleanRow = {};
-                            let userOrin = "", userBsoft = "", rawTitle = "";
-                            
+                            let userOrin = "", userBsoft = "";
                             for (let key in row) { 
-                                let trimmedKey = key.trim();
                                 let valStr = String(row[key] || '');
-                                cleanRow[trimmedKey] = row[key]; 
-                                
-                                if (isOrinAlias(trimmedKey) && !userOrin) userOrin = cleanStr(valStr);
-                                if (isBsoftAlias(trimmedKey) && !userBsoft) userBsoft = cleanStr(valStr);
-                                if (isTitleAlias(trimmedKey) && !rawTitle) rawTitle = cleanStr(valStr);
+                                if (isOrinAlias(key) && !userOrin) userOrin = cleanStr(valStr);
+                                if (isBsoftAlias(key) && !userBsoft) userBsoft = cleanStr(valStr);
                             }
 
-                            // Coba cari kecocokan dari Master DB
+                            // Cari kecocokan dari Master DB 1
                             let match = (userOrin ? dbMapByOrin[userOrin] : null) || (userBsoft ? dbMapByBsoft[userBsoft] : null);
                             
-                            // Sisipkan KODE BSOFT dan STOK BSOFT ke dalam data RO 
+                            // Bikin object baru dan sisipkan kolom master di awal
                             let joinedData = {
                                 'STATUS_SISTEM': match ? '✅ MATCHED' : '❌ NOT_FOUND',
                                 'ID_ORIN_MASTER': match ? (match['ID ORIN'] || userOrin) : userOrin,
                                 'KODE_BSOFT_MASTER': match ? (match['KODE BSOFT'] || '-') : '-',
-                                'STOK_BSOFT_MASTER': match && match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '-',
-                                ...cleanRow
+                                'STOK_BSOFT_MASTER': match && match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '-'
                             };
+
+                            // Gabungkan sisa kolom RO aslinya persis urutannya
+                            for (let key in row) {
+                                joinedData[key.trim()] = row[key];
+                            }
+
                             rawDataRo.push(joinedData);
                         });
                         
                         document.getElementById('summary-ro').innerText = rawDataRo.length.toLocaleString('id-ID');
-                        renderRoTable(); // Render table RO awal
+                        
+                        // Siapkan untuk pagination
+                        filteredRoData = [...rawDataRo];
+                        roCurrentPage = 1;
+                        renderRoTable();
                     }
                 });
 
-                statusEl.innerHTML = `✅ Terhubung (5 Database - Bersih)`; 
+                statusEl.innerHTML = `✅ Terhubung (5 Database)`; 
                 statusEl.className = "text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full text-xs shadow-sm";
                 document.getElementById('summary-sku').innerText = database.length.toLocaleString('id-ID');
                 document.getElementById('summary-toko').innerText = Object.keys(storeRecordsByToko).length.toLocaleString('id-ID');
@@ -805,27 +838,56 @@
         }
 
         // ==========================================
-        // FUNGSI TAB 3: REKAP RO 2026
+        // FUNGSI TAB 3: REKAP RO 2026 (Dengan Pagination Anti-Lag)
         // ==========================================
-        function renderRoTable() {
+        function searchRoData() {
             const keyword = cleanStr(document.getElementById('ro-search-input').value);
+            if(keyword) {
+                filteredRoData = rawDataRo.filter(row => {
+                    return Object.values(row).some(val => cleanStr(String(val)).includes(keyword));
+                });
+            } else {
+                filteredRoData = [...rawDataRo];
+            }
+            roCurrentPage = 1;
+            renderRoTable();
+        }
+
+        function changeRoPage(delta) {
+            roCurrentPage += delta;
+            renderRoTable();
+        }
+
+        function renderRoTable() {
             const thead = document.getElementById('ro-thead');
             const tbody = document.getElementById('ro-table-body');
             
-            if(rawDataRo.length === 0) {
-                tbody.innerHTML = `<tr><td class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Database RO Kosong.</td></tr>`;
+            if(filteredRoData.length === 0) {
+                tbody.innerHTML = `<tr><td class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Data tidak ditemukan.</td></tr>`;
+                document.getElementById('ro-page-info').innerText = `Menampilkan 0 data`;
+                document.getElementById('ro-page-number').innerText = `1 / 1`;
+                document.getElementById('ro-btn-prev').disabled = true;
+                document.getElementById('ro-btn-next').disabled = true;
                 return;
             }
 
-            let filteredRo = rawDataRo;
-            if(keyword) {
-                filteredRo = rawDataRo.filter(row => {
-                    return Object.values(row).some(val => cleanStr(String(val)).includes(keyword));
-                });
-            }
+            // Setup Pagination Logic
+            const totalPages = Math.ceil(filteredRoData.length / roRowsPerPage) || 1;
+            if (roCurrentPage < 1) roCurrentPage = 1;
+            if (roCurrentPage > totalPages) roCurrentPage = totalPages;
 
-            // Bangun Header Tabel Secara Dinamis
-            let rawHeaders = Object.keys(rawDataRo[0]).filter(k => k !== 'STATUS_SISTEM' && !k.includes('_MASTER'));
+            document.getElementById('ro-btn-prev').disabled = roCurrentPage === 1;
+            document.getElementById('ro-btn-next').disabled = roCurrentPage === totalPages;
+            document.getElementById('ro-page-number').innerText = `${roCurrentPage} / ${totalPages}`;
+            
+            const startIndex = (roCurrentPage - 1) * roRowsPerPage;
+            const endIndex = Math.min(startIndex + roRowsPerPage, filteredRoData.length);
+            document.getElementById('ro-page-info').innerText = `Menampilkan ${startIndex + 1}-${endIndex} dari ${filteredRoData.length} data`;
+            
+            const paginatedData = filteredRoData.slice(startIndex, endIndex);
+
+            // Bangun Header Tabel Secara Dinamis dari baris pertama
+            let rawHeaders = Object.keys(filteredRoData[0]).filter(k => k !== 'STATUS_SISTEM' && !k.includes('_MASTER'));
             
             let headHtml = `<tr>
                 <th class="py-3 px-3 bg-gray-900 border-r border-gray-700">STATUS</th>
@@ -839,11 +901,12 @@
             headHtml += `</tr>`;
             thead.innerHTML = headHtml;
 
-            let html = '';
-            filteredRo.forEach((row, i) => {
+            // Bangun Body Hanya Berdasarkan Data yang Di-slice
+            let htmlChunks = [];
+            paginatedData.forEach((row, i) => {
                 let statusBadge = row.STATUS_SISTEM.includes('✅') ? `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold text-[10px]">✅ MATCHED</span>` : `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold text-[10px]">❌ No Match</span>`;
                 
-                html += `<tr class="hover:bg-orange-50 transition-colors">
+                let rowHtml = `<tr class="hover:bg-orange-50 transition-colors">
                     <td class="py-2 px-3 border-b text-center border-r">${statusBadge}</td>
                     <td class="py-2 px-3 border-b text-center font-mono font-bold text-gray-700 bg-blue-50/30">${row.ID_ORIN_MASTER}</td>
                     <td class="py-2 px-3 border-b text-center font-mono font-bold text-blue-700 bg-blue-50/30">${row.KODE_BSOFT_MASTER}</td>
@@ -853,30 +916,23 @@
                     let val = row[h] !== undefined ? row[h] : '';
                     let isTextLong = String(val).length > 30;
                     if(isTextLong) {
-                        html += `<td class="py-2 px-3 border-b text-left whitespace-normal leading-tight min-w-[200px] max-w-[250px]">${val}</td>`;
+                        rowHtml += `<td class="py-2 px-3 border-b text-left whitespace-normal leading-tight min-w-[200px] max-w-[250px]">${val}</td>`;
                     } else {
-                        html += `<td class="py-2 px-3 border-b text-center">${val}</td>`;
+                        rowHtml += `<td class="py-2 px-3 border-b text-center">${val}</td>`;
                     }
                 });
-                html += `</tr>`;
+                rowHtml += `</tr>`;
+                htmlChunks.push(rowHtml);
             });
 
-            if (filteredRo.length === 0) html = `<tr><td colspan="${rawHeaders.length + 4}" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data RO ditemukan untuk pencarian "${document.getElementById('ro-search-input').value}".</td></tr>`;
-            tbody.innerHTML = html;
+            tbody.innerHTML = htmlChunks.join('');
         }
 
         function exportRoExcel() {
-            if(rawDataRo.length === 0) return alert('Tampilkan data RO terlebih dahulu.');
-            const keyword = cleanStr(document.getElementById('ro-search-input').value);
-            
-            let filteredRo = rawDataRo;
-            if(keyword) {
-                filteredRo = rawDataRo.filter(row => Object.values(row).some(val => cleanStr(String(val)).includes(keyword)));
-            }
-            if(filteredRo.length === 0) return alert('Tidak ada data yang cocok dengan pencarian untuk di-export.');
+            if(filteredRoData.length === 0) return alert('Tidak ada data RO yang bisa di-export.');
 
-            const sheet = XLSX.utils.json_to_sheet(filteredRo);
-            sheet['!cols'] = getColWidths(filteredRo, false);
+            const sheet = XLSX.utils.json_to_sheet(filteredRoData);
+            sheet['!cols'] = getColWidths(filteredRoData, false);
             
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, sheet, "Laporan_Rekap_RO"); 
@@ -887,12 +943,14 @@
         }
 
         // ==========================================
-        // FUNGSI-FUNGSI UTAMA LAINNYA
+        // FUNGSI UMUM LAINNYA & DARI INDEX.HTML LAMA
         // ==========================================
+
         function populateCategoryCheckboxes() {
             const container = document.getElementById('category-checkbox-container');
             if(!container) return;
             container.innerHTML = '';
+            
             Array.from(availableCategories).sort().forEach((cat, index) => {
                 let label = document.createElement('label');
                 label.className = "flex items-center gap-2 cursor-pointer hover:text-blue-600 truncate";
@@ -968,7 +1026,7 @@
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
         document.getElementById('analytics-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') generateTop50(); });
-        document.getElementById('ro-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') renderRoTable(); });
+        document.getElementById('ro-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchRoData(); });
 
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
@@ -1023,14 +1081,18 @@
         function searchStoreManual() {
             if (Object.keys(storeRecordsByToko).length === 0) return alert("Database Toko belum siap atau kosong.");
             const rawVal = document.getElementById('store-search-input').value;
-            if(!rawVal.trim()) return alert("Ketik nama toko.");
 
-            const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
             let uniqueStores = Object.keys(storeRecordsByToko);
-            
-            let matchedStoreNames = uniqueStores.filter(storeName => {
-                return searchTerms.some(term => storeName.includes(term));
-            });
+            let matchedStoreNames = [];
+
+            if (!rawVal.trim()) {
+                matchedStoreNames = uniqueStores;
+            } else {
+                const searchTerms = rawVal.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
+                matchedStoreNames = uniqueStores.filter(storeName => {
+                    return searchTerms.some(term => storeName.includes(term));
+                });
+            }
 
             if (matchedStoreNames.length > 0) {
                 processedData = matchedStoreNames.map(storeName => ({ 
@@ -1094,7 +1156,6 @@
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
                     const row = dataAsArrays[i]; 
                     if (!row) continue;
-                    // Cek apakah ada header ID, atau minimal ada header Judul / Harga
                     let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell) || isTitleAlias(cell));
                     if (hasHeaderId) { 
                         headerRowIndex = i; 
@@ -1103,7 +1164,6 @@
                     }
                 }
                 
-                // Jika tidak ketemu baris header standar, ambil baris pertama sebagai fallback otomatis
                 if (headerRowIndex === -1 && dataAsArrays.length > 0) {
                     headerRowIndex = 0;
                     actualHeaders = dataAsArrays[0].map((h, idx) => String(h).trim() || `KOLOM_${idx+1}`);
@@ -1116,12 +1176,12 @@
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
                     let rowObj = {}; 
                     for (let j = 0; j < actualHeaders.length; j++) {
-                        rowObj[actualHeaders[j] || `KOLOM_KOSONG_${j+1}`] = dataAsArrays[i][j]; 
+                        let headerName = actualHeaders[j] || `KOLOM_KOSONG_${j+1}`;
+                        rowObj[headerName] = dataAsArrays[i][j]; 
                     }
                     userExcelData.push(rowObj);
                 }
 
-                // Jika header ternyata berupa baris data (karena tidak ada baris header teks di atasnya)
                 if (userExcelData.length === 0 && dataAsArrays.length > 0) {
                     let fallbackHeaders = dataAsArrays[0].map((_, idx) => idx === 0 ? "JUDUL ITEM" : (idx === 1 ? "HARGA" : `KOLOM_${idx+1}`));
                     for (let i = 0; i < dataAsArrays.length; i++) {
@@ -1157,11 +1217,9 @@
 
                     if (!rawUserTitle && Object.keys(row).length > 0) {
                         let firstKey = Object.keys(row)[0];
-                        rawUserTitle = String(row[firstKey] || '');
-                    }
-                    if (!rawUserPrice && Object.keys(row).length > 1) {
-                        let secondKey = Object.keys(row)[1];
-                        rawUserPrice = String(row[secondKey] || '');
+                        if(!isOrinAlias(firstKey) && !isBsoftAlias(firstKey) && !isPriceAlias(firstKey)) {
+                            rawUserTitle = String(row[firstKey] || '');
+                        }
                     }
 
                     let match = null;
@@ -1184,14 +1242,17 @@
                         }
                     }
 
-                    if (match) {
-                        let newRow = { ...row };
-                        const finalId = match['ID ORIN'] || rawUserOrin || '';
-                        if (wants.sold || wants.eoh) {
-                            const { totalSold, totalEoh } = calcStoreData(finalId);
-                            if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = totalSold;
-                            if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
+                    let newRow = {};
+                    
+                    for (let key in row) {
+                        if (!String(key).startsWith('KOLOM_KOSONG_') && !String(key).match(/^KOLOM_\d+$/)) {
+                            newRow[key] = row[key];
                         }
+                    }
+
+                    if (match) {
+                        const finalId = match['ID ORIN'] || rawUserOrin || '';
+                        
                         if (wants.orin) newRow['ID ORIN'] = finalId;
                         if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || rawUserBsoft || '';
                         if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || rawUserTitle || '';
@@ -1199,12 +1260,32 @@
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '';
                         if (wants.kategori) newRow['KATEGORI'] = match['KATEGORI'] || '';
                         
-                        newRow['STATUS SYSTEM'] = '✅ CUSTOM_MATCHED'; 
+                        if (wants.sold || wants.eoh) {
+                            const { totalSold, totalEoh } = calcStoreData(finalId);
+                            if (wants.sold) newRow['SOLD (TERJUAL BULAN INI)'] = totalSold;
+                            if (wants.eoh) newRow['EOH (STOK AKHIR GRAMEDIA)'] = totalEoh;
+                        }
+                        
+                        newRow['__hidden_orin'] = finalId;
+                        newRow['__hidden_judul'] = match['JUDUL ITEM'] || rawUserTitle || '';
+                        
+                        newRow['STATUS SYSTEM'] = '✅ Ter-lookup'; 
                         return newRow;
                     } else {
-                        let failRow = { ...row };
-                        failRow['STATUS SYSTEM'] = '❌ NOT FOUND';
-                        return failRow;
+                        if (wants.orin && !newRow['ID ORIN']) newRow['ID ORIN'] = rawUserOrin || '';
+                        if (wants.bsoft && !newRow['KODE BSOFT']) newRow['KODE BSOFT'] = rawUserBsoft || '';
+                        if (wants.judul && !newRow['JUDUL ITEM']) newRow['JUDUL ITEM'] = rawUserTitle || '';
+                        if (wants.harga && !newRow['HARGA']) newRow['HARGA'] = rawUserPrice || '';
+                        if (wants.stokbsoft && !newRow['STOK BSOFT']) newRow['STOK BSOFT'] = '';
+                        if (wants.kategori && !newRow['KATEGORI']) newRow['KATEGORI'] = '';
+                        if (wants.sold && !newRow['SOLD (TERJUAL BULAN INI)']) newRow['SOLD (TERJUAL BULAN INI)'] = '';
+                        if (wants.eoh && !newRow['EOH (STOK AKHIR GRAMEDIA)']) newRow['EOH (STOK AKHIR GRAMEDIA)'] = '';
+                        
+                        newRow['__hidden_orin'] = rawUserOrin || '';
+                        newRow['__hidden_judul'] = rawUserTitle || '';
+                        
+                        newRow['STATUS SYSTEM'] = '❌ Kosong';
+                        return newRow;
                     }
                 });
 
@@ -1219,9 +1300,21 @@
             reader.readAsArrayBuffer(file);
         }
 
-        function resetFilterAndPage() { currentFilter = 'ALL'; currentPage = 1; }
-        function setFilter(filterType) { currentFilter = filterType; currentPage = 1; renderPreview(); }
-        function changePage(delta) { currentPage += delta; renderPreview(); }
+        function resetFilterAndPage() {
+            currentFilter = 'ALL';
+            currentPage = 1;
+        }
+
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            currentPage = 1;
+            renderPreview();
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderPreview();
+        }
 
         function handleSort(col) {
             if(sortCol === col) { sortAsc = !sortAsc; } 
@@ -1280,7 +1373,8 @@
 
             const thead = document.getElementById('table-head');
             const tbody = document.getElementById('table-body');
-            const headers = Object.keys(processedData[0]);
+            
+            const headers = Object.keys(processedData[0]).filter(k => !k.startsWith('__hidden_'));
             
             let headerRow = '<tr>';
             headerRow += `<th class="py-2 px-2 border-b border-gray-600 text-center w-10"><input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded cursor-pointer" title="Pilih Semua"></th>`;
@@ -1297,9 +1391,9 @@
             paginatedData.forEach((rowObj, index) => {
                 let rowHtml = '<tr class="hover:bg-blue-50 transition-colors text-[10px] md:text-xs">';
                 
-                let orinVal = rowObj['ID ORIN'] || rowObj['ItemID'] || '';
-                let judulVal = rowObj['JUDUL ITEM'] || rowObj['JUDUL'] || '';
-                let isBookMatched = rowObj['STATUS SYSTEM'] === '✅ MATCHED_BOOK' || rowObj['STATUS SYSTEM'] === '✅ CUSTOM_MATCHED';
+                let orinVal = rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '';
+                let judulVal = rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '';
+                let isBookMatched = String(rowObj['STATUS SYSTEM']).includes('✅ Ter-lookup') || String(rowObj['STATUS SYSTEM']).includes('✅ CUSTOM_MATCHED') || String(rowObj['STATUS SYSTEM']).includes('✅ MATCHED_BOOK');
                 
                 if (isBookMatched && orinVal) {
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
@@ -1310,10 +1404,10 @@
                 headers.forEach(header => {
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
                     if (header === 'STATUS SYSTEM') {
-                        if (val === '✅ MATCHED_BOOK' || val === '✅ CUSTOM_MATCHED') {
-                            let orinEsc = escapeAttr(rowObj['ID ORIN'] || rowObj['ItemID'] || '');
+                        if (val.includes('✅ Ter-lookup') || val.includes('✅ MATCHED_BOOK') || val.includes('✅ CUSTOM_MATCHED')) {
+                            let orinEsc = escapeAttr(rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '');
                             let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || rowObj['BSOFTH'] || '');
-                            let judulEsc = escapeAttr(rowObj['JUDUL ITEM'] || rowObj['JUDUL'] || '');
+                            let judulEsc = escapeAttr(rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '');
                             let hargaEsc = escapeAttr(rowObj['HARGA'] || '');
                             let stokEsc = escapeAttr(rowObj['STOK BSOFT'] || '');
                             
@@ -1322,11 +1416,11 @@
                                 <button onclick="lihatDetail('${orinEsc}', '${bsoftEsc}', '${judulEsc}', '${hargaEsc}', '${stokEsc}')" class="text-[9px] md:text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button>
                             </td>`;
                         }
-                        else if (val === '✅ MATCHED_STORE') {
+                        else if (val.includes('✅ MATCHED_STORE')) {
                             let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-purple-100 text-purple-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-1.5 text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button></td>`;
                         }
-                        else if (val === '✅ MATCHED') {
+                        else if (val.includes('✅ MATCHED')) {
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-2 rounded-full text-[10px]">✅ Terisi</span></td>`;
                         }
                         else if (String(val).includes('❌')) {
@@ -1357,19 +1451,24 @@
             tbody.innerHTML = htmlChunks.join('');
         }
 
-        // ==========================================
-        // FUNGSI ANALITIK (FITUR 4)
-        // ==========================================
         function setupAnalyticsDropZone() {
             const dropZone = document.getElementById('analytics-drop-zone');
             const fileInput = document.getElementById('analytics-file-upload');
+            
             dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-active'); });
             dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('drag-active'); });
             dropZone.addEventListener('drop', e => {
-                e.preventDefault(); dropZone.classList.remove('drag-active');
-                if (e.dataTransfer.files.length) handleCustomAnalyticsFile(e.dataTransfer.files[0]);
+                e.preventDefault();
+                dropZone.classList.remove('drag-active');
+                if (e.dataTransfer.files.length) {
+                    handleCustomAnalyticsFile(e.dataTransfer.files[0]);
+                }
             });
-            fileInput.addEventListener('change', e => { if (e.target.files.length) handleCustomAnalyticsFile(e.target.files[0]); });
+            fileInput.addEventListener('change', e => {
+                if (e.target.files.length) {
+                    handleCustomAnalyticsFile(e.target.files[0]);
+                }
+            });
         }
 
         function handleCustomAnalyticsFile(file) {
@@ -1381,20 +1480,28 @@
 
                 let headerRowIndex = -1, actualHeaders = [];
                 for (let i = 0; i < Math.min(dataAsArrays.length, 30); i++) {
-                    const row = dataAsArrays[i]; if (!row) continue;
+                    const row = dataAsArrays[i]; 
+                    if (!row) continue;
                     let hasHeaderId = row.some(cell => isOrinAlias(cell) || isBsoftAlias(cell) || isTitleAlias(cell));
-                    if (hasHeaderId) { headerRowIndex = i; actualHeaders = row.map(h => String(h).trim()); break; }
+                    if (hasHeaderId) { 
+                        headerRowIndex = i; 
+                        actualHeaders = row.map(h => String(h).trim()); 
+                        break; 
+                    }
                 }
                 
                 if (headerRowIndex === -1 && dataAsArrays.length > 0) {
-                    headerRowIndex = 0; actualHeaders = dataAsArrays[0].map((h, idx) => String(h).trim() || `KOLOM_${idx+1}`);
+                    headerRowIndex = 0;
+                    actualHeaders = dataAsArrays[0].map((h, idx) => String(h).trim() || `KOLOM_${idx+1}`);
                 }
 
                 customAnalyticsExcelRows = [];
                 for (let i = headerRowIndex + 1; i < dataAsArrays.length; i++) {
                     if (dataAsArrays[i].length === 0 || dataAsArrays[i].every(c => String(c).trim() === '')) continue;
                     let rowObj = {}; 
-                    for (let j = 0; j < actualHeaders.length; j++) { rowObj[actualHeaders[j] || `KOLOM_${j+1}`] = dataAsArrays[i][j]; }
+                    for (let j = 0; j < actualHeaders.length; j++) {
+                        rowObj[actualHeaders[j] || `KOLOM_${j+1}`] = dataAsArrays[i][j]; 
+                    }
                     customAnalyticsExcelRows.push(rowObj);
                 }
 
@@ -1466,29 +1573,49 @@
                         let isCritical = valFokus >= 20 && stokBsoftVal < 100;
 
                         let mergedObj = { ...row };
-                        mergedObj.orin = orin; mergedObj.judul = judul; mergedObj.kodeBsoft = kodeBsoft; mergedObj.kategori = kategori;
-                        mergedObj.stokBsoft = stokBsoftVal; mergedObj.stokGramedia = eoh;
-                        mergedObj.jan = db4.jan; mergedObj.feb = db4.feb; mergedObj.mar = db4.mar; mergedObj.apr = db4.apr; 
-                        mergedObj.mei = db4.mei; mergedObj.jun = db4.jun; mergedObj.jul = db4.jul; mergedObj.ags = ags;
-                        mergedObj.total = total26; mergedObj.valFokus = valFokus; mergedObj.isCritical = isCritical;
+                        mergedObj.orin = orin;
+                        mergedObj.judul = judul;
+                        mergedObj.kodeBsoft = kodeBsoft;
+                        mergedObj.kategori = kategori;
+                        mergedObj.stokBsoft = stokBsoftVal;
+                        mergedObj.stokGramedia = eoh;
+                        mergedObj.jan = db4.jan; mergedObj.feb = db4.feb; mergedObj.mar = db4.mar;
+                        mergedObj.apr = db4.apr; mergedObj.mei = db4.mei; mergedObj.jun = db4.jun;
+                        mergedObj.jul = db4.jul; mergedObj.ags = ags;
+                        mergedObj.total = total26;
+                        mergedObj.valFokus = valFokus;
+                        mergedObj.isCritical = isCritical;
+
                         combinedData.push(mergedObj);
                     }
                 });
             } else {
                 let allOrins = new Set([...Object.keys(dbMapByOrin), ...Object.keys(storeSummaryMap), ...Object.keys(monthlySalesMap)]);
+
                 allOrins.forEach(orin => {
-                    let db1 = dbMapByOrin[orin]; if (!db1) return;
+                    let db1 = dbMapByOrin[orin]; 
+                    if (!db1) return;
+
                     let judul = db1['JUDUL ITEM'] ? String(db1['JUDUL ITEM']) : "";
                     if (!judul.trim() || cleanStr(judul).includes('obral')) return;
+
                     let kategori = db1['KATEGORI'] ? String(db1['KATEGORI']) : "-";
-                    let db2 = calcStoreData(orin); let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
-                    let ags = db2.totalSold || 0; let eoh = db2.totalEoh || 0;
+
+                    let db2 = calcStoreData(orin);     
+                    let db4 = monthlySalesMap[orin] || {jan:0, feb:0, mar:0, apr:0, mei:0, jun:0, jul:0}; 
+                    
+                    let ags = db2.totalSold || 0; 
+                    let eoh = db2.totalEoh || 0;
                     let total26 = db4.jan + db4.feb + db4.mar + db4.apr + db4.mei + db4.jun + db4.jul + ags;
-                    let kodeBsoft = db1['KODE BSOFT'] || '-'; let stokBsoftVal = parseNum(db1['STOK BSOFT']);
+
+                    let kodeBsoft = db1['KODE BSOFT'] || '-';
+                    let stokBsoftVal = parseNum(db1['STOK BSOFT']);
 
                     if (total26 > 0 || stokBsoftVal > 0 || eoh > 0) {
                         let isMatch = true;
-                        if (keyword) isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword);
+                        if (keyword) {
+                            isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword);
+                        }
 
                         if (isMatch) {
                             let valFokus = total26;
@@ -1503,185 +1630,545 @@
                             else if (currentSortMode === 'Q1') valFokus = db4.jan + db4.feb + db4.mar;
                             else if (currentSortMode === 'Q2') valFokus = db4.apr + db4.mei + db4.jun;
 
+                            let isCritical = valFokus >= 20 && stokBsoftVal < 100;
+
                             combinedData.push({
-                                orin: db1['ID ORIN'] || orin, judul: judul, kodeBsoft: kodeBsoft, kategori: kategori,
-                                stokBsoft: stokBsoftVal, stokGramedia: eoh,
+                                orin: db1['ID ORIN'] || orin,
+                                judul: judul,
+                                kodeBsoft: kodeBsoft,
+                                kategori: kategori,
+                                stokBsoft: stokBsoftVal,
+                                stokGramedia: eoh,
                                 jan: db4.jan, feb: db4.feb, mar: db4.mar, apr: db4.apr, mei: db4.mei, jun: db4.jun, jul: db4.jul, ags: ags,
-                                total: total26, valFokus: valFokus, isCritical: (valFokus >= 20 && stokBsoftVal < 100)
+                                total: total26,
+                                valFokus: valFokus,
+                                isCritical: isCritical
                             });
                         }
                     }
                 });
             }
+
             combinedData.sort((a, b) => b.valFokus - a.valFokus);
             currentAnalyticsData = combinedData.slice(0, 150);
             renderAnalyticsTable();
         }
 
         function renderAnalyticsTable() {
-            const thead = document.getElementById('analytics-thead'); const tbody = document.getElementById('analytics-table-body');
+            const thead = document.getElementById('analytics-thead');
+            const tbody = document.getElementById('analytics-table-body');
             document.getElementById('analytics-table-section').classList.remove('hidden');
 
             let isSingleMonth = currentSortMode !== 'TOTAL' && currentSortMode !== 'Q1' && currentSortMode !== 'Q2';
             let isQuarter = currentSortMode === 'Q1' || currentSortMode === 'Q2';
-            let headHtml = `<tr><th class="py-3 px-3">Rank</th><th class="py-3 px-3 text-left">Judul Item</th><th class="py-3 px-3 border-l">ID ORIN</th><th class="py-3 px-3">KODE BSOFT</th><th class="py-3 px-3 bg-emerald-900 text-yellow-200">KATEGORI</th>`;
-            if (isSingleMonth) { let monthNames = {JAN:'Januari', FEB:'Februari', MAR:'Maret', APR:'April', MEI:'Mei', JUN:'Juni', JUL:'Juli', AGS:'Agustus'}; headHtml += `<th class="py-3 px-4 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">${monthNames[currentSortMode]}</th>`; } 
-            else if (isQuarter) { let qName = currentSortMode === 'Q1' ? 'Kuartal 1 (Jan-Mar)' : 'Kuartal 2 (Apr-Jun)'; headHtml += `<th class="py-3 px-4 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">${qName}</th>`; } 
-            else { headHtml += `<th class="py-3 px-2 border-l border-emerald-700">Jan</th><th class="py-3 px-2 border-emerald-700">Feb</th><th class="py-3 px-2 border-emerald-700">Mar</th><th class="py-3 px-2 border-emerald-700">Apr</th><th class="py-3 px-2 border-emerald-700">Mei</th><th class="py-3 px-2 border-emerald-700">Jun</th><th class="py-3 px-2 border-emerald-700">Jul</th><th class="py-3 px-2 border-emerald-700">Ags</th><th class="py-3 px-3 bg-emerald-700 font-bold">TOTAL</th>`; }
-            headHtml += `<th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK BSOFT</th><th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK AKHIR GRAMEDIA</th><th class="py-3 px-3 border-l border-emerald-600 bg-emerald-900">STATUS STOK</th></tr>`;
+
+            let headHtml = `<tr>
+                <th class="py-3 px-3">Rank</th>
+                <th class="py-3 px-3 text-left">Judul Item</th>
+                <th class="py-3 px-3 border-l">ID ORIN</th>
+                <th class="py-3 px-3">KODE BSOFT</th>
+                <th class="py-3 px-3 bg-emerald-900 text-yellow-200">KATEGORI</th>`;
+
+            if (isSingleMonth) {
+                let monthNames = {JAN:'Januari', FEB:'Februari', MAR:'Maret', APR:'April', MEI:'Mei', JUN:'Juni', JUL:'Juli', AGS:'Agustus'};
+                headHtml += `<th class="py-3 px-4 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">${monthNames[currentSortMode]}</th>`;
+            } else if (isQuarter) {
+                let qName = currentSortMode === 'Q1' ? 'Kuartal 1 (Jan-Mar)' : 'Kuartal 2 (Apr-Jun)';
+                headHtml += `<th class="py-3 px-4 bg-emerald-900 border-l border-r border-emerald-700 text-yellow-300 font-bold">${qName}</th>`;
+            } else {
+                headHtml += `
+                    <th class="py-3 px-2 border-l border-emerald-700">Jan</th>
+                    <th class="py-3 px-2 border-emerald-700">Feb</th>
+                    <th class="py-3 px-2 border-emerald-700">Mar</th>
+                    <th class="py-3 px-2 border-emerald-700">Apr</th>
+                    <th class="py-3 px-2 border-emerald-700">Mei</th>
+                    <th class="py-3 px-2 border-emerald-700">Jun</th>
+                    <th class="py-3 px-2 border-emerald-700">Jul</th>
+                    <th class="py-3 px-2 border-emerald-700">Ags</th>
+                    <th class="py-3 px-3 bg-emerald-700 font-bold">TOTAL</th>`;
+            }
+
+            headHtml += `
+                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-800">STOK BSOFT</th>
+                <th class="py-3 px-3 border-l border-emerald-600 bg-gray-700">STOK AKHIR GRAMEDIA</th>
+                <th class="py-3 px-3 border-l border-emerald-600 bg-emerald-900">STATUS STOK</th>
+            </tr>`;
             thead.innerHTML = headHtml;
 
             let html = '';
             currentAnalyticsData.forEach((row, i) => {
-                let rnkStr = i < 3 ? ['🥇', '🥈', '🥉'][i] : (i + 1); let orinEsc = escapeAttr(row.orin); let judulEsc = escapeAttr(row.judul); let bsEsc = escapeAttr(row.kodeBsoft);
+                let rnkStr = i < 3 ? ['🥇', '🥈', '🥉'][i] : (i + 1);
+                let orinEsc = escapeAttr(row.orin); let judulEsc = escapeAttr(row.judul); let bsEsc = escapeAttr(row.kodeBsoft);
                 let arrSales = `[${row.jan},${row.feb},${row.mar},${row.apr},${row.mei},${row.jun},${row.jul},${row.ags}]`;
+
                 let rowBgClass = row.isCritical ? 'bg-red-50 hover:bg-red-100 text-red-900' : 'hover:bg-emerald-50';
                 let statusStokBadge = row.isCritical ? `<span class="bg-red-200 text-red-800 px-2 py-0.5 rounded font-bold text-[10px]">⚠️ STOK KRITIS</span>` : `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold text-[10px]">✅ Aman</span>`;
 
-                html += `<tr class="${rowBgClass} transition-colors"><td class="py-2 px-3 border-b font-bold text-gray-500">${rnkStr}</td><td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">${row.judul}<div class="mt-1.5"><button onclick="openTrendModal('${judulEsc}', '${orinEsc}', '${bsEsc}', ${arrSales})" class="text-[9px] md:text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-0.5 px-2 rounded font-bold shadow-sm transition inline-flex items-center gap-1">📈 Lihat Tren</button></div></td><td class="py-2 px-3 border-b border-l font-mono text-gray-500">${row.orin}</td><td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td><td class="py-2 px-3 border-b font-semibold text-purple-700 bg-emerald-50">${row.kategori || '-'}</td>`;
-                if (isSingleMonth || isQuarter) { html += `<td class="py-2 px-4 border-b border-l border-r border-emerald-200 font-black text-sm">${row.valFokus}</td>`; } 
-                else { html += `<td class="py-2 px-2 border-b border-emerald-100">${row.jan}</td><td class="py-2 px-2 border-b border-emerald-100">${row.feb}</td><td class="py-2 px-2 border-b border-emerald-100">${row.mar}</td><td class="py-2 px-2 border-b border-emerald-100">${row.apr}</td><td class="py-2 px-2 border-b border-emerald-100">${row.mei}</td><td class="py-2 px-2 border-b border-emerald-100">${row.jun}</td><td class="py-2 px-2 border-b border-emerald-100">${row.jul}</td><td class="py-2 px-2 border-b border-emerald-100">${row.ags}</td><td class="py-2 px-3 border-b font-black">${row.total}</td>`; }
-                html += `<td class="py-2 px-3 border-b border-l border-emerald-200 font-bold ${row.isCritical ? 'text-red-700 bg-red-100' : 'bg-gray-100 text-gray-800'}">${row.stokBsoft}</td><td class="py-2 px-3 border-b font-bold bg-gray-50 text-emerald-700">${row.stokGramedia}</td><td class="py-2 px-3 border-b border-l font-bold">${statusStokBadge}</td></tr>`;
+                html += `<tr class="${rowBgClass} transition-colors">
+                    <td class="py-2 px-3 border-b font-bold text-gray-500">${rnkStr}</td>
+                    <td class="py-2 px-3 border-b text-left whitespace-normal leading-tight font-semibold min-w-[200px] max-w-[250px]">
+                        ${row.judul}
+                        <div class="mt-1.5">
+                            <button onclick="openTrendModal('${judulEsc}', '${orinEsc}', '${bsEsc}', ${arrSales})" class="text-[9px] md:text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 py-0.5 px-2 rounded font-bold shadow-sm transition inline-flex items-center gap-1">📈 Lihat Tren</button>
+                        </div>
+                    </td>
+                    <td class="py-2 px-3 border-b border-l font-mono text-gray-500">${row.orin}</td>
+                    <td class="py-2 px-3 border-b font-mono font-bold text-emerald-700">${row.kodeBsoft}</td>
+                    <td class="py-2 px-3 border-b font-semibold text-purple-700 bg-emerald-50">${row.kategori || '-'}</td>`;
+
+                if (isSingleMonth) {
+                    html += `<td class="py-2 px-4 border-b border-l border-r border-emerald-200 font-black text-sm">${row.valFokus}</td>`;
+                } else if (isQuarter) {
+                    html += `<td class="py-2 px-4 border-b border-l border-r border-emerald-200 font-black text-sm">${row.valFokus}</td>`;
+                } else {
+                    html += `
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.jan}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.feb}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.mar}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.apr}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.mei}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.jun}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.jul}</td>
+                        <td class="py-2 px-2 border-b border-emerald-100">${row.ags}</td>
+                        <td class="py-2 px-3 border-b font-black">${row.total}</td>`;
+                }
+
+                html += `
+                    <td class="py-2 px-3 border-b border-l border-emerald-200 font-bold ${row.isCritical ? 'text-red-700 bg-red-100' : 'bg-gray-100 text-gray-800'}">${row.stokBsoft}</td>
+                    <td class="py-2 px-3 border-b font-bold bg-gray-50 text-emerald-700">${row.stokGramedia}</td>
+                    <td class="py-2 px-3 border-b border-l font-bold">${statusStokBadge}</td>
+                </tr>`;
             });
+            
             if (currentAnalyticsData.length === 0) html = `<tr><td colspan="15" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data ditemukan untuk pencarian ini.</td></tr>`;
             tbody.innerHTML = html;
         }
 
-        // ==========================================
-        // FUNGSI UMUM LAINNYA & EKSPOR
-        // ==========================================
         function openTrendModal(judul, orin, bsoft, arrSales) {
-            document.getElementById('trend-judul').innerText = judul; document.getElementById('trend-orin').innerText = orin; document.getElementById('trend-bsoft').innerText = bsoft; document.getElementById('trendModal').classList.remove('hidden');
-            const ctx = document.getElementById('chartTrend').getContext('2d'); if (chartTrendObj) chartTrendObj.destroy();
-            chartTrendObj = new Chart(ctx, { type: 'line', data: { labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus'], datasets: [{ label: 'Penjualan Nasional 2026', data: arrSales, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 2, pointBackgroundColor: 'rgba(4, 120, 87, 1)', pointRadius: 4, fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+            document.getElementById('trend-judul').innerText = judul;
+            document.getElementById('trend-orin').innerText = orin;
+            document.getElementById('trend-bsoft').innerText = bsoft;
+            document.getElementById('trendModal').classList.remove('hidden');
+
+            const ctx = document.getElementById('chartTrend').getContext('2d');
+            if (chartTrendObj) chartTrendObj.destroy();
+
+            chartTrendObj = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus'],
+                    datasets: [{
+                        label: 'Penjualan Nasional 2026',
+                        data: arrSales,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(4, 120, 87, 1)',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
         }
         function closeTrendModal() { document.getElementById('trendModal').classList.add('hidden'); }
 
         function exportAnalyticsExcel() {
             if(currentAnalyticsData.length === 0) return alert('Tampilkan data terlebih dahulu sebelum export.');
-            let aoa = [ ["LAPORAN ANALISIS PENJUALAN BUKU & WARNING STOK KRITIS"], ["Dicetak pada:", new Date().toLocaleDateString('id-ID')], [], ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Kategori", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"] ];
-            currentAnalyticsData.forEach((r, i) => { let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "✅ Aman"; aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.kategori, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]); });
-            const sheet = XLSX.utils.aoa_to_sheet(aoa); let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:18}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}]; sheet['!cols'] = cols;
-            const headerStyle = { fill: { fgColor: { rgb: "065F46" } }, font: { bold: true, color: { rgb: "FFFFFF" } }, alignment: { vertical: "center", horizontal: "center" } }; const criticalStyle = { fill: { fgColor: { rgb: "FEE2E2" } }, font: { bold: true, color: { rgb: "991B1B" } } };
-            for(let C = 0; C <= 16; C++) { let cellRef = XLSX.utils.encode_cell({c: C, r: 3}); if(sheet[cellRef]) sheet[cellRef].s = headerStyle; }
-            currentAnalyticsData.forEach((r, i) => { let rowIndex = 4 + i; if(r.isCritical) { for(let C = 0; C <= 16; C++) { let cellRef = XLSX.utils.encode_cell({c: C, r: rowIndex}); if(sheet[cellRef]) sheet[cellRef].s = criticalStyle; } } });
-            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_StokKritis"); 
-            const now = new Date(); const dateStrFile = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth()+1).padStart(2, '0')}-${now.getFullYear()}`;
+            
+            let aoa = [
+                ["LAPORAN ANALISIS PENJUALAN BUKU & WARNING STOK KRITIS"],
+                ["Dicetak pada:", new Date().toLocaleDateString('id-ID')],
+                [],
+                ["Rank", "Judul Item", "ID ORIN", "KODE BSOFT", "Kategori", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "TOTAL", "STOK BSOFT", "STOK AKHIR GRAMEDIA", "STATUS STOK"]
+            ];
+
+            currentAnalyticsData.forEach((r, i) => {
+                let statusStok = r.isCritical ? "⚠️ STOK KRITIS (Stok Bsoft < 100)" : "✅ Aman";
+                aoa.push([ i+1, r.judul, r.orin, r.kodeBsoft, r.kategori, r.jan, r.feb, r.mar, r.apr, r.mei, r.jun, r.jul, r.ags, r.total, r.stokBsoft, r.stokGramedia, statusStok ]);
+            });
+
+            const sheet = XLSX.utils.aoa_to_sheet(aoa);
+            let cols = [{wch:5}, {wch:40}, {wch:12}, {wch:20}, {wch:18}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:6}, {wch:10}, {wch:15}, {wch:22}, {wch:30}];
+            sheet['!cols'] = cols;
+
+            if (sheet["A1"]) sheet["A1"].s = { font: { bold: true, sz: 14 } };
+            if (sheet["A2"]) sheet["A2"].s = { font: { italic: true } };
+
+            const headerStyle = {
+                fill: { fgColor: { rgb: "065F46" } }, 
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                alignment: { vertical: "center", horizontal: "center" }
+            };
+
+            const criticalStyle = {
+                fill: { fgColor: { rgb: "FEE2E2" } },
+                font: { bold: true, color: { rgb: "991B1B" } } 
+            };
+
+            for(let C = 0; C <= 16; C++) {
+                let cellRef = XLSX.utils.encode_cell({c: C, r: 3});
+                if(sheet[cellRef]) sheet[cellRef].s = headerStyle;
+            }
+
+            currentAnalyticsData.forEach((r, i) => {
+                let rowIndex = 4 + i;
+                if(r.isCritical) {
+                    for(let C = 0; C <= 16; C++) {
+                        let cellRef = XLSX.utils.encode_cell({c: C, r: rowIndex});
+                        if(sheet[cellRef]) sheet[cellRef].s = criticalStyle;
+                    }
+                }
+            });
+
+            const workbook = XLSX.utils.book_new(); 
+            XLSX.utils.book_append_sheet(workbook, sheet, "Analitik_StokKritis"); 
+            
+            const now = new Date();
+            const dateStrFile = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth()+1).padStart(2, '0')}-${now.getFullYear()}`;
             XLSX.writeFile(workbook, `Laporan_Analitik_Penjualan_per_${dateStrFile}.xlsx`);
         }
 
         function exportMultiSheetExcel() {
-            const checkedBoxes = document.querySelectorAll('.row-select-chk:checked'); let itemsToExport = [];
-            if (checkedBoxes.length === 0) { processedData.forEach(d => { let orin = d['ID ORIN'] || d['ItemID']; let judul = d['JUDUL ITEM'] || d['JUDUL']; if (orin) { itemsToExport.push({ idOrin: orin, judul: judul }); } }); if (itemsToExport.length === 0) return alert("Tidak ada data valid."); if (!confirm(`Export SEMUA (${itemsToExport.length} buku) ke multi-sheet?`)) return; } 
-            else { checkedBoxes.forEach(chk => { itemsToExport.push({ idOrin: chk.getAttribute('data-orin'), judul: chk.getAttribute('data-judul') }); }); }
-            const workbook = XLSX.utils.book_new(); const now = new Date(); const dateStrFull = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
+            const checkedBoxes = document.querySelectorAll('.row-select-chk:checked');
+            
+            let itemsToExport = [];
+            if (checkedBoxes.length === 0) {
+                processedData.forEach(d => {
+                    let orin = d['__hidden_orin'] || d['ID ORIN'] || d['ItemID'];
+                    let judul = d['__hidden_judul'] || d['JUDUL ITEM'] || d['JUDUL'];
+                    if (orin) {
+                        itemsToExport.push({ idOrin: orin, judul: judul });
+                    }
+                });
+                if (itemsToExport.length === 0) {
+                    return alert("Tidak ada data buku valid yang bisa di-export multi-sheet.");
+                }
+                if (!confirm(`Tidak ada baris yang dicentang. Apakah Anda ingin meng-export SEMUA (${itemsToExport.length} buku) ke dalam multi-sheet Excel?`)) {
+                    return;
+                }
+            } else {
+                checkedBoxes.forEach(chk => {
+                    itemsToExport.push({
+                        idOrin: chk.getAttribute('data-orin'),
+                        judul: chk.getAttribute('data-judul')
+                    });
+                });
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const now = new Date();
+            const dateStrFull = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
+
             itemsToExport.forEach((item, idx) => {
-                let orinKey = cleanStr(item.idOrin); let dbRow = dbMapByOrin[orinKey] || {}; let kodeBsoft = dbRow['KODE BSOFT'] || '-'; let harga = parseNum(dbRow['HARGA']); let stokBsoft = parseNum(dbRow['STOK BSOFT']); let kategori = dbRow['KATEGORI'] || '-';
-                const stores = storeRecordsByOrin[orinKey] || []; let validStores = []; let sumSold = 0, sumEoh = 0;
-                stores.forEach(store => { const namaToko = store.rawToko || store.namaToko || '-'; const cabangRef = getBranchRef(namaToko); const valSold = store.sold || 0; const valEoh = store.eoh || 0; if (valSold > 0 || valEoh > 0) { sumSold += valSold; sumEoh += valEoh; validStores.push({ namaToko, cabangRef, valSold, valEoh }); } });
+                let orinKey = cleanStr(item.idOrin);
+                let dbRow = dbMapByOrin[orinKey] || {};
+                
+                let kodeBsoft = dbRow['KODE BSOFT'] || '-';
+                let harga = parseNum(dbRow['HARGA']);
+                let stokBsoft = parseNum(dbRow['STOK BSOFT']);
+                let kategori = dbRow['KATEGORI'] || '-';
+
+                const stores = storeRecordsByOrin[orinKey] || [];
+                let validStores = [];
+                let sumSold = 0, sumEoh = 0;
+
+                stores.forEach(store => {
+                    const namaToko = store.rawToko || store.namaToko || '-';
+                    const cabangRef = getBranchRef(namaToko); 
+                    const valSold = store.sold || 0;
+                    const valEoh = store.eoh || 0;
+                    if (valSold > 0 || valEoh > 0) {
+                        sumSold += valSold;
+                        sumEoh += valEoh;
+                        validStores.push({ namaToko, cabangRef, valSold, valEoh });
+                    }
+                });
                 validStores.sort((a, b) => b.valSold - a.valSold);
-                let rowsData = [ ["LAPORAN DATA BUKU GRAMEDIA"], ["Dicetak pada:", dateStrFull], [], ["ID ORIN:", item.idOrin], ["KODE BSOFT:", kodeBsoft], ["JUDUL ITEM:", item.judul], ["HARGA:", String(harga)], ["STOK BSOFT:", String(stokBsoft)], ["KATEGORI:", kategori], ["TOTAL SOLD:", String(sumSold)], ["TOTAL EOH:", String(sumEoh)], [], ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"] ];
-                validStores.forEach(st => { rowsData.push([st.namaToko, st.cabangRef, st.valSold, st.valEoh]); });
-                const sheet = XLSX.utils.aoa_to_sheet(rowsData); sheet['!cols'] = getColWidths(rowsData, true);
-                let safeSheetName = String(item.judul).replace(/[\/\\\?\*\[\]\:]/g, "").substring(0, 28) || `Buku_${idx + 1}`; let finalSheetName = safeSheetName; let counter = 1; while (workbook.SheetNames.includes(finalSheetName)) { finalSheetName = `${safeSheetName.substring(0, 25)}_${counter}`; counter++; }
+
+                let rowsData = [
+                    ["LAPORAN DATA BUKU GRAMEDIA"],
+                    ["Dicetak pada:", dateStrFull],
+                    [],
+                    ["ID ORIN:", item.idOrin],
+                    ["KODE BSOFT:", kodeBsoft],
+                    ["JUDUL ITEM:", item.judul],
+                    ["HARGA:", String(harga)],
+                    ["STOK BSOFT:", String(stokBsoft)],
+                    ["KATEGORI:", kategori],
+                    ["TOTAL SOLD:", String(sumSold)],
+                    ["TOTAL EOH:", String(sumEoh)],
+                    [],
+                    ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+                ];
+
+                validStores.forEach(st => {
+                    rowsData.push([st.namaToko, st.cabangRef, st.valSold, st.valEoh]);
+                });
+
+                const sheet = XLSX.utils.aoa_to_sheet(rowsData);
+                sheet['!cols'] = getColWidths(rowsData, true);
+
+                let safeSheetName = String(item.judul).replace(/[\/\\\?\*\[\]\:]/g, "").substring(0, 28);
+                if (!safeSheetName) safeSheetName = `Buku_${idx + 1}`;
+                
+                let finalSheetName = safeSheetName;
+                let counter = 1;
+                while (workbook.SheetNames.includes(finalSheetName)) {
+                    finalSheetName = `${safeSheetName.substring(0, 25)}_${counter}`;
+                    counter++;
+                }
+
                 XLSX.utils.book_append_sheet(workbook, sheet, finalSheetName);
             });
+
             const dateFileStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
             XLSX.writeFile(workbook, `MultiSheet_Laporan_Buku_${dateFileStr}.xlsx`);
         }
 
         function buildChartBuku(validStores) {
-            const ctx = document.getElementById('chartBuku').getContext('2d'); if(chartBukuObj) chartBukuObj.destroy();
-            let sortedStores = [...validStores].sort((a, b) => b.valSold - a.valSold); const top5 = sortedStores.slice(0, 5); 
-            chartBukuObj = new Chart(ctx, { type: 'bar', data: { labels: top5.map(s => s.namaToko.replace('GRAMEDIA ', '')), datasets: [{ label: 'SOLD', data: top5.map(s => s.valSold), backgroundColor: 'rgba(59, 130, 246, 0.8)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } } }, plugins: { legend: { display: false } }, layout: { padding: { bottom: 10 } } } });
+            const ctx = document.getElementById('chartBuku').getContext('2d');
+            if(chartBukuObj) chartBukuObj.destroy();
+            let sortedStores = [...validStores].sort((a, b) => b.valSold - a.valSold);
+            const top5 = sortedStores.slice(0, 5); 
+            
+            chartBukuObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top5.map(s => s.namaToko.replace('GRAMEDIA ', '')),
+                    datasets: [{ label: 'SOLD', data: top5.map(s => s.valSold), backgroundColor: 'rgba(59, 130, 246, 0.8)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { 
+                        y: { beginAtZero: true },
+                        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } }
+                    },
+                    plugins: { legend: { display: false } },
+                    layout: { padding: { bottom: 10 } }
+                }
+            });
         }
 
         function buildChartToko(validRecords) {
-            const ctx = document.getElementById('chartToko').getContext('2d'); if(chartTokoObj) chartTokoObj.destroy();
-            let sortedRecords = [...validRecords].sort((a, b) => b.valSold - a.valSold); const top5 = sortedRecords.slice(0, 5); 
-            chartTokoObj = new Chart(ctx, { type: 'bar', data: { labels: top5.map(s => s.judulItem.length > 35 ? s.judulItem.substring(0, 35) + '...' : s.judulItem), datasets: [{ label: 'SOLD', data: top5.map(s => s.valSold), backgroundColor: 'rgba(147, 51, 234, 0.8)', borderColor: 'rgba(147, 51, 234, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } } }, plugins: { legend: { display: false } }, layout: { padding: { bottom: 10 } } } });
+            const ctx = document.getElementById('chartToko').getContext('2d');
+            if(chartTokoObj) chartTokoObj.destroy();
+            let sortedRecords = [...validRecords].sort((a, b) => b.valSold - a.valSold);
+            const top5 = sortedRecords.slice(0, 5); 
+            
+            chartTokoObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top5.map(s => s.judulItem.length > 35 ? s.judulItem.substring(0, 35) + '...' : s.judulItem),
+                    datasets: [{ label: 'SOLD', data: top5.map(s => s.valSold), backgroundColor: 'rgba(147, 51, 234, 0.8)', borderColor: 'rgba(147, 51, 234, 1)', borderWidth: 1 }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { 
+                        y: { beginAtZero: true },
+                        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } }
+                    },
+                    plugins: { legend: { display: false } },
+                    layout: { padding: { bottom: 10 } }
+                }
+            });
         }
 
         function fallbackCopyTextToClipboard(text) {
-            var textArea = document.createElement("textarea"); textArea.value = text; textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
-            try { var successful = document.execCommand('copy'); if(successful) alert("Data berhasil disalin!"); else alert("Gagal menyalin data."); } catch (err) { alert("Browser memblokir akses Clipboard."); } document.body.removeChild(textArea);
+            var textArea = document.createElement("textarea");
+            textArea.value = text; textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
+            document.body.appendChild(textArea); textArea.focus(); textArea.select();
+            try { var successful = document.execCommand('copy'); if(successful) alert("Data berhasil disalin! Silakan Paste (Ctrl+V) di WA atau Excel."); else alert("Gagal menyalin data ke Clipboard."); } 
+            catch (err) { alert("Gagal menyalin, browser kamu memblokir akses Clipboard sepenuhnya."); }
+            document.body.removeChild(textArea);
         }
 
         function copyToWA(jenis) {
             let text = "";
-            if (jenis === 'buku') { text += `*INFO STOK BUKU*\n📕 Judul: ${document.getElementById('mdl-judul').innerText}\n🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n🏷️ Kategori: ${document.getElementById('mdl-kategori').innerText}\n\n*Top 10 Toko Terlaris:*\n`; currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} [${st.cabangRef}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; }); text += `\n*Total Nasional*\nSold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`; } 
-            else { text += `*INFO STOK TOKO*\n🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}\n\n*Top 10 Buku Terlaris:*\n`; currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} [${st.kategori}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; }); text += `\n*Total Toko*\nSold: ${document.getElementById('store-mdl-totalsold').innerText} | EOH: ${document.getElementById('store-mdl-totaleoh').innerText}`; }
-            if (!navigator.clipboard) { fallbackCopyTextToClipboard(text); return; } navigator.clipboard.writeText(text).then(function() { alert("Data berhasil disalin!"); }, function(err) { fallbackCopyTextToClipboard(text); });
+            if (jenis === 'buku') {
+                text += `*INFO STOK BUKU*\n📕 Judul: ${document.getElementById('mdl-judul').innerText}\n🔢 ORIN: ${document.getElementById('mdl-id').innerText}\n🏷️ Kategori: ${document.getElementById('mdl-kategori').innerText}\n\n*Top 10 Toko Terlaris:*\n`;
+                currentValidStores.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.namaToko} [${st.cabangRef}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                text += `\n*Total Nasional*\nSold: ${document.getElementById('mdl-totalsold').innerText} | EOH: ${document.getElementById('mdl-totaleoh').innerText}`;
+            } else {
+                text += `*INFO STOK TOKO*\n🏪 Lokasi: ${document.getElementById('mdl-store-name').innerText}\n\n*Top 10 Buku Terlaris:*\n`;
+                currentValidRecords.slice(0, 10).forEach((st, i) => { text += `${i+1}. ${st.judulItem} [${st.kategori}] (Sold: ${st.valSold}, EOH: ${st.valEoh})\n`; });
+                text += `\n*Total Toko*\nSold: ${document.getElementById('store-mdl-totalsold').innerText} | EOH: ${document.getElementById('store-mdl-totaleoh').innerText}`;
+            }
+            if (!navigator.clipboard) { fallbackCopyTextToClipboard(text); return; }
+            navigator.clipboard.writeText(text).then(function() { alert("Data berhasil disalin! Silakan Paste (Ctrl+V) di WA atau Excel."); }, function(err) { fallbackCopyTextToClipboard(text); });
         }
 
         function lihatDetail(idOrin, kodeBsoft, judulItem, harga, stokBsoft) {
-            document.getElementById('mdl-id').innerText = idOrin; document.getElementById('mdl-kode').innerText = kodeBsoft; document.getElementById('mdl-judul').innerText = judulItem; document.getElementById('mdl-harga').innerText = harga; document.getElementById('mdl-stokbsoft').innerText = stokBsoft;
-            let dbMatch = dbMapByOrin[cleanStr(idOrin)]; let kategoriVal = dbMatch ? (dbMatch['KATEGORI'] || '-') : '-'; document.getElementById('mdl-kategori').innerText = kategoriVal;
-            const tbody = document.getElementById('detailBody'); const now = new Date(); const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
-            document.getElementById('pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`; currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
+            document.getElementById('mdl-id').innerText = idOrin; document.getElementById('mdl-kode').innerText = kodeBsoft; 
+            document.getElementById('mdl-judul').innerText = judulItem; document.getElementById('mdl-harga').innerText = harga; 
+            document.getElementById('mdl-stokbsoft').innerText = stokBsoft;
+            
+            let dbMatch = dbMapByOrin[cleanStr(idOrin)];
+            let kategoriVal = dbMatch ? (dbMatch['KATEGORI'] || '-') : '-';
+            document.getElementById('mdl-kategori').innerText = kategoriVal;
+            
+            const tbody = document.getElementById('detailBody'); const now = new Date();
+            const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
+            
+            document.getElementById('pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
+            currentDetailFileName = `Detail_Toko_${dateStr}_${judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
+
             const stores = storeRecordsByOrin[cleanStr(idOrin)] || []; let validStores = [];
-            stores.forEach(store => { const namaToko = store.rawToko || store.namaToko || '-'; const cabangRef = getBranchRef(namaToko); const valSold = store.sold || 0; const valEoh = store.eoh || 0; if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, cabangRef, valSold, valEoh }); });
+            stores.forEach(store => {
+                const namaToko = store.rawToko || store.namaToko || '-'; 
+                const cabangRef = getBranchRef(namaToko);
+                const valSold = store.sold || 0; 
+                const valEoh = store.eoh || 0; 
+                if (valSold > 0 || valEoh > 0) validStores.push({ namaToko, cabangRef, valSold, valEoh });
+            });
+
             validStores.sort((a, b) => b.valSold - a.valSold); currentValidStores = validStores;
             let htmlChunks = []; let sumSold = 0, sumEoh = 0; 
-            validStores.forEach(item => { sumSold += item.valSold; sumEoh += item.valEoh; htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 text-center border-b border-l font-semibold text-gray-600">${item.cabangRef}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`); });
+            
+            validStores.forEach(item => {
+                sumSold += item.valSold; sumEoh += item.valEoh;
+                htmlChunks.push(`<tr class="hover:bg-gray-50"><td class="py-2 px-3 text-left border-b">${item.namaToko}</td><td class="py-2 px-3 text-center border-b border-l font-semibold text-gray-600">${item.cabangRef}</td><td class="py-2 px-3 font-bold border-b border-l text-blue-600">${item.valSold}</td><td class="py-2 px-3 font-bold border-b border-l text-green-600">${item.valEoh}</td></tr>`);
+            });
+            
             document.getElementById('mdl-totalsold').innerText = sumSold; document.getElementById('mdl-totaleoh').innerText = sumEoh;
-            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`; else tbody.innerHTML = htmlChunks.join('');
-            document.getElementById('detailModal').classList.remove('hidden'); setTimeout(() => { buildChartBuku(validStores); }, 100);
+            if (validStores.length === 0) tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH.</td></tr>`;
+            else tbody.innerHTML = htmlChunks.join('');
+            
+            document.getElementById('detailModal').classList.remove('hidden');
+            setTimeout(() => { buildChartBuku(validStores); }, 100);
         }
         function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
         function lihatDetailKatalog(namaToko) {
-            document.getElementById('mdl-store-name').innerText = namaToko; const tbody = document.getElementById('storeDetailBody'); const now = new Date(); const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
-            document.getElementById('store-pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`; currentStoreFileName = `Data_Buku_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
+            document.getElementById('mdl-store-name').innerText = namaToko; const tbody = document.getElementById('storeDetailBody');
+            const now = new Date(); const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth()+1).padStart(2, '0') + now.getFullYear();
+            
+            document.getElementById('store-pdf-print-date').innerText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth()+1).padStart(2, '0')}/${now.getFullYear()}`;
+            currentStoreFileName = `Data_Buku_${dateStr}_${namaToko.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase()}`; 
+
             const records = storeRecordsByToko[cleanStr(namaToko)] || []; let validRecords = [];
             records.forEach(st => {
                 const idOrin = st.rawOrin || ''; const valSold = st.sold || 0; const valEoh = st.eoh || 0;
-                if (valSold > 0 || valEoh > 0) { let dbMatch = dbMapByOrin[cleanStr(idOrin)]; let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st.judulItem || '-'); let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-'; let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-'; let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-'; let kategori = dbMatch ? (dbMatch['KATEGORI'] || '-') : '-'; validRecords.push({ idOrin, judulItem, harga, stokBsoft, kategori, valSold, valEoh, kodeBsoft, namaToko }); }
+                if (valSold > 0 || valEoh > 0) {
+                    let dbMatch = dbMapByOrin[cleanStr(idOrin)];
+                    let judulItem = dbMatch ? (dbMatch['JUDUL ITEM'] || '-') : (st.judulItem || '-');
+                    let harga = dbMatch && dbMatch['HARGA'] !== undefined ? dbMatch['HARGA'] : '-';
+                    let kodeBsoft = dbMatch ? (dbMatch['KODE BSOFT'] || '-') : '-';
+                    let stokBsoft = dbMatch && dbMatch['STOK BSOFT'] !== undefined ? dbMatch['STOK BSOFT'] : '-';
+                    let kategori = dbMatch ? (dbMatch['KATEGORI'] || '-') : '-';
+                    validRecords.push({ idOrin, judulItem, harga, stokBsoft, kategori, valSold, valEoh, kodeBsoft, namaToko });
+                }
             });
+
             validRecords.sort((a, b) => b.valSold - a.valSold); currentValidRecords = validRecords;
             let htmlChunks = []; let sumStoreSold = 0, sumStoreEoh = 0; 
-            validRecords.forEach(item => { sumStoreSold += item.valSold; sumStoreEoh += item.valEoh; htmlChunks.push(`<tr class="hover:bg-purple-50"><td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td><td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td><td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-semibold text-purple-700">${item.kategori}</td><td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td><td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td></tr>`); });
+            
+            validRecords.forEach(item => {
+                sumStoreSold += item.valSold; sumStoreEoh += item.valEoh;
+                htmlChunks.push(`<tr class="hover:bg-purple-50"><td class="py-2 px-2 text-left border-b border-r text-xs font-mono text-gray-500">${item.idOrin}</td><td class="py-2 px-3 text-left border-b font-semibold text-xs whitespace-normal leading-tight text-gray-800 w-1/3">${item.judulItem}</td><td class="py-2 px-2 text-center border-b border-l text-xs">${item.harga}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-bold text-gray-700">${item.stokBsoft}</td><td class="py-2 px-2 text-center border-b border-l text-xs font-semibold text-purple-700">${item.kategori}</td><td class="py-2 px-2 font-bold border-b border-l text-blue-600 text-center text-sm">${item.valSold}</td><td class="py-2 px-2 font-bold border-b border-l text-green-600 text-center text-sm">${item.valEoh}</td></tr>`);
+            });
+            
             document.getElementById('store-mdl-totalsold').innerText = sumStoreSold; document.getElementById('store-mdl-totaleoh').innerText = sumStoreEoh;
-            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok.</td></tr>`; else tbody.innerHTML = htmlChunks.join('');
-            document.getElementById('storeModal').classList.remove('hidden'); setTimeout(() => { buildChartToko(validRecords); }, 100);
+            if (validRecords.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-gray-500 italic text-center text-sm">Tidak ada stok.</td></tr>`;
+            else tbody.innerHTML = htmlChunks.join('');
+            
+            document.getElementById('storeModal').classList.remove('hidden');
+            setTimeout(() => { buildChartToko(validRecords); }, 100);
         }
         function closeStoreModal() { document.getElementById('storeModal').classList.add('hidden'); }
 
         function getColWidths(dataArray, isAoa = false) {
             let cols = [];
-            if (isAoa) { dataArray.forEach(row => { row.forEach((cell, i) => { let len = cell ? String(cell).length + 2 : 5; if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); }); } 
-            else { if(dataArray.length === 0) return cols; let headers = Object.keys(dataArray[0]); headers.forEach((h, i) => cols[i] = { wch: h.length + 2 }); dataArray.forEach(row => { headers.forEach((h, i) => { let len = row[h] ? String(row[h]).length + 2 : 5; if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); }); } 
+            if (isAoa) {
+                dataArray.forEach(row => { row.forEach((cell, i) => { let len = cell ? String(cell).length + 2 : 5; if (!cols[i] || cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; }); });
+            } else {
+                if(dataArray.length === 0) return cols;
+                
+                const headers = Object.keys(dataArray[0]).filter(k => !k.startsWith('__hidden_'));
+                headers.forEach((h, i) => cols[i] = { wch: h.length + 2 });
+                
+                dataArray.forEach(row => { 
+                    headers.forEach((h, i) => { 
+                        let len = row[h] ? String(row[h]).length + 2 : 5; 
+                        if (cols[i].wch < len) cols[i] = { wch: Math.min(len, 60) }; 
+                    }); 
+                });
+            } 
             return cols;
         }
 
         function exportToExcel() {
             if (!processedData || processedData.length === 0) return;
-            const sheet = XLSX.utils.json_to_sheet(processedData); sheet['!cols'] = getColWidths(processedData, false);
-            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Hasil_Lookup"); XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
+            
+            const exportData = processedData.map(row => {
+                let cleanRow = {};
+                for (let key in row) {
+                    if (!key.startsWith('__hidden_')) {
+                        cleanRow[key] = row[key];
+                    }
+                }
+                return cleanRow;
+            });
+            
+            const sheet = XLSX.utils.json_to_sheet(exportData); 
+            sheet['!cols'] = getColWidths(exportData, false);
+            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Hasil_Lookup"); 
+            XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
         }
+
         function exportDetailToExcel() {
-            const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr'); if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
+            const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
             const toNum = (val) => { let str = String(val).trim(); if (str === '' || str === '-') return str; let num = Number(str); return isNaN(num) ? str : num; };
-            let aoa = [ ["LAPORAN DATA BUKU GRAMEDIA"], ["Dicetak pada:", document.getElementById('pdf-print-date').innerText], [], ["ID ORIN:", document.getElementById('mdl-id').innerText], ["KODE BSOFT:", document.getElementById('mdl-kode').innerText], ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText], ["HARGA:", String(document.getElementById('mdl-harga').innerText)], ["STOK BSOFT:", String(document.getElementById('mdl-stokbsoft').innerText)], ["KATEGORI:", document.getElementById('mdl-kategori').innerText], ["TOTAL SOLD:", String(document.getElementById('mdl-totalsold').innerText)], ["TOTAL EOH:", String(document.getElementById('mdl-totaleoh').innerText)], [], ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"] ];
+            let aoa = [
+                ["LAPORAN DATA BUKU GRAMEDIA"], ["Dicetak pada:", document.getElementById('pdf-print-date').innerText], [],
+                ["ID ORIN:", document.getElementById('mdl-id').innerText], ["KODE BSOFT:", document.getElementById('mdl-kode').innerText], 
+                ["JUDUL ITEM:", document.getElementById('mdl-judul').innerText], 
+                ["HARGA:", String(document.getElementById('mdl-harga').innerText)], 
+                ["STOK BSOFT:", String(document.getElementById('mdl-stokbsoft').innerText)], 
+                ["KATEGORI:", document.getElementById('mdl-kategori').innerText],
+                ["TOTAL SOLD:", String(document.getElementById('mdl-totalsold').innerText)], 
+                ["TOTAL EOH:", String(document.getElementById('mdl-totaleoh').innerText)], [],
+                ["Nama Toko", "Cabang Referensi", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+            ];
             rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 4) aoa.push([cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText)]); });
-            const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko"); XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
+            const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true);
+            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Per_Toko"); XLSX.writeFile(workbook, currentDetailFileName + ".xlsx");
         }
+        
         function exportDetailToPDF() {
-            const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr'); if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
+            const tbody = document.getElementById('detailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
             const el = document.getElementById('pdf-content'); const hdr = document.getElementById('pdf-header-title'); const origClass = el.className;
             hdr.classList.remove('hidden'); el.className = "p-2 bg-white w-full"; 
             const opt = { margin: [0.5, 0.4, 0.5, 0.4], filename: currentDetailFileName + ".pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }, pagebreak: { avoid: 'tr' } };
             html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
+
         function exportStoreDetailToExcel() {
-            const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr'); if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
+            const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export.");
             const toNum = (val) => { let str = String(val).trim(); if (str === '' || str === '-') return str; let num = Number(str); return isNaN(num) ? str : num; };
-            let aoa = [ ["LAPORAN DATA & STOK TOKO"], ["Dicetak pada:", document.getElementById('store-pdf-print-date').innerText], [], ["LOKASI TOKO:", document.getElementById('mdl-store-name').innerText], ["TOTAL SOLD:", String(document.getElementById('store-mdl-totalsold').innerText)], ["TOTAL EOH:", String(document.getElementById('store-mdl-totaleoh').innerText)], [], ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "Kategori", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"] ];
+            let aoa = [
+                ["LAPORAN DATA & STOK TOKO"], ["Dicetak pada:", document.getElementById('store-pdf-print-date').innerText], [],
+                ["LOKASI TOKO:", document.getElementById('mdl-store-name').innerText], 
+                ["TOTAL SOLD:", String(document.getElementById('store-mdl-totalsold').innerText)], 
+                ["TOTAL EOH:", String(document.getElementById('store-mdl-totaleoh').innerText)], [],
+                ["ID ORIN", "Judul Item", "Harga", "Stok BSOFT", "Kategori", "SOLD (TERJUAL BULAN INI)", "EOH (STOK AKHIR GRAMEDIA)"]
+            ];
             rows.forEach(row => { let cols = row.querySelectorAll('td'); if (cols.length === 7) aoa.push([ cols[0].innerText, cols[1].innerText, toNum(cols[2].innerText), toNum(cols[3].innerText), cols[4].innerText, toNum(cols[5].innerText), toNum(cols[6].innerText) ]); });
-            const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko"); XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
+            const sheet = XLSX.utils.aoa_to_sheet(aoa); sheet['!cols'] = getColWidths(aoa, true);
+            const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, sheet, "Data_Buku_Toko"); XLSX.writeFile(workbook, currentStoreFileName + ".xlsx");
         }
+        
         function exportStoreDetailToPDF() {
-            const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr'); if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
+            const tbody = document.getElementById('storeDetailBody'); const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada"))) return alert("Tidak ada data untuk di-export ke PDF.");
             const el = document.getElementById('store-pdf-content'); const hdr = document.getElementById('store-pdf-header-title'); const origClass = el.className;
             hdr.classList.add('hidden'); el.className = "p-2 bg-white w-full"; 
             const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: currentStoreFileName + ".pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { avoid: 'tr' } };
