@@ -826,7 +826,7 @@
                             
                             // Bikin object baru, sisipkan info master di belakang layar untuk kemudahan Filter & Analisis
                             let joinedData = {
-                                'STATUS_SISTEM': match ? '✅ MATCHED' : '❌ NOT_FOUND',
+                                'STATUS_SISTEM': match ? '✅ MATCHED' : '❌ NOT_FOUND', // Menyimpan log hidden saja, gak perlu dirender di table RO
                                 'ID_ORIN_MASTER': match ? (match['ID ORIN'] || userOrin) : userOrin,
                                 'KODE_BSOFT_MASTER': match ? (match['KODE BSOFT'] || '-') : '-',
                                 'STOK_BSOFT_MASTER': match && match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '-',
@@ -1040,11 +1040,10 @@
             
             const paginatedData = filteredRoData.slice(startIndex, endIndex);
 
-            // Bangun Header Tabel Secara Dinamis dari baris pertama (Sembunyikan __JUDUL_MASTER)
+            // Kolom STATUS dihapus agar tabel lebih bersih
             let rawHeaders = Object.keys(filteredRoData[0]).filter(k => k !== 'STATUS_SISTEM' && k !== '__JUDUL_MASTER' && !k.includes('_MASTER'));
             
             let headHtml = `<tr>
-                <th class="py-3 px-3 bg-gray-900 border-r border-gray-700">STATUS</th>
                 <th class="py-3 px-3 bg-blue-900 text-blue-200">ID ORIN (MASTER)</th>
                 <th class="py-3 px-3 bg-blue-900 text-blue-200">KODE BSOFT (MASTER)</th>
                 <th class="py-3 px-3 bg-blue-900 text-blue-200 border-r border-blue-700">STOK BSOFT (MASTER)</th>`;
@@ -1055,13 +1054,10 @@
             headHtml += `</tr>`;
             thead.innerHTML = headHtml;
 
-            // Bangun Body
+            // Bangun Body tanpa sel status
             let htmlChunks = [];
             paginatedData.forEach((row, i) => {
-                let statusBadge = row.STATUS_SISTEM.includes('✅') ? `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold text-[10px]">✅ MATCHED</span>` : `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold text-[10px]">❌ No Match</span>`;
-                
                 let rowHtml = `<tr class="hover:bg-orange-50 transition-colors">
-                    <td class="py-2 px-3 border-b text-center border-r">${statusBadge}</td>
                     <td class="py-2 px-3 border-b text-center font-mono font-bold text-gray-700 bg-blue-50/30">${row.ID_ORIN_MASTER}</td>
                     <td class="py-2 px-3 border-b text-center font-mono font-bold text-blue-700 bg-blue-50/30">${row.KODE_BSOFT_MASTER}</td>
                     <td class="py-2 px-3 border-b text-center font-black text-gray-800 bg-blue-50/30 border-r border-gray-200">${row.STOK_BSOFT_MASTER}</td>`;
@@ -1072,7 +1068,6 @@
                     if(isTextLong) {
                         rowHtml += `<td class="py-2 px-3 border-b text-left whitespace-normal leading-tight min-w-[200px] max-w-[250px]">${val}</td>`;
                     } else {
-                        // Highlighting QTY column
                         if(isQtyAlias(h)) {
                             rowHtml += `<td class="py-2 px-3 border-b text-center font-bold text-orange-700 bg-orange-50/50">${val}</td>`;
                         } else {
@@ -1090,7 +1085,6 @@
         function exportRoExcel() {
             if(filteredRoData.length === 0) return alert('Tidak ada data RO yang bisa di-export.');
 
-            // Buat Salinan Data Khusus Export (Sembunyikan __JUDUL_MASTER yang cuma untuk internal)
             const exportData = filteredRoData.map(r => {
                 let cleanR = {};
                 for(let k in r) {
@@ -1156,7 +1150,9 @@
                         'KATEGORI': match['KATEGORI'] || '',
                         'SOLD (TERJUAL BULAN INI)': totalSold, 
                         'EOH (STOK AKHIR GRAMEDIA)': totalEoh, 
-                        'STATUS SYSTEM': '✅ MATCHED_BOOK' 
+                        'AKSI': 'DETAIL_BUKU',
+                        '__hidden_orin': match['ID ORIN'],
+                        '__hidden_judul': match['JUDUL ITEM']
                     };
                 });
                 sortCol = 'SOLD (TERJUAL BULAN INI)'; 
@@ -1344,7 +1340,9 @@
                         'KATEGORI': match['KATEGORI'] || '',
                         'SOLD (TERJUAL BULAN INI)': totalSold, 
                         'EOH (STOK AKHIR GRAMEDIA)': totalEoh, 
-                        'STATUS SYSTEM': '✅ MATCHED_BOOK' 
+                        'AKSI': 'DETAIL_BUKU',
+                        '__hidden_orin': match['ID ORIN'],
+                        '__hidden_judul': match['JUDUL ITEM']
                     };
                 });
                 sortCol = 'SOLD (TERJUAL BULAN INI)'; 
@@ -1382,7 +1380,7 @@
             if (matchedStoreNames.length > 0) {
                 processedData = matchedStoreNames.map(storeName => ({ 
                     'NAMA TOKO TERDAFTAR': storeRecordsByToko[storeName][0].rawToko || storeName, 
-                    'STATUS SYSTEM': '✅ MATCHED_STORE' 
+                    'AKSI': 'DETAIL_TOKO' 
                 }));
                 resetFilterAndPage();
                 renderPreview(); 
@@ -1636,10 +1634,11 @@
             document.getElementById('preview-section').classList.remove('hidden');
 
             let filteredData = processedData;
+            // Filter MATCHED sekarang memfilter jika ada tombol Aksi atau jika status ter-lookup (Fitur 3)
             if (currentFilter === 'MATCHED') {
-                filteredData = processedData.filter(d => String(d['STATUS SYSTEM']).includes('✅'));
+                filteredData = processedData.filter(d => (d['STATUS SYSTEM'] && String(d['STATUS SYSTEM']).includes('✅')) || d['AKSI'] !== undefined);
             } else if (currentFilter === 'NOT_FOUND') {
-                filteredData = processedData.filter(d => String(d['STATUS SYSTEM']).includes('❌'));
+                filteredData = processedData.filter(d => d['STATUS SYSTEM'] && String(d['STATUS SYSTEM']).includes('❌'));
             }
 
             const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
@@ -1678,7 +1677,7 @@
                 
                 let orinVal = rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '';
                 let judulVal = rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '';
-                let isBookMatched = String(rowObj['STATUS SYSTEM']).includes('✅ Ter-lookup') || String(rowObj['STATUS SYSTEM']).includes('✅ CUSTOM_MATCHED') || String(rowObj['STATUS SYSTEM']).includes('✅ MATCHED_BOOK');
+                let isBookMatched = rowObj['AKSI'] === 'DETAIL_BUKU' || (rowObj['STATUS SYSTEM'] && String(rowObj['STATUS SYSTEM']).includes('✅ Ter-lookup'));
                 
                 if (isBookMatched && orinVal) {
                     rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle"><input type="checkbox" class="row-select-chk w-4 h-4 rounded cursor-pointer text-indigo-600" data-orin="${escapeAttr(orinVal)}" data-judul="${escapeAttr(judulVal)}"></td>`;
@@ -1688,8 +1687,28 @@
 
                 headers.forEach(header => {
                     let val = rowObj[header] !== undefined ? rowObj[header] : '';
-                    if (header === 'STATUS SYSTEM') {
-                        if (val.includes('✅ Ter-lookup') || val.includes('✅ MATCHED_BOOK') || val.includes('✅ CUSTOM_MATCHED')) {
+                    
+                    if (header === 'AKSI') {
+                        if (val === 'DETAIL_BUKU') {
+                            let orinEsc = escapeAttr(rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '');
+                            let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || '');
+                            let judulEsc = escapeAttr(rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '');
+                            let hargaEsc = escapeAttr(rowObj['HARGA'] || '');
+                            let stokEsc = escapeAttr(rowObj['STOK BSOFT'] || '');
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle">
+                                <button onclick="lihatDetail('${orinEsc}', '${bsoftEsc}', '${judulEsc}', '${hargaEsc}', '${stokEsc}')" class="text-[9px] md:text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button>
+                            </td>`;
+                        } else if (val === 'DETAIL_TOKO') {
+                            let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
+                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle">
+                                <button onclick="lihatDetailKatalog('${nmToko}')" class="text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button>
+                            </td>`;
+                        } else {
+                            rowHtml += `<td class="py-1.5 px-2 border-b text-center align-middle">-</td>`;
+                        }
+                    }
+                    else if (header === 'STATUS SYSTEM') {
+                        if (val.includes('✅ Ter-lookup')) {
                             let orinEsc = escapeAttr(rowObj['__hidden_orin'] || rowObj['ID ORIN'] || '');
                             let bsoftEsc = escapeAttr(rowObj['KODE BSOFT'] || rowObj['BSOFTH'] || '');
                             let judulEsc = escapeAttr(rowObj['__hidden_judul'] || rowObj['JUDUL ITEM'] || '');
@@ -1701,15 +1720,11 @@
                                 <button onclick="lihatDetail('${orinEsc}', '${bsoftEsc}', '${judulEsc}', '${hargaEsc}', '${stokEsc}')" class="text-[9px] md:text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Detail</button>
                             </td>`;
                         }
-                        else if (val.includes('✅ MATCHED_STORE')) {
-                            let nmToko = escapeAttr(rowObj['NAMA TOKO TERDAFTAR']);
-                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-purple-100 text-purple-800 py-0.5 px-1.5 rounded-full text-[10px]">✅ Toko Aktif</span><br><button onclick="lihatDetailKatalog('${nmToko}')" class="mt-1.5 text-[9px] md:text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 py-1 px-2 rounded font-bold shadow-sm transition whitespace-nowrap">Lihat Buku</button></td>`;
-                        }
-                        else if (val.includes('✅ MATCHED')) {
-                            rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-green-100 text-green-800 py-0.5 px-2 rounded-full text-[10px]">✅ Terisi</span></td>`;
-                        }
                         else if (String(val).includes('❌')) {
                             rowHtml += `<td class="py-1.5 px-2 border-b font-bold text-center align-middle"><span class="bg-red-100 text-red-800 py-0.5 px-2 rounded-full text-[10px] whitespace-nowrap">${val}</span></td>`;
+                        }
+                        else {
+                            rowHtml += `<td class="py-1.5 px-2 border-b text-center">${val}</td>`;
                         }
                     }
                     else if (header.includes('SOLD') || header.includes('EOH') || header.includes('TOTAL') || header.includes('Ags')) {
