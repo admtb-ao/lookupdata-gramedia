@@ -568,7 +568,7 @@
         const isTitleAlias = (str) => {
             if (!str) return false;
             let s = String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
-            return ['judulitem', 'judul', 'title', 'namabuku', 'itemname'].includes(s);
+            return ['judulitem', 'judul', 'title', 'namabuku', 'itemname', 'productname'].includes(s);
         };
 
         const isPriceAlias = (str) => {
@@ -947,10 +947,13 @@
                     } 
                 }
                 
-                // Jika judul masih 'Tidak Diketahui', coba cari di field asli
+                // Jika judul masih 'Tidak Diketahui', coba cari di field asli menggunakan semua alias title
                 if(judul === 'Tidak Diketahui') {
                     for(let k in row) { if(isTitleAlias(k)) { judul = row[k]; break; } }
                 }
+
+                // FILTER: Abaikan buku obral agar tidak masuk Top 5
+                if (cleanStr(judul).includes('obral')) return;
 
                 if(!itemSummaryMap[orin]) {
                     itemSummaryMap[orin] = { orin: orin, judul: judul, freq: 0, sumQty: 0 };
@@ -974,21 +977,21 @@
             }
             sectAnalytics.classList.remove('hidden');
 
-            // Render DOM
+            // Render DOM dengan styling baru agar teks ter-wrap rapi
             let htmlFreq = '';
             topFreq.forEach((item, i) => {
-                htmlFreq += `<div class="flex justify-between items-center border-b border-gray-100 py-1 last:border-0">
-                    <span class="truncate pr-2 font-medium" title="${escapeAttr(item.judul)}">${i+1}. ${item.judul}</span>
-                    <span class="font-bold text-orange-700 whitespace-nowrap bg-orange-50 px-2 py-0.5 rounded">${item.freq}x PO</span>
+                htmlFreq += `<div class="flex justify-between items-start border-b border-gray-100 py-1.5 last:border-0 gap-2">
+                    <span class="pr-2 font-medium text-[11px] md:text-xs leading-tight flex-1">${i+1}. ${item.judul}</span>
+                    <span class="font-bold text-orange-700 whitespace-nowrap bg-orange-50 px-2 py-0.5 rounded text-[10px] mt-0.5">${item.freq}x PO</span>
                 </div>`;
             });
             document.getElementById('ro-top-freq').innerHTML = htmlFreq || '<span class="text-gray-400 italic">Belum ada frekuensi.</span>';
 
             let htmlQty = '';
             topQty.forEach((item, i) => {
-                htmlQty += `<div class="flex justify-between items-center border-b border-gray-100 py-1 last:border-0">
-                    <span class="truncate pr-2 font-medium" title="${escapeAttr(item.judul)}">${i+1}. ${item.judul}</span>
-                    <span class="font-bold text-green-700 whitespace-nowrap bg-green-50 px-2 py-0.5 rounded">${item.sumQty.toLocaleString('id-ID')} Pcs</span>
+                htmlQty += `<div class="flex justify-between items-start border-b border-gray-100 py-1.5 last:border-0 gap-2">
+                    <span class="pr-2 font-medium text-[11px] md:text-xs leading-tight flex-1">${i+1}. ${item.judul}</span>
+                    <span class="font-bold text-green-700 whitespace-nowrap bg-green-50 px-2 py-0.5 rounded text-[10px] mt-0.5">${item.sumQty.toLocaleString('id-ID')} Pcs</span>
                 </div>`;
             });
             document.getElementById('ro-top-qty').innerHTML = htmlQty || '<span class="text-gray-400 italic">Belum ada volume qty.</span>';
