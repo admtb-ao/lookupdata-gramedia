@@ -76,7 +76,7 @@
         <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
             <button onclick="switchTab('tab-operasional')" id="btn-tab-operasional" class="tab-btn active px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">🛠️ Operasional & Lookup (Fitur 1-3)</button>
             <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📈 Analitik Penjualan (Fitur 4)</button>
-            <button onclick="switchTab('tab-rekap-ro')" id="btn-tab-rekap-ro" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📦 Rekap RO 2026 (Fitur 5)</button>
+            <button onclick="switchTab('tab-rekap-ro')" id="btn-tab-rekap-ro" class="tab-btn px-4 py-3 text-sm md:text-base text-gray-600 font-semibold whitespace-nowrap transition-colors">📦 Rekap RO Profesional (Fitur 5)</button>
         </div>
 
         <!-- ============================================== -->
@@ -265,27 +265,56 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- TAB 3: REKAP RO 2026 (FITUR 5) -->
+        <!-- TAB 3: REKAP RO 2026 PRO (FITUR 5) -->
         <!-- ============================================== -->
         <div id="tab-rekap-ro" class="tab-content hidden">
             <div class="mb-6 bg-gradient-to-r from-orange-50 to-amber-50 p-5 md:p-6 rounded-xl border border-orange-200 shadow-sm">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
-                        <h2 class="text-lg md:text-xl font-bold text-gray-800">📦 Laporan Rekapitulasi RO 2026</h2>
-                        <p class="text-sm text-gray-600 mt-1">Data RO otomatis disandingkan dengan <span class="font-bold">KODE BSOFT</span> dan <span class="font-bold">STOK BSOFT</span> dari Master Database.</p>
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">📦 Laporan & Analisis Rekapitulasi RO 2026</h2>
+                        <p class="text-sm text-gray-600 mt-1">Data RO otomatis dianalisis dan disandingkan dengan <span class="font-bold">KODE BSOFT</span> serta <span class="font-bold">STOK BSOFT</span> Master.</p>
                     </div>
-                    <button onclick="exportRoExcel()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
-                        📥 Export Excel RO
+                    <button onclick="exportRoExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg transition shadow-sm text-sm flex items-center justify-center gap-2">
+                        📥 Export Data Filter (Excel)
                     </button>
                 </div>
                 
-                <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
-                    <input type="text" id="ro-search-input" placeholder="Cari Judul / ORIN / Bsoft di data RO..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    <button onclick="searchRoData()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-6 rounded-lg transition shadow">Cari Data</button>
+                <!-- Filter Kontrol Terpadu -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end bg-white p-4 rounded-lg border shadow-inner mb-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Pencarian Universal (Judul, ORIN, PO, Toko)</label>
+                        <input type="text" id="ro-search-input" placeholder="Ketik kata kunci pencarian..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mulai Tanggal</label>
+                        <input type="date" id="ro-start-date" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Sampai Tanggal</label>
+                        <input type="date" id="ro-end-date" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div class="md:col-span-4 flex gap-2 justify-end mt-2">
+                        <button onclick="resetRoFilter()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg transition text-sm">Reset Filter</button>
+                        <button onclick="applyRoFilter()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition text-sm shadow">Terapkan Filter & Analisis</button>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS CARDS MINI -->
+                <div id="ro-analytics-section" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 hidden">
+                    <div class="bg-white border border-orange-200 rounded-lg p-4 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 text-4xl">🔥</div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-2 border-b pb-1">Top 5 Item Paling Sering di-RO (Frekuensi)</h3>
+                        <div id="ro-top-freq" class="text-xs space-y-1.5 text-gray-700"></div>
+                    </div>
+                    <div class="bg-white border border-orange-200 rounded-lg p-4 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 text-4xl">📦</div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-2 border-b pb-1">Top 5 Item QTY RO Terbesar (Volume)</h3>
+                        <div id="ro-top-qty" class="text-xs space-y-1.5 text-gray-700"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tabel Rekap RO dengan Filter & Pagination -->
+            <!-- Tabel Rekap RO dengan Pagination -->
             <div id="ro-table-section">
                 <div class="table-container shadow-sm rounded-lg border bg-white">
                     <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
@@ -298,7 +327,6 @@
                     </table>
                 </div>
                 
-                <!-- Pagination Kontrol Untuk RO -->
                 <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
                     <div id="ro-page-info">Menampilkan - data</div>
                     <div class="flex gap-2">
@@ -337,12 +365,12 @@
 
     <!-- MODAL 1: BUKU -> RINCIAN PER TOKO -->
     <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center transition-opacity p-4">
+        <!-- (Kode Modal Sama - Dihilangkan untuk keringkasan visual, namun fungsional di JS ada) -->
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-blue-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku Per Toko</h5>
                 <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
-            
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
                 <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
@@ -351,13 +379,11 @@
                     <button onclick="exportDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
                 </div>
             </div>
-            
             <div id="pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
                     <h2 class="text-2xl font-bold text-gray-800">Laporan Data Buku Gramedia</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="pdf-print-date"></span></p>
                 </div>
-
                 <div class="bg-blue-50 border border-blue-200 p-3 md:p-4 rounded-lg mb-4 text-xs md:text-sm text-left">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                         <div><span class="font-semibold text-gray-600">ID ORIN:</span> <span id="mdl-id" class="font-bold text-gray-800 ml-1"></span></div>
@@ -370,12 +396,10 @@
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
                 </div>
-
                 <div class="mb-4 bg-white border p-3 rounded-lg">
                     <div class="text-center font-bold text-sm text-gray-700 mb-2">📊 Top 5 Penjualan (SOLD) Tertinggi</div>
                     <div class="chart-container"><canvas id="chartBuku"></canvas></div>
                 </div>
-
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
                     <table class="min-w-full bg-white text-xs md:text-sm text-center whitespace-nowrap md:whitespace-normal">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
@@ -390,7 +414,6 @@
                     </table>
                 </div>
             </div>
-
             <div class="p-3 border-t bg-gray-50 flex justify-end">
                 <button onclick="closeModal()" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition text-sm md:text-base">Tutup</button>
             </div>
@@ -399,12 +422,12 @@
 
     <!-- MODAL 2: TOKO -> RINCIAN KATALOG BUKU -->
     <div id="storeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center transition-opacity p-4">
+        <!-- (Kode Modal Sama - Dihilangkan untuk keringkasan visual, namun fungsional di JS ada) -->
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 md:p-5 bg-purple-800 text-white">
                 <h5 class="font-bold text-lg md:text-xl">Data Buku di Toko</h5>
                 <button onclick="closeStoreModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
-            
             <div class="p-3 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-3">
                 <span class="text-xs md:text-sm text-gray-600 font-semibold hidden sm:block">Aksi Laporan:</span>
                 <div class="flex w-full sm:w-auto gap-2">
@@ -413,13 +436,11 @@
                     <button onclick="exportStoreDetailToPDF()" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow-sm">📄 Export PDF</button>
                 </div>
             </div>
-            
             <div id="store-pdf-content" class="p-4 md:p-6 overflow-y-auto bg-white flex-1">
                 <div id="store-pdf-header-title" class="hidden text-center mb-6 border-b-2 border-gray-800 pb-2">
                     <h2 class="text-2xl font-bold text-gray-800">Laporan Data & Stok Toko</h2>
                     <p class="text-gray-600 text-sm mt-1">Dicetak pada: <span id="store-pdf-print-date"></span></p>
                 </div>
-
                 <div class="bg-purple-50 border border-purple-200 p-3 md:p-4 rounded-lg mb-4 text-sm md:text-base text-left">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div class="sm:col-span-2"><span class="font-semibold text-gray-600">LOKASI TOKO:</span> <span id="mdl-store-name" class="font-bold text-purple-800 ml-1 text-lg"></span></div>
@@ -427,12 +448,10 @@
                         <div><span class="font-semibold text-gray-600">TOTAL EOH:</span> <span id="store-mdl-totaleoh" class="font-bold text-green-700 ml-1"></span></div>
                     </div>
                 </div>
-
                 <div class="mb-4 bg-white border p-3 rounded-lg">
                     <div class="text-center font-bold text-sm text-gray-700 mb-2">📊 Top 5 Buku Terlaris (SOLD)</div>
                     <div class="chart-container"><canvas id="chartToko"></canvas></div>
                 </div>
-
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
                     <table class="min-w-full bg-white text-xs md:text-sm text-center whitespace-nowrap md:whitespace-normal">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
@@ -450,7 +469,6 @@
                     </table>
                 </div>
             </div>
-
             <div class="p-3 border-t bg-gray-50 flex justify-end">
                 <button onclick="closeStoreModal()" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition text-sm md:text-base">Tutup</button>
             </div>
@@ -488,7 +506,7 @@
         let currentPage = 1;
         const rowsPerPage = 50; 
         
-        // VARIABEL KHUSUS TAB RO
+        // VARIABEL KHUSUS TAB RO PRO
         let rawDataRo = [];
         let filteredRoData = [];
         let roCurrentPage = 1;
@@ -524,6 +542,10 @@
             return Math.abs(parseInt(s, 10) || 0);
         };
         const escapeAttr = (str) => { return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;'); };
+
+        // Alias Finder Helper untuk RO Analytics
+        const isQtyAlias = (str) => { let s = cleanStr(str); return s.includes('qty') || s.includes('jumlah') || s === 'pesan' || s === 'order'; };
+        const isDateAlias = (str) => { let s = cleanStr(str); return s.includes('tanggal') || s.includes('date') || s === 'tgl'; };
 
         const isOrinAlias = (str) => {
             if (!str) return false;
@@ -569,6 +591,9 @@
             const btn = document.getElementById('btn-' + tabId);
             if(tabId === 'tab-rekap-ro') {
                 btn.classList.add('active-ro', 'border-b-2');
+                if(filteredRoData.length > 0 && document.getElementById('ro-analytics-section').classList.contains('hidden')){
+                    applyRoFilter(); // auto apply if switching back
+                }
             } else {
                 btn.classList.add('active', 'border-b-2');
             }
@@ -609,7 +634,6 @@
                     csvRoText = localStorage.getItem('cacheCsvRo');
                 } else {
                     const cacheBuster = new Date().getTime();
-                    // Tarik 5 file sekaligus
                     const [resMain, resStore, resBranch, resSales, resRo] = await Promise.all([ 
                         fetch(`${csvUrlMain}&t=${cacheBuster}`), 
                         fetch(`${csvUrlStore}&t=${cacheBuster}`), 
@@ -773,7 +797,7 @@
                     }
                 });
 
-                // 5. Parsing Data RO 2026 (Fitur 5)
+                // 5. Parsing Data RO 2026 (Fitur 5 PRO)
                 Papa.parse(csvRoText, {
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
@@ -789,28 +813,27 @@
                             // Cari kecocokan dari Master DB 1
                             let match = (userOrin ? dbMapByOrin[userOrin] : null) || (userBsoft ? dbMapByBsoft[userBsoft] : null);
                             
-                            // Bikin object baru dan sisipkan kolom master di awal
+                            // Bikin object baru, sisipkan info master di belakang layar untuk kemudahan Filter & Analisis
                             let joinedData = {
                                 'STATUS_SISTEM': match ? '✅ MATCHED' : '❌ NOT_FOUND',
                                 'ID_ORIN_MASTER': match ? (match['ID ORIN'] || userOrin) : userOrin,
                                 'KODE_BSOFT_MASTER': match ? (match['KODE BSOFT'] || '-') : '-',
-                                'STOK_BSOFT_MASTER': match && match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '-'
+                                'STOK_BSOFT_MASTER': match && match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '-',
+                                '__JUDUL_MASTER': match ? (match['JUDUL ITEM'] || 'Tidak Diketahui') : 'Tidak Diketahui'
                             };
 
                             // Gabungkan sisa kolom RO aslinya persis urutannya
-                            for (let key in row) {
-                                joinedData[key.trim()] = row[key];
-                            }
-
+                            for (let key in row) { joinedData[key.trim()] = row[key]; }
                             rawDataRo.push(joinedData);
                         });
                         
                         document.getElementById('summary-ro').innerText = rawDataRo.length.toLocaleString('id-ID');
                         
-                        // Siapkan untuk pagination
+                        // Default load: apply empty filter
                         filteredRoData = [...rawDataRo];
                         roCurrentPage = 1;
                         renderRoTable();
+                        generateRoAnalytics(filteredRoData);
                     }
                 });
 
@@ -838,19 +861,137 @@
         }
 
         // ==========================================
-        // FUNGSI TAB 3: REKAP RO 2026 (Dengan Pagination Anti-Lag)
+        // FUNGSI TAB 3: REKAP RO 2026 PRO
         // ==========================================
-        function searchRoData() {
-            const keyword = cleanStr(document.getElementById('ro-search-input').value);
-            if(keyword) {
-                filteredRoData = rawDataRo.filter(row => {
-                    return Object.values(row).some(val => cleanStr(String(val)).includes(keyword));
-                });
-            } else {
-                filteredRoData = [...rawDataRo];
+        
+        function parseCustomDate(dateStr) {
+            if(!dateStr) return null;
+            let d = new Date(dateStr);
+            if(!isNaN(d.getTime())) return d;
+            
+            // Coba parsing format ID DD/MM/YYYY atau DD-MM-YYYY
+            let parts = dateStr.split(/[-/]/);
+            if(parts.length === 3) {
+                if(parts[0].length <= 2 && parts[2].length === 4) { // DD/MM/YYYY
+                    return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                }
             }
+            return null;
+        }
+
+        function resetRoFilter() {
+            document.getElementById('ro-search-input').value = '';
+            document.getElementById('ro-start-date').value = '';
+            document.getElementById('ro-end-date').value = '';
+            applyRoFilter();
+        }
+
+        function applyRoFilter() {
+            const keyword = cleanStr(document.getElementById('ro-search-input').value);
+            const startStr = document.getElementById('ro-start-date').value;
+            const endStr = document.getElementById('ro-end-date').value;
+            
+            let startObj = startStr ? new Date(startStr) : null;
+            let endObj = endStr ? new Date(endStr) : null;
+            if(startObj) startObj.setHours(0,0,0,0);
+            if(endObj) endObj.setHours(23,59,59,999);
+
+            filteredRoData = rawDataRo.filter(row => {
+                // 1. Keyword search (Semua kolom RO)
+                let matchKey = true;
+                if(keyword) {
+                    matchKey = Object.values(row).some(val => cleanStr(String(val)).includes(keyword));
+                }
+
+                // 2. Date Filtering
+                let matchDate = true;
+                if(startObj || endObj) {
+                    let rowDate = null;
+                    // Cari kolom yang mengandung 'tanggal' / 'date'
+                    for(let k in row) {
+                        if(isDateAlias(k)) {
+                            rowDate = parseCustomDate(row[k]);
+                            if(rowDate) break;
+                        }
+                    }
+                    
+                    if(rowDate) {
+                        if(startObj && rowDate < startObj) matchDate = false;
+                        if(endObj && rowDate > endObj) matchDate = false;
+                    } else {
+                        matchDate = false; // Jika di-filter tgl tapi baris tsb gak punya tgl valid
+                    }
+                }
+                
+                return matchKey && matchDate;
+            });
+
             roCurrentPage = 1;
             renderRoTable();
+            generateRoAnalytics(filteredRoData);
+        }
+
+        function generateRoAnalytics(data) {
+            let itemSummaryMap = {};
+            
+            data.forEach(row => {
+                let orin = row.ID_ORIN_MASTER || 'UNKNOWN';
+                let judul = row.__JUDUL_MASTER || 'Tanpa Judul';
+                let qty = 0;
+                
+                // Cari otomatis kolom QTY
+                for(let k in row) { 
+                    if(isQtyAlias(k) && !k.includes('MASTER')) { 
+                        qty = parseNum(row[k]); 
+                        break; 
+                    } 
+                }
+                
+                // Jika judul masih 'Tidak Diketahui', coba cari di field asli
+                if(judul === 'Tidak Diketahui') {
+                    for(let k in row) { if(isTitleAlias(k)) { judul = row[k]; break; } }
+                }
+
+                if(!itemSummaryMap[orin]) {
+                    itemSummaryMap[orin] = { orin: orin, judul: judul, freq: 0, sumQty: 0 };
+                }
+                
+                itemSummaryMap[orin].freq += 1;
+                itemSummaryMap[orin].sumQty += qty;
+            });
+
+            let arrSummary = Object.values(itemSummaryMap);
+            
+            // Top 5 by Frequency (Frekuensi RO)
+            let topFreq = [...arrSummary].sort((a,b) => b.freq - a.freq).slice(0, 5);
+            // Top 5 by QTY (Volume RO)
+            let topQty = [...arrSummary].sort((a,b) => b.sumQty - a.sumQty).slice(0, 5);
+
+            const sectAnalytics = document.getElementById('ro-analytics-section');
+            if(data.length === 0) {
+                sectAnalytics.classList.add('hidden');
+                return;
+            }
+            sectAnalytics.classList.remove('hidden');
+
+            // Render DOM
+            let htmlFreq = '';
+            topFreq.forEach((item, i) => {
+                htmlFreq += `<div class="flex justify-between items-center border-b border-gray-100 py-1 last:border-0">
+                    <span class="truncate pr-2 font-medium" title="${escapeAttr(item.judul)}">${i+1}. ${item.judul}</span>
+                    <span class="font-bold text-orange-700 whitespace-nowrap bg-orange-50 px-2 py-0.5 rounded">${item.freq}x PO</span>
+                </div>`;
+            });
+            document.getElementById('ro-top-freq').innerHTML = htmlFreq || '<span class="text-gray-400 italic">Belum ada frekuensi.</span>';
+
+            let htmlQty = '';
+            topQty.forEach((item, i) => {
+                htmlQty += `<div class="flex justify-between items-center border-b border-gray-100 py-1 last:border-0">
+                    <span class="truncate pr-2 font-medium" title="${escapeAttr(item.judul)}">${i+1}. ${item.judul}</span>
+                    <span class="font-bold text-green-700 whitespace-nowrap bg-green-50 px-2 py-0.5 rounded">${item.sumQty.toLocaleString('id-ID')} Pcs</span>
+                </div>`;
+            });
+            document.getElementById('ro-top-qty').innerHTML = htmlQty || '<span class="text-gray-400 italic">Belum ada volume qty.</span>';
         }
 
         function changeRoPage(delta) {
@@ -863,7 +1004,7 @@
             const tbody = document.getElementById('ro-table-body');
             
             if(filteredRoData.length === 0) {
-                tbody.innerHTML = `<tr><td class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Data tidak ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Data tidak ditemukan sesuai filter.</td></tr>`;
                 document.getElementById('ro-page-info').innerText = `Menampilkan 0 data`;
                 document.getElementById('ro-page-number').innerText = `1 / 1`;
                 document.getElementById('ro-btn-prev').disabled = true;
@@ -871,7 +1012,6 @@
                 return;
             }
 
-            // Setup Pagination Logic
             const totalPages = Math.ceil(filteredRoData.length / roRowsPerPage) || 1;
             if (roCurrentPage < 1) roCurrentPage = 1;
             if (roCurrentPage > totalPages) roCurrentPage = totalPages;
@@ -882,12 +1022,12 @@
             
             const startIndex = (roCurrentPage - 1) * roRowsPerPage;
             const endIndex = Math.min(startIndex + roRowsPerPage, filteredRoData.length);
-            document.getElementById('ro-page-info').innerText = `Menampilkan ${startIndex + 1}-${endIndex} dari ${filteredRoData.length} data`;
+            document.getElementById('ro-page-info').innerText = `Menampilkan ${startIndex + 1}-${endIndex} dari total ${filteredRoData.length} hasil filter`;
             
             const paginatedData = filteredRoData.slice(startIndex, endIndex);
 
-            // Bangun Header Tabel Secara Dinamis dari baris pertama
-            let rawHeaders = Object.keys(filteredRoData[0]).filter(k => k !== 'STATUS_SISTEM' && !k.includes('_MASTER'));
+            // Bangun Header Tabel Secara Dinamis dari baris pertama (Sembunyikan __JUDUL_MASTER)
+            let rawHeaders = Object.keys(filteredRoData[0]).filter(k => k !== 'STATUS_SISTEM' && k !== '__JUDUL_MASTER' && !k.includes('_MASTER'));
             
             let headHtml = `<tr>
                 <th class="py-3 px-3 bg-gray-900 border-r border-gray-700">STATUS</th>
@@ -901,7 +1041,7 @@
             headHtml += `</tr>`;
             thead.innerHTML = headHtml;
 
-            // Bangun Body Hanya Berdasarkan Data yang Di-slice
+            // Bangun Body
             let htmlChunks = [];
             paginatedData.forEach((row, i) => {
                 let statusBadge = row.STATUS_SISTEM.includes('✅') ? `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold text-[10px]">✅ MATCHED</span>` : `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold text-[10px]">❌ No Match</span>`;
@@ -918,7 +1058,12 @@
                     if(isTextLong) {
                         rowHtml += `<td class="py-2 px-3 border-b text-left whitespace-normal leading-tight min-w-[200px] max-w-[250px]">${val}</td>`;
                     } else {
-                        rowHtml += `<td class="py-2 px-3 border-b text-center">${val}</td>`;
+                        // Highlighting QTY column
+                        if(isQtyAlias(h)) {
+                            rowHtml += `<td class="py-2 px-3 border-b text-center font-bold text-orange-700 bg-orange-50/50">${val}</td>`;
+                        } else {
+                            rowHtml += `<td class="py-2 px-3 border-b text-center">${val}</td>`;
+                        }
                     }
                 });
                 rowHtml += `</tr>`;
@@ -931,8 +1076,17 @@
         function exportRoExcel() {
             if(filteredRoData.length === 0) return alert('Tidak ada data RO yang bisa di-export.');
 
-            const sheet = XLSX.utils.json_to_sheet(filteredRoData);
-            sheet['!cols'] = getColWidths(filteredRoData, false);
+            // Buat Salinan Data Khusus Export (Sembunyikan __JUDUL_MASTER yang cuma untuk internal)
+            const exportData = filteredRoData.map(r => {
+                let cleanR = {};
+                for(let k in r) {
+                    if(k !== '__JUDUL_MASTER') cleanR[k] = r[k];
+                }
+                return cleanR;
+            });
+
+            const sheet = XLSX.utils.json_to_sheet(exportData);
+            sheet['!cols'] = getColWidths(exportData, false);
             
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, sheet, "Laporan_Rekap_RO"); 
@@ -1026,7 +1180,7 @@
         document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
         document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
         document.getElementById('analytics-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') generateTop50(); });
-        document.getElementById('ro-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchRoData(); });
+        document.getElementById('ro-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') applyRoFilter(); });
 
         function searchManual() {
             if (database.length === 0) return alert("Database belum siap.");
