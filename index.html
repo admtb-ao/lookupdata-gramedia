@@ -88,7 +88,10 @@
                 <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
                 <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                    <input type="text" id="manual-search-input" placeholder="Contoh: leika,garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    <div class="relative w-full">
+                        <input type="text" id="manual-search-input" autocomplete="off" placeholder="Contoh: leika,garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                        <ul id="f1-search-suggestions" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden mt-1 text-sm divide-y divide-gray-100"></ul>
+                    </div>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Buku
                     </button>
@@ -117,7 +120,10 @@
                 <label class="block text-gray-800 font-bold mb-2">🏪 Fitur 2: Pencarian Khusus Toko</label>
                 <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik nama toko. <b>(Kosongkan lalu Cari untuk memuat semua toko. Bisa cari banyak toko sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="store-search-input" placeholder="Contoh: gajah mada,sudirman... (Atau kosongkan untuk lihat semua)" class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                    <div class="relative w-full">
+                        <input type="text" id="store-search-input" autocomplete="off" placeholder="Contoh: gajah mada,sudirman... (Atau kosongkan untuk lihat semua)" class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" disabled>
+                        <ul id="f2-search-suggestions" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden mt-1 text-sm divide-y divide-gray-100"></ul>
+                    </div>
                     <button id="search-store-btn" onclick="searchStoreManual()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                         Cari Toko
                     </button>
@@ -231,7 +237,10 @@
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
-                    <input type="text" id="analytics-search-input" placeholder="Cari Judul / ORIN / Kategori..." class="w-full md:w-1/3 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <div class="relative w-full md:w-1/3">
+                        <input type="text" id="analytics-search-input" autocomplete="off" placeholder="Cari Judul / ORIN / Kategori..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <ul id="f4-search-suggestions" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden mt-1 text-sm divide-y divide-gray-100"></ul>
+                    </div>
                     
                     <select id="analytic-sort" class="w-full md:w-auto flex-1 border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-gray-700">
                         <option value="TOTAL">Semua Bulan (Total Keseluruhan)</option>
@@ -1182,70 +1191,125 @@
             return { totalSold: 0, totalEoh: 0 };
         }
 
-        document.getElementById('manual-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchManual(); });
-        document.getElementById('store-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchStoreManual(); });
-        document.getElementById('analytics-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') generateTop50(); });
+
+        // --- FITUR BARU: AUTOCOMPLETE / SUGGESTION KESELURUHAN (F1, F2, F4, RO) ---
         
-        // Listener lama diganti di bawah untuk support hide dropdown
-        document.getElementById('ro-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') { document.getElementById('ro-search-suggestions').classList.add('hidden'); applyRoFilter(); } });
+        const f1Input = document.getElementById('manual-search-input');
+        const f1Suggest = document.getElementById('f1-search-suggestions');
+        
+        const f2Input = document.getElementById('store-search-input');
+        const f2Suggest = document.getElementById('f2-search-suggestions');
+        
+        const f4Input = document.getElementById('analytics-search-input');
+        const f4Suggest = document.getElementById('f4-search-suggestions');
 
-
-        // --- FITUR BARU: AUTOCOMPLETE / SUGGESTION REKAP RO ---
         const roSearchInputEl = document.getElementById('ro-search-input');
         const roSearchSuggestionsEl = document.getElementById('ro-search-suggestions');
 
+        // Logic Autocomplete Fitur 1 (Master Buku)
+        f1Input.addEventListener('input', function() {
+            const keyword = cleanStr(this.value);
+            if (keyword.length < 2) { f1Suggest.classList.add('hidden'); return; }
+            let suggestions = new Set();
+            for (let i = 0; i < database.length; i++) {
+                let row = database[i];
+                ['ID ORIN', 'KODE BSOFT', 'JUDUL ITEM', 'KATEGORI'].forEach(k => {
+                    let val = String(row[k] || '');
+                    if (val && cleanStr(val).includes(keyword) && val.length < 80) suggestions.add(val);
+                });
+                if (suggestions.size >= 15) break;
+            }
+            if (suggestions.size > 0) {
+                f1Suggest.innerHTML = Array.from(suggestions).map(s => {
+                    return `<li class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-gray-700 transition text-xs" onclick="selectF1Suggestion('${escapeAttr(s)}')">${s.replace(new RegExp(`(${keyword})`, 'gi'), '<span class="font-bold text-blue-600">$1</span>')}</li>`;
+                }).join('');
+                f1Suggest.classList.remove('hidden');
+            } else { f1Suggest.classList.add('hidden'); }
+        });
+
+        // Logic Autocomplete Fitur 2 (Toko Aktif)
+        f2Input.addEventListener('input', function() {
+            const keyword = cleanStr(this.value);
+            if (keyword.length < 2) { f2Suggest.classList.add('hidden'); return; }
+            let suggestions = new Set();
+            let storeNames = Object.keys(storeRecordsByToko);
+            for (let i = 0; i < storeNames.length; i++) {
+                if (cleanStr(storeNames[i]).includes(keyword)) suggestions.add(storeNames[i]);
+                if (suggestions.size >= 15) break;
+            }
+            if (suggestions.size > 0) {
+                f2Suggest.innerHTML = Array.from(suggestions).map(s => {
+                    return `<li class="px-3 py-2 hover:bg-purple-50 cursor-pointer text-gray-700 transition text-xs" onclick="selectF2Suggestion('${escapeAttr(s)}')">${s.replace(new RegExp(`(${keyword})`, 'gi'), '<span class="font-bold text-purple-600">$1</span>')}</li>`;
+                }).join('');
+                f2Suggest.classList.remove('hidden');
+            } else { f2Suggest.classList.add('hidden'); }
+        });
+
+        // Logic Autocomplete Fitur 4 (Analitik Penjualan)
+        f4Input.addEventListener('input', function() {
+            const keyword = cleanStr(this.value);
+            if (keyword.length < 2) { f4Suggest.classList.add('hidden'); return; }
+            let suggestions = new Set();
+            for (let i = 0; i < database.length; i++) {
+                let row = database[i];
+                ['ID ORIN', 'KODE BSOFT', 'JUDUL ITEM', 'KATEGORI'].forEach(k => {
+                    let val = String(row[k] || '');
+                    if (val && cleanStr(val).includes(keyword) && val.length < 80) suggestions.add(val);
+                });
+                if (suggestions.size >= 15) break;
+            }
+            if (suggestions.size > 0) {
+                f4Suggest.innerHTML = Array.from(suggestions).map(s => {
+                    return `<li class="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-gray-700 transition text-xs" onclick="selectF4Suggestion('${escapeAttr(s)}')">${s.replace(new RegExp(`(${keyword})`, 'gi'), '<span class="font-bold text-emerald-600">$1</span>')}</li>`;
+                }).join('');
+                f4Suggest.classList.remove('hidden');
+            } else { f4Suggest.classList.add('hidden'); }
+        });
+
+        // Logic Autocomplete Fitur 5 (Rekap RO)
         roSearchInputEl.addEventListener('input', function() {
             const keyword = cleanStr(this.value);
-            // Minimal 2 huruf baru memunculkan suggestion
-            if (keyword.length < 2) {
-                roSearchSuggestionsEl.classList.add('hidden');
-                return;
-            }
-
+            if (keyword.length < 2) { roSearchSuggestionsEl.classList.add('hidden'); return; }
             let suggestions = new Set();
-            // Cari ke seluruh data RO
             for (let i = 0; i < rawDataRo.length; i++) {
                 let row = rawDataRo[i];
                 for (let key in row) {
-                    // Abaikan pencarian di kolom sistem bawaan
                     if (key === 'STATUS_SISTEM' || (key.includes('_MASTER') && key !== '__JUDUL_MASTER')) continue;
-                    
                     let val = String(row[key]);
-                    if (val && cleanStr(val).includes(keyword) && val.length < 80) { // Limit length teks biar ga panjang banget
+                    if (val && cleanStr(val).includes(keyword) && val.length < 80) { 
                         suggestions.add(val);
                     }
                 }
-                // Batasi maksimal 15 hasil biar ringan
                 if (suggestions.size >= 15) break; 
             }
-
-            const suggestArray = Array.from(suggestions);
-            if (suggestArray.length > 0) {
-                roSearchSuggestionsEl.innerHTML = suggestArray.map(s => {
-                    // Highlight kata yang diketik dengan regex
-                    const regex = new RegExp(`(${keyword})`, 'gi');
-                    const highlighted = s.replace(regex, '<span class="font-bold text-orange-600">$1</span>');
-                    return `<li class="px-3 py-2 hover:bg-orange-50 cursor-pointer text-gray-700 transition" onclick="selectRoSuggestion('${escapeAttr(s)}')">${highlighted}</li>`;
+            if (suggestions.size > 0) {
+                roSearchSuggestionsEl.innerHTML = Array.from(suggestions).map(s => {
+                    return `<li class="px-3 py-2 hover:bg-orange-50 cursor-pointer text-gray-700 transition text-xs" onclick="selectRoSuggestion('${escapeAttr(s)}')">${s.replace(new RegExp(`(${keyword})`, 'gi'), '<span class="font-bold text-orange-600">$1</span>')}</li>`;
                 }).join('');
                 roSearchSuggestionsEl.classList.remove('hidden');
-            } else {
-                roSearchSuggestionsEl.classList.add('hidden');
-            }
-        });
-
-        // Sembunyikan popup kalau klik di luar area
-        document.addEventListener('click', function(e) {
-            if (!roSearchInputEl.contains(e.target) && !roSearchSuggestionsEl.contains(e.target)) {
-                if(roSearchSuggestionsEl) roSearchSuggestionsEl.classList.add('hidden');
-            }
+            } else { roSearchSuggestionsEl.classList.add('hidden'); }
         });
 
         // Fungsi ketika list item di klik
-        function selectRoSuggestion(val) {
-            roSearchInputEl.value = val;
-            roSearchSuggestionsEl.classList.add('hidden');
-            applyRoFilter(); // Langsung otomatis filter setelah diklik
-        }
+        function selectF1Suggestion(val) { f1Input.value = val; f1Suggest.classList.add('hidden'); searchManual(); }
+        function selectF2Suggestion(val) { f2Input.value = val; f2Suggest.classList.add('hidden'); searchStoreManual(); }
+        function selectF4Suggestion(val) { f4Input.value = val; f4Suggest.classList.add('hidden'); generateTop50(); }
+        function selectRoSuggestion(val) { roSearchInputEl.value = val; roSearchSuggestionsEl.classList.add('hidden'); applyRoFilter(); }
+
+        // Sembunyikan popup kalau klik di luar area input / list
+        document.addEventListener('click', function(e) {
+            if (f1Input && !f1Input.contains(e.target) && !f1Suggest.contains(e.target)) f1Suggest.classList.add('hidden');
+            if (f2Input && !f2Input.contains(e.target) && !f2Suggest.contains(e.target)) f2Suggest.classList.add('hidden');
+            if (f4Input && !f4Input.contains(e.target) && !f4Suggest.contains(e.target)) f4Suggest.classList.add('hidden');
+            if (roSearchInputEl && !roSearchInputEl.contains(e.target) && !roSearchSuggestionsEl.contains(e.target)) roSearchSuggestionsEl.classList.add('hidden');
+        });
+
+        // Enter Key Handlers (Sekaligus menutup popup suggestion)
+        f1Input.addEventListener('keypress', e => { if (e.key === 'Enter') { f1Suggest.classList.add('hidden'); searchManual(); } });
+        f2Input.addEventListener('keypress', e => { if (e.key === 'Enter') { f2Suggest.classList.add('hidden'); searchStoreManual(); } });
+        f4Input.addEventListener('keypress', e => { if (e.key === 'Enter') { f4Suggest.classList.add('hidden'); generateTop50(); } });
+        roSearchInputEl.addEventListener('keypress', e => { if (e.key === 'Enter') { roSearchSuggestionsEl.classList.add('hidden'); applyRoFilter(); } });
+        
         // --------------------------------------------------------
 
 
