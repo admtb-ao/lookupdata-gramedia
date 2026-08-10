@@ -1041,9 +1041,18 @@
             const paginatedData = filteredRoData.slice(startIndex, endIndex);
 
             // Kolom STATUS dihapus agar tabel lebih bersih
-            let rawHeaders = Object.keys(filteredRoData[0]).filter(k => k !== 'STATUS_SISTEM' && k !== '__JUDUL_MASTER' && !k.includes('_MASTER'));
+            // Tentukan kolom mana saja yang normal (bukan special master/po/name2)
+            let rawHeaders = Object.keys(filteredRoData[0]).filter(k => 
+                k !== 'STATUS_SISTEM' && 
+                k !== '__JUDUL_MASTER' && 
+                !k.includes('_MASTER') &&
+                k !== 'Consignment replenishment order' &&
+                k !== 'Name2'
+            );
             
             let headHtml = `<tr>
+                <th class="py-3 px-3 bg-orange-900 text-orange-200 border-r border-orange-700">Consignment replenishment order</th>
+                <th class="py-3 px-3 bg-orange-900 text-orange-200 border-r border-orange-700">Name2</th>
                 <th class="py-3 px-3 bg-blue-900 text-blue-200">ID ORIN (MASTER)</th>
                 <th class="py-3 px-3 bg-blue-900 text-blue-200">KODE BSOFT (MASTER)</th>
                 <th class="py-3 px-3 bg-blue-900 text-blue-200 border-r border-blue-700">STOK BSOFT (MASTER)</th>`;
@@ -1054,10 +1063,15 @@
             headHtml += `</tr>`;
             thead.innerHTML = headHtml;
 
-            // Bangun Body tanpa sel status
+            // Bangun Body
             let htmlChunks = [];
             paginatedData.forEach((row, i) => {
+                let valPO = row['Consignment replenishment order'] !== undefined ? row['Consignment replenishment order'] : '-';
+                let valName2 = row['Name2'] !== undefined ? row['Name2'] : '-';
+
                 let rowHtml = `<tr class="hover:bg-orange-50 transition-colors">
+                    <td class="py-2 px-3 border-b text-center font-bold text-orange-800 bg-orange-50/50">${valPO}</td>
+                    <td class="py-2 px-3 border-b text-left whitespace-normal min-w-[150px] font-semibold text-gray-800 bg-orange-50/30">${valName2}</td>
                     <td class="py-2 px-3 border-b text-center font-mono font-bold text-gray-700 bg-blue-50/30">${row.ID_ORIN_MASTER}</td>
                     <td class="py-2 px-3 border-b text-center font-mono font-bold text-blue-700 bg-blue-50/30">${row.KODE_BSOFT_MASTER}</td>
                     <td class="py-2 px-3 border-b text-center font-black text-gray-800 bg-blue-50/30 border-r border-gray-200">${row.STOK_BSOFT_MASTER}</td>`;
