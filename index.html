@@ -66,7 +66,7 @@
                     <div id="summary-cabang" class="text-lg md:text-xl font-black text-amber-700">-</div>
                 </div>
                 <div class="border border-gray-200 rounded-lg p-3 text-center bg-orange-50 sm:col-span-1 col-span-2">
-                    <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">DATA RO 2026</div>
+                    <div class="text-[10px] md:text-xs text-gray-500 font-semibold mb-1">DATA RO MASUK</div>
                     <div id="summary-ro" class="text-lg md:text-xl font-black text-orange-700">-</div>
                 </div>
             </div>
@@ -813,6 +813,8 @@
                     header: true, skipEmptyLines: true,
                     complete: function(results) {
                         rawDataRo = [];
+                        let uniquePOs = new Set(); // <-- Ini buat nampung PO Unik
+
                         results.data.forEach(row => {
                             let userOrin = "", userBsoft = "";
                             for (let key in row) { 
@@ -836,9 +838,16 @@
                             // Gabungkan sisa kolom RO aslinya persis urutannya
                             for (let key in row) { joinedData[key.trim()] = row[key]; }
                             rawDataRo.push(joinedData);
+
+                            // <-- Tangkap PO uniknya di sini
+                            let poNumber = joinedData['Consignment replenishment order'];
+                            if(poNumber && String(poNumber).trim() !== '') {
+                                uniquePOs.add(String(poNumber).trim());
+                            }
                         });
                         
-                        document.getElementById('summary-ro').innerText = rawDataRo.length.toLocaleString('id-ID');
+                        // Menampilkan jumlah PO unik, bukan jumlah baris
+                        document.getElementById('summary-ro').innerText = uniquePOs.size.toLocaleString('id-ID');
                         
                         // Default load: apply empty filter
                         filteredRoData = [...rawDataRo];
