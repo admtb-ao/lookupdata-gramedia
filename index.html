@@ -187,7 +187,7 @@
                     </div>
                 </div>
                 
-                <div class="table-container shadow-sm rounded-lg border bg-white">
+                <div class="table-container shadow-sm rounded-lg border bg-white relative">
                     <table class="min-w-full bg-white text-center w-full">
                         <thead class="bg-gray-800 text-white sticky top-0 z-10 shadow-sm" id="table-head"></thead>
                         <tbody class="text-gray-700 align-middle divide-y" id="table-body"></tbody>
@@ -262,7 +262,7 @@
 
             <!-- Tabel Analytics -->
             <div id="analytics-table-section" class="hidden">
-                <div class="table-container shadow-sm rounded-lg border bg-white">
+                <div class="table-container shadow-sm rounded-lg border bg-white relative">
                     <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
                         <thead class="bg-emerald-800 text-white sticky top-0 z-10 text-xs shadow-sm" id="analytics-thead">
                             <!-- Header akan di-generate secara dinamis sesuai pilihan filter -->
@@ -329,7 +329,7 @@
 
             <!-- Tabel Rekap RO dengan Pagination -->
             <div id="ro-table-section">
-                <div class="table-container shadow-sm rounded-lg border bg-white">
+                <div class="table-container shadow-sm rounded-lg border bg-white relative">
                     <table class="min-w-full bg-white text-center w-full whitespace-nowrap">
                         <thead class="bg-gray-800 text-white sticky top-0 z-10 text-xs shadow-sm" id="ro-thead">
                             <!-- Header Dinamis RO -->
@@ -826,7 +826,7 @@
                             
                             // Bikin object baru, sisipkan info master di belakang layar untuk kemudahan Filter & Analisis
                             let joinedData = {
-                                'STATUS_SISTEM': match ? '✅ MATCHED' : '❌ NOT_FOUND', // Menyimpan log hidden saja, gak perlu dirender di table RO
+                                'STATUS_SISTEM': match ? '✅ MATCHED' : '❌ NOT_FOUND', 
                                 'ID_ORIN_MASTER': match ? (match['ID ORIN'] || userOrin) : userOrin,
                                 'KODE_BSOFT_MASTER': match ? (match['KODE BSOFT'] || '-') : '-',
                                 'STOK_BSOFT_MASTER': match && match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '-',
@@ -2488,6 +2488,46 @@
             const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: currentStoreFileName + ".pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { avoid: 'tr' } };
             html2pdf().set(opt).from(el).save().then(() => { hdr.classList.add('hidden'); el.className = origClass; });
         }
+
+        // --- FITUR SCROLLBAR X DI ATAS TABEL ---
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.table-container').forEach(container => {
+                // 1. Bikin elemen scrollbar buatan
+                const topScroll = document.createElement('div');
+                topScroll.style.overflowX = 'auto';
+                topScroll.style.overflowY = 'hidden';
+                topScroll.style.marginBottom = '2px';
+                
+                // 2. Bikin isian kosong biar scrollbar-nya muncul
+                const dummyContent = document.createElement('div');
+                dummyContent.style.height = '1px';
+                topScroll.appendChild(dummyContent);
+                
+                // 3. Taruh persis di atas tabel
+                container.parentNode.insertBefore(topScroll, container);
+                
+                // 4. Sinkronisasi pergerakan geser kiri-kanan
+                topScroll.addEventListener('scroll', () => { container.scrollLeft = topScroll.scrollLeft; });
+                container.addEventListener('scroll', () => { topScroll.scrollLeft = container.scrollLeft; });
+                
+                // 5. Update otomatis panjang scrollbar-nya
+                const table = container.querySelector('table');
+                const updateScrollWidth = () => {
+                    if(table) dummyContent.style.width = table.offsetWidth + 'px';
+                };
+                
+                // Pakai ResizeObserver di tabel aslinya biar selalu akurat saat data ganti
+                if (table) {
+                    const ro = new ResizeObserver(updateScrollWidth);
+                    ro.observe(table);
+                }
+                
+                // Jaga-jaga buat table yang render datanya pake innerHTML secara dinamis
+                const observer = new MutationObserver(updateScrollWidth);
+                observer.observe(container, { childList: true, subtree: true });
+            });
+        });
+        // ----------------------------------------
     </script>
 </body>
 </html>
