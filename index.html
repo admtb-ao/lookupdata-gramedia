@@ -25,6 +25,12 @@
         .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; }
         .tab-btn.active { border-bottom-width: 2px; border-color: #059669; color: #047857; font-weight: bold; background-color: #ecfdf5; }
         .tab-btn.active-ro { border-bottom-width: 2px; border-color: #d97706; color: #b45309; font-weight: bold; background-color: #fffbeb; }
+        
+        /* Highlight Class untuk Keyboard Navigation Autocomplete */
+        .sugg-active-blue { background-color: #dbeafe !important; color: #1e40af !important; font-weight: bold !important; }
+        .sugg-active-purple { background-color: #f3e8ff !important; color: #6b21a8 !important; font-weight: bold !important; }
+        .sugg-active-emerald { background-color: #d1fae5 !important; color: #065f46 !important; font-weight: bold !important; }
+        .sugg-active-orange { background-color: #ffedd5 !important; color: #9a3412 !important; font-weight: bold !important; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
@@ -89,7 +95,7 @@
                 <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, Judul, atau Pengarang. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3 mb-4">
                     <div class="relative w-full">
-                        <input type="text" id="manual-search-input" autocomplete="off" placeholder="Contoh: leika, tere liye, garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                        <input type="text" id="manual-search-input" autocomplete="off" placeholder="Contoh: leika, masboy, garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                         <ul id="f1-search-suggestions" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden mt-1 text-sm divide-y divide-gray-100"></ul>
                     </div>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -1195,7 +1201,7 @@
         }
 
 
-        // --- FITUR BARU: AUTOCOMPLETE / SUGGESTION KESELURUHAN (F1, F2, F4, RO) ---
+        // --- FITUR BARU: AUTOCOMPLETE / SUGGESTION KESELURUHAN & KEYBOARD NAVIGATION ---
         
         const f1Input = document.getElementById('manual-search-input');
         const f1Suggest = document.getElementById('f1-search-suggestions');
@@ -1208,6 +1214,66 @@
 
         const roSearchInputEl = document.getElementById('ro-search-input');
         const roSearchSuggestionsEl = document.getElementById('ro-search-suggestions');
+        
+        // Helper untuk Navigasi Keyboard pada Suggestion Dropdown
+        function setupAutocompleteKeyboard(inputEl, suggestEl, searchAction, activeClass) {
+            let currentFocus = -1;
+
+            inputEl.addEventListener('input', function() {
+                currentFocus = -1; // Reset saat ngetik
+            });
+
+            inputEl.addEventListener('keydown', function(e) {
+                let items = suggestEl.getElementsByTagName("li");
+                if (e.key === 'ArrowDown') {
+                    if(!suggestEl.classList.contains('hidden')) {
+                        e.preventDefault();
+                        currentFocus++;
+                        setActive(items);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    if(!suggestEl.classList.contains('hidden')) {
+                        e.preventDefault();
+                        currentFocus--;
+                        setActive(items);
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault(); // Mencegah form ke-submit / refresh
+                    if (currentFocus > -1 && !suggestEl.classList.contains('hidden') && items.length > 0) {
+                        items[currentFocus].click(); // Simulasikan klik pada item yang aktif
+                    } else {
+                        suggestEl.classList.add('hidden');
+                        if (searchAction) searchAction();
+                    }
+                }
+            });
+
+            function setActive(items) {
+                if (!items || items.length === 0) return;
+                
+                // Bersihkan styling aktif dari semua item
+                for (let i = 0; i < items.length; i++) {
+                    items[i].classList.remove(activeClass);
+                }
+                
+                // Looping atas-bawah
+                if (currentFocus >= items.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                
+                // Tambahkan kelas aktif
+                items[currentFocus].classList.add(activeClass);
+                
+                // Pastikan item yang di-highlight selalu kelihatan di area scroll
+                items[currentFocus].scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+        }
+
+        // Pasang Event Listener Keyboard untuk ke-4 Input Search
+        setupAutocompleteKeyboard(f1Input, f1Suggest, searchManual, 'sugg-active-blue');
+        setupAutocompleteKeyboard(f2Input, f2Suggest, searchStoreManual, 'sugg-active-purple');
+        setupAutocompleteKeyboard(f4Input, f4Suggest, generateTop50, 'sugg-active-emerald');
+        setupAutocompleteKeyboard(roSearchInputEl, roSearchSuggestionsEl, applyRoFilter, 'sugg-active-orange');
+
 
         f1Input.addEventListener('input', function() {
             const keyword = cleanStr(this.value);
@@ -1300,11 +1366,6 @@
             if (f4Input && !f4Input.contains(e.target) && !f4Suggest.contains(e.target)) f4Suggest.classList.add('hidden');
             if (roSearchInputEl && !roSearchInputEl.contains(e.target) && !roSearchSuggestionsEl.contains(e.target)) roSearchSuggestionsEl.classList.add('hidden');
         });
-
-        f1Input.addEventListener('keypress', e => { if (e.key === 'Enter') { f1Suggest.classList.add('hidden'); searchManual(); } });
-        f2Input.addEventListener('keypress', e => { if (e.key === 'Enter') { f2Suggest.classList.add('hidden'); searchStoreManual(); } });
-        f4Input.addEventListener('keypress', e => { if (e.key === 'Enter') { f4Suggest.classList.add('hidden'); generateTop50(); } });
-        roSearchInputEl.addEventListener('keypress', e => { if (e.key === 'Enter') { roSearchSuggestionsEl.classList.add('hidden'); applyRoFilter(); } });
 
 
         function searchManual() {
