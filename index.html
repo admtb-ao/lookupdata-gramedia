@@ -86,10 +86,10 @@
             <!-- FITUR 1: Pencarian Manual BUKU & Multi-Kategori -->
             <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-sm">
                 <label class="block text-gray-800 font-bold mb-2">📘 Fitur 1: Pencarian Katalog Buku</label>
-                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
+                <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, Judul, atau Pengarang. <b>(Bisa cari banyak sekaligus, pisahkan dengan koma!)</b></p>
                 <div class="flex flex-col sm:flex-row gap-3 mb-4">
                     <div class="relative w-full">
-                        <input type="text" id="manual-search-input" autocomplete="off" placeholder="Contoh: leika,garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                        <input type="text" id="manual-search-input" autocomplete="off" placeholder="Contoh: leika, tere liye, garda..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                         <ul id="f1-search-suggestions" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden mt-1 text-sm divide-y divide-gray-100"></ul>
                     </div>
                     <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
@@ -141,6 +141,7 @@
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-orin" class="w-4 h-4 text-blue-600 rounded"> ID ORIN</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-bsoft" class="w-4 h-4 text-blue-600 rounded" checked> KODE BSOFT</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-judul" class="w-4 h-4 text-blue-600 rounded"> JUDUL ITEM</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-pengarang" class="w-4 h-4 text-blue-600 rounded"> PENGARANG</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-harga" class="w-4 h-4 text-blue-600 rounded" checked> HARGA</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-stokbsoft" class="w-4 h-4 text-blue-600 rounded" checked> STOK BSOFT</label>
                         <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" id="chk-kategori" class="w-4 h-4 text-blue-600 rounded" checked> KATEGORI</label>
@@ -238,7 +239,7 @@
 
                 <div class="flex flex-col md:flex-row gap-3 items-center bg-white p-3 md:p-4 rounded-lg border shadow-inner">
                     <div class="relative w-full md:w-1/3">
-                        <input type="text" id="analytics-search-input" autocomplete="off" placeholder="Cari Judul / ORIN / Kategori..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" id="analytics-search-input" autocomplete="off" placeholder="Cari Judul / Pengarang / ORIN / Kategori..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <ul id="f4-search-suggestions" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden mt-1 text-sm divide-y divide-gray-100"></ul>
                     </div>
                     
@@ -611,7 +612,7 @@
             }
         }
 
-        const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-harga', 'chk-stokbsoft', 'chk-kategori', 'chk-sold', 'chk-eoh'];
+        const chkIds = ['chk-orin', 'chk-bsoft', 'chk-judul', 'chk-pengarang', 'chk-harga', 'chk-stokbsoft', 'chk-kategori', 'chk-sold', 'chk-eoh'];
         function initCheckboxPrefs() {
             chkIds.forEach(id => {
                 const el = document.getElementById(id);
@@ -1214,7 +1215,7 @@
             let suggestions = new Set();
             for (let i = 0; i < database.length; i++) {
                 let row = database[i];
-                ['ID ORIN', 'KODE BSOFT', 'JUDUL ITEM', 'KATEGORI'].forEach(k => {
+                ['ID ORIN', 'KODE BSOFT', 'JUDUL ITEM', 'KATEGORI', 'PENGARANG'].forEach(k => {
                     let val = String(row[k] || '');
                     if (val && cleanStr(val).includes(keyword) && val.length < 80) suggestions.add(val);
                 });
@@ -1251,7 +1252,7 @@
             let suggestions = new Set();
             for (let i = 0; i < database.length; i++) {
                 let row = database[i];
-                ['ID ORIN', 'KODE BSOFT', 'JUDUL ITEM', 'KATEGORI'].forEach(k => {
+                ['ID ORIN', 'KODE BSOFT', 'JUDUL ITEM', 'KATEGORI', 'PENGARANG'].forEach(k => {
                     let val = String(row[k] || '');
                     if (val && cleanStr(val).includes(keyword) && val.length < 80) suggestions.add(val);
                 });
@@ -1320,7 +1321,8 @@
                         cleanStr(dbRow['ID ORIN']).includes(term) || 
                         cleanStr(dbRow['KODE BSOFT']).includes(term) || 
                         cleanStr(dbRow['JUDUL ITEM']).includes(term) ||
-                        cleanStr(dbRow['KATEGORI']).includes(term)
+                        cleanStr(dbRow['KATEGORI']).includes(term) ||
+                        cleanStr(dbRow['PENGARANG']).includes(term)
                     );
                 });
             }
@@ -1477,6 +1479,7 @@
                     orin: document.getElementById('chk-orin').checked, 
                     bsoft: document.getElementById('chk-bsoft').checked, 
                     judul: document.getElementById('chk-judul').checked, 
+                    pengarang: document.getElementById('chk-pengarang').checked, 
                     harga: document.getElementById('chk-harga').checked, 
                     stokbsoft: document.getElementById('chk-stokbsoft').checked, 
                     kategori: document.getElementById('chk-kategori').checked,
@@ -1537,6 +1540,7 @@
                         if (wants.orin) newRow['ID ORIN'] = finalId;
                         if (wants.bsoft) newRow['KODE BSOFT'] = match['KODE BSOFT'] || rawUserBsoft || '';
                         if (wants.judul) newRow['JUDUL ITEM'] = match['JUDUL ITEM'] || rawUserTitle || '';
+                        if (wants.pengarang) newRow['PENGARANG'] = match['PENGARANG'] || '-';
                         if (wants.harga) newRow['HARGA'] = match['HARGA'] !== undefined ? match['HARGA'] : (rawUserPrice || '');
                         if (wants.stokbsoft) newRow['STOK BSOFT'] = match['STOK BSOFT'] !== undefined ? match['STOK BSOFT'] : '';
                         if (wants.kategori) newRow['KATEGORI'] = match['KATEGORI'] || '';
@@ -1557,6 +1561,7 @@
                         if (wants.orin && !newRow['ID ORIN']) newRow['ID ORIN'] = rawUserOrin || '';
                         if (wants.bsoft && !newRow['KODE BSOFT']) newRow['KODE BSOFT'] = rawUserBsoft || '';
                         if (wants.judul && !newRow['JUDUL ITEM']) newRow['JUDUL ITEM'] = rawUserTitle || '';
+                        if (wants.pengarang && !newRow['PENGARANG']) newRow['PENGARANG'] = '-';
                         if (wants.harga && !newRow['HARGA']) newRow['HARGA'] = rawUserPrice || '';
                         if (wants.stokbsoft && !newRow['STOK BSOFT']) newRow['STOK BSOFT'] = '';
                         if (wants.kategori && !newRow['KATEGORI']) newRow['KATEGORI'] = '';
@@ -1858,7 +1863,7 @@
 
                     let isMatch = true;
                     if (keyword) {
-                        isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword);
+                        isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword) || cleanStr(pengarang).includes(keyword);
                     }
 
                     if (isMatch) {
@@ -1904,6 +1909,7 @@
                     let judul = db1['JUDUL ITEM'] ? String(db1['JUDUL ITEM']) : "";
                     if (!judul.trim() || cleanStr(judul).includes('obral')) return;
 
+                    let pengarang = db1['PENGARANG'] ? String(db1['PENGARANG']) : "-";
                     let kategori = db1['KATEGORI'] ? String(db1['KATEGORI']) : "-";
 
                     let db2 = calcStoreData(orin);     
@@ -1919,7 +1925,7 @@
                     if (total26 > 0 || stokBsoftVal > 0 || eoh > 0) {
                         let isMatch = true;
                         if (keyword) {
-                            isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword);
+                            isMatch = cleanStr(orin).includes(keyword) || cleanStr(judul).includes(keyword) || cleanStr(kodeBsoft).includes(keyword) || cleanStr(kategori).includes(keyword) || cleanStr(pengarang).includes(keyword);
                         }
 
                         if (isMatch) {
@@ -1940,7 +1946,7 @@
                             combinedData.push({
                                 orin: db1['ID ORIN'] || orin,
                                 judul: judul,
-                                pengarang: db1['PENGARANG'] || '-',
+                                pengarang: pengarang,
                                 kodeBsoft: kodeBsoft,
                                 kategori: kategori,
                                 stokBsoft: stokBsoftVal,
@@ -2423,8 +2429,8 @@
                 for (let key in row) {
                     if (!key.startsWith('__hidden_')) {
                         cleanRow[key] = row[key];
-                        // Sisipkan kolom pengarang khusus setelah judul item
-                        if (key === 'JUDUL ITEM') {
+                        // Sisipkan kolom pengarang khusus setelah judul item HANYA JIKA belum ada (user tidak centang checkbox)
+                        if (key === 'JUDUL ITEM' && !row.hasOwnProperty('PENGARANG')) {
                             cleanRow['PENGARANG'] = row['__hidden_pengarang'] || '-';
                         }
                     }
