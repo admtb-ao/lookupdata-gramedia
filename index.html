@@ -277,6 +277,16 @@
                         <tbody class="text-gray-700 align-middle divide-y text-xs" id="analytics-table-body"></tbody>
                     </table>
                 </div>
+
+                <!-- Kontrol Pagination untuk Analitik (Fitur 4) -->
+                <div class="mt-4 flex flex-col sm:flex-row justify-between items-center text-xs md:text-sm text-gray-600 gap-3">
+                    <div id="analytics-page-info">Menampilkan - data</div>
+                    <div class="flex gap-2">
+                        <button onclick="changeAnalyticsPage(-1)" id="analytics-btn-prev" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Sebelumnya</button>
+                        <span id="analytics-page-number" class="px-4 py-2 font-bold">1 / 1</span>
+                        <button onclick="changeAnalyticsPage(1)" id="analytics-btn-next" class="px-4 py-2 border rounded bg-white hover:bg-gray-100 disabled:opacity-50">Selanjutnya</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -524,6 +534,10 @@
         let currentFilter = 'ALL'; 
         let currentPage = 1;
         const rowsPerPage = 50; 
+
+        // VARIABEL PAGINATION KHUSUS FITUR 4 (ANALITIK)
+        let analyticsCurrentPage = 1;
+        const analyticsRowsPerPage = 100;
         
         // VARIABEL KHUSUS TAB RO PRO
         let rawDataRo = [];
@@ -2023,7 +2037,19 @@
             }
 
             combinedData.sort((a, b) => b.valFokus - a.valFokus);
-            currentAnalyticsData = combinedData.slice(0, 150);
+            
+            if (customAnalyticsExcelRows && customAnalyticsExcelRows.length > 0) {
+                currentAnalyticsData = combinedData; 
+            } else {
+                currentAnalyticsData = combinedData.slice(0, 500); 
+            }
+            
+            analyticsCurrentPage = 1; 
+            renderAnalyticsTable();
+        }
+
+        function changeAnalyticsPage(delta) {
+            analyticsCurrentPage += delta;
             renderAnalyticsTable();
         }
 
@@ -2031,6 +2057,30 @@
             const thead = document.getElementById('analytics-thead');
             const tbody = document.getElementById('analytics-table-body');
             document.getElementById('analytics-table-section').classList.remove('hidden');
+
+            if (currentAnalyticsData.length === 0) {
+                thead.innerHTML = '';
+                tbody.innerHTML = `<tr><td colspan="15" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data ditemukan untuk pencarian ini.</td></tr>`;
+                document.getElementById('analytics-page-info').innerText = `Menampilkan 0 data`;
+                document.getElementById('analytics-page-number').innerText = `1 / 1`;
+                document.getElementById('analytics-btn-prev').disabled = true;
+                document.getElementById('analytics-btn-next').disabled = true;
+                return;
+            }
+
+            const totalPages = Math.ceil(currentAnalyticsData.length / analyticsRowsPerPage) || 1;
+            if (analyticsCurrentPage < 1) analyticsCurrentPage = 1;
+            if (analyticsCurrentPage > totalPages) analyticsCurrentPage = totalPages;
+
+            document.getElementById('analytics-btn-prev').disabled = analyticsCurrentPage === 1;
+            document.getElementById('analytics-btn-next').disabled = analyticsCurrentPage === totalPages;
+            document.getElementById('analytics-page-number').innerText = `${analyticsCurrentPage} / ${totalPages}`;
+
+            const startIndex = (analyticsCurrentPage - 1) * analyticsRowsPerPage;
+            const endIndex = Math.min(startIndex + analyticsRowsPerPage, currentAnalyticsData.length);
+            document.getElementById('analytics-page-info').innerText = `Menampilkan ${startIndex + 1}-${endIndex} dari total ${currentAnalyticsData.length} data`;
+
+            const paginatedData = currentAnalyticsData.slice(startIndex, endIndex);
 
             let isSingleMonth = currentSortMode !== 'TOTAL' && currentSortMode !== 'Q1' && currentSortMode !== 'Q2';
             let isQuarter = currentSortMode === 'Q1' || currentSortMode === 'Q2';
@@ -2069,8 +2119,10 @@
             thead.innerHTML = headHtml;
 
             let html = '';
-            currentAnalyticsData.forEach((row, i) => {
-                let rnkStr = i < 3 ? ['🥇', '🥈', '🥉'][i] : (i + 1);
+            paginatedData.forEach((row, loopIndex) => {
+                let actualIndex = startIndex + loopIndex;
+                let rnkStr = actualIndex < 3 ? ['🥇', '🥈', '🥉'][actualIndex] : (actualIndex + 1);
+                
                 let orinEsc = escapeAttr(row.orin); let judulEsc = escapeAttr(row.judul); let bsEsc = escapeAttr(row.kodeBsoft);
                 let arrSales = `[${row.jan},${row.feb},${row.mar},${row.apr},${row.mei},${row.jun},${row.jul},${row.ags}]`;
 
@@ -2115,7 +2167,6 @@
                 </tr>`;
             });
             
-            if (currentAnalyticsData.length === 0) html = `<tr><td colspan="15" class="py-8 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Tidak ada data ditemukan untuk pencarian ini.</td></tr>`;
             tbody.innerHTML = html;
         }
 
